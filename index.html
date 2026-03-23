@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern ToDo List</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
+    <div id="app" class="w-full mx-auto py-6 px-4 sm:px-6 lg:px-8 h-screen flex flex-col">
+        <!-- Header -->
+        <header class="flex-shrink-0 flex justify-between items-center mb-6 bg-white p-6 rounded-xl shadow-sm">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-indigo-600"></i>
+                    Modern ToDo List
+                </h1>
+                <p class="text-sm text-gray-500 mt-1">基于 XML 的极简任务管理工具</p>
+            </div>
+            <div class="flex gap-3">
+                <button @click="loadXML" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-folder-open"></i> 加载 XML
+                </button>
+                <div v-if="activeList" class="flex gap-2">
+                    <button @click="saveXML" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2" title="直接保存到当前文件">
+                        <i class="fa-solid fa-floppy-disk"></i> 保存
+                    </button>
+                    <button @click="saveAsXML" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2" title="另存为新文件">
+                        <i class="fa-solid fa-file-export"></i> 另存为
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search and Filter Toolbar (Moved above lists) -->
+        <div class="mb-6 flex gap-3 items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex-shrink-0" v-if="todoLists.length > 0">
+            <!-- Text Search -->
+            <div class="relative flex-1">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="text" v-model="filterState.keyword" placeholder="搜索任务名或备注..." class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow bg-gray-50">
+            </div>
+            
+            <!-- Tag Filter -->
+            <div class="relative w-48">
+                <i class="fa-solid fa-tags absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
+                <select v-model="filterState.tag" class="w-full pl-8 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none appearance-none bg-gray-50">
+                    <option value="">所有标签</option>
+                    <option v-for="tag in allAvailableTags" :key="tag" :value="tag">{{ tag }}</option>
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+            </div>
+
+            <!-- Due Date Filter -->
+            <div class="relative w-40">
+                <i class="fa-regular fa-calendar absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
+                <select v-model="filterState.dueDate" class="w-full pl-8 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none appearance-none bg-gray-50">
+                    <option value="all">全部时间</option>
+                    <option value="today">今天到期</option>
+                    <option value="tomorrow">明天到期</option>
+                    <option value="this_week">本周内到期</option>
+                    <option value="next_week">下周内到期</option>
+                    <option value="overdue">已超期</option>
+                    <option value="no_date">无期限</option>
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+            </div>
+
+            <!-- Global Search Checkbox -->
+            <label class="flex items-center gap-1.5 cursor-pointer text-sm text-gray-700 bg-gray-50 border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors font-medium">
+                <input type="checkbox" v-model="filterState.globalSearch" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                全局搜索
+            </label>
+
+            <!-- Clear Filters -->
+            <button v-if="hasActiveFilters" @click="clearFilters" class="text-sm text-gray-500 hover:text-red-500 transition-colors px-2 py-2 flex items-center gap-1" title="清除筛选">
+                <i class="fa-solid fa-filter-circle-xmark"></i> 清除
+            </button>
+        </div>
+
+        <!-- Main Content Layout -->
+        <div class="flex-1 flex gap-6 min-h-0">
+            
+            <!-- Sidebar: Lists -->
+            <aside class="w-56 bg-white rounded-xl shadow-sm flex flex-col flex-shrink-0 overflow-hidden">
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h3 class="font-bold text-gray-700 text-sm">任务列表</h3>
+                    <button @click="addNewList" class="text-indigo-600 hover:text-indigo-800 transition-colors" title="新建列表">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-2 space-y-1">
+                    <div v-for="list in todoLists" :key="list.id" 
+                         @click="activeListId = list.id"
+                         class="px-3 py-2.5 rounded-lg cursor-pointer flex justify-between items-center group transition-colors text-sm"
+                         :class="activeListId === list.id ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'">
+                        <div class="flex items-center gap-2 overflow-hidden">
+                            <i class="fa-solid fa-list-ul text-xs opacity-70"></i>
+                            <span class="truncate">{{ list.name }}</span>
+                        </div>
+                        <button @click.stop="removeList(list.id)" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity" title="关闭列表">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div v-if="todoLists.length === 0" class="text-center py-6 text-gray-400 text-xs">
+                        暂无列表
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Middle Panel: Task List -->
+            <main class="flex-1 bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
+                <!-- Empty State -->
+                <div v-if="!activeList" class="flex-1 flex flex-col items-center justify-center py-20 text-gray-400">
+                    <i class="fa-regular fa-file-code text-6xl mb-4 text-gray-300"></i>
+                    <p class="text-lg font-medium text-gray-500">未选择任何列表</p>
+                    <p class="text-sm mt-1 mb-6">请在左侧选择或新建列表，或加载本地 XML 文件</p>
+                    <button @click="addNewList" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> 新建列表
+                    </button>
+                </div>
+
+                <!-- Task List Component -->
+                <div v-else class="flex-1 overflow-hidden flex flex-col">
+                    <!-- Task List Header -->
+                    <div class="px-6 pt-6 pb-4 border-b border-gray-100 flex flex-col gap-3 flex-shrink-0">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-lg font-bold text-gray-800">{{ filterState.globalSearch ? '全局搜索结果' : '任务列表' }}</h2>
+                            <button @click="addTask()" class="text-sm bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1.5 border border-indigo-200">
+                                <i class="fa-solid fa-plus"></i> 新建任务
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-6 pt-4">
+                        <task-list :tasks="filteredTasks" :selected-id="selectedTask?.id" :disable-drag="filterState.globalSearch" @select="selectTask" @add-subtask="addSubtask" @delete-task="deleteTask" @drag-start="onDragStart" @drag-over="onDragOver" @drop="onDrop" @open-file="openFileRef"></task-list>
+                        
+                        <div v-if="filteredTasks.length === 0 && tasks.length > 0" class="text-center py-10 text-gray-400">
+                            <i class="fa-solid fa-magnifying-glass text-3xl mb-3 text-gray-300"></i>
+                            <p>没有找到符合条件的任务</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Right Panel: Task Details -->
+            <aside class="w-1/3 min-w-[320px] max-w-[500px] bg-white rounded-xl shadow-sm overflow-hidden flex flex-col flex-shrink-0" v-if="activeList">
+                <div v-if="selectedTask" class="flex flex-col h-full">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
+                        <h3 class="text-lg font-bold text-gray-900">任务详情</h3>
+                    </div>
+                    
+                    <div class="p-6 overflow-y-auto flex-1 flex flex-col gap-5">
+                        <!-- Title -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">标题</label>
+                            <input type="text" v-model="selectedTask.title" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow text-gray-800">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Priority -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">优先级 (0-10)</label>
+                                <input type="number" min="0" max="10" v-model="selectedTask.priority" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow text-gray-800">
+                            </div>
+                            
+                            <!-- Due Date -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">到期时间</label>
+                                <input type="date" v-model="selectedTask.dueDate" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow text-gray-800">
+                            </div>
+                        </div>
+
+                        <!-- Tags (Categories) -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">标签</label>
+                            <div class="flex flex-wrap gap-2 mb-2">
+                                <span v-for="(tag, index) in selectedTask.categories" :key="index" class="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md text-xs font-medium border border-indigo-100">
+                                    {{ tag }}
+                                    <button @click="removeTag(index)" class="hover:text-indigo-900 transition-colors focus:outline-none">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </span>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" v-model="newTagInput" @keydown.enter.prevent="addTag" placeholder="输入新标签并按回车" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow text-gray-800 text-sm">
+                                <button @click="addTag" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                                    添加
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- File Link -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">关联文件链接</label>
+                            <div class="flex gap-2">
+                                <div class="relative flex-1">
+                                    <input type="text" v-model="selectedTask.fileRefPath" placeholder="输入链接或相对路径，例如: .\files\doc.pdf" class="w-full border border-gray-300 rounded-lg pl-3 pr-10 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow text-gray-800 text-sm">
+                                    <label class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-indigo-600 cursor-pointer transition-colors" title="选择本地文件 (获取文件名)">
+                                        <i class="fa-solid fa-folder-open"></i>
+                                        <input type="file" class="hidden" @change="handleFileSelect">
+                                    </label>
+                                </div>
+                                <button v-if="selectedTask.fileRefPath" @click="openFileRef(selectedTask.fileRefPath)" class="flex-shrink-0 bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg flex items-center justify-center transition-colors" title="打开文件">
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-sm"></i>
+                                </button>
+                            </div>
+                            <p class="text-[10px] text-gray-400 mt-1">支持网页链接(http://)或相对路径。本地绝对路径可能因浏览器安全限制无法直接打开，可右键复制。</p>
+                        </div>
+
+                        <!-- Comments -->
+                        <div class="flex-1 flex flex-col min-h-[150px]">
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">备注</label>
+                            <textarea v-model="selectedTask.comments" class="flex-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow resize-none text-gray-800 text-sm leading-relaxed"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div v-else class="flex flex-col items-center justify-center h-full text-gray-400 p-6 text-center">
+                    <i class="fa-solid fa-hand-pointer text-4xl mb-3 text-gray-200"></i>
+                    <p class="text-sm font-medium text-gray-500">未选择任何任务</p>
+                    <p class="text-xs mt-1">在左侧列表中点击任务以查看和编辑详情</p>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Template for Task List (Recursive Component) -->
+    <template id="task-list-template">
+        <div class="space-y-1">
+            <div v-for="task in tasks" :key="task.id" class="task-item">
+                
+                <!-- If it's a list header -->
+                <div v-if="task.isListHeader" class="py-2 px-3 bg-gray-100 text-gray-700 font-bold rounded-lg flex items-center gap-2 mt-4 mb-2 shadow-sm border border-gray-200">
+                    <i class="fa-solid fa-folder-open text-indigo-500"></i>
+                    {{ task.title }}
+                </div>
+
+                <!-- Task Row -->
+                <div v-else class="group flex items-center gap-3 py-2 px-3 rounded-lg border transition-all cursor-pointer"
+                     :class="[
+                        task.percentDone >= 100 ? 'opacity-60' : '',
+                        selectedId === task.id ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:border-gray-200 hover:bg-gray-50',
+                        isDragOver(task) ? 'border-indigo-400 bg-indigo-50' : ''
+                     ]"
+                     :draggable="!disableDrag"
+                     @dragstart.stop="!disableDrag && handleDragStart($event, task)"
+                     @dragover.stop.prevent="handleDragOver($event, task)"
+                     @drop.stop.prevent="handleDrop($event, task)"
+                     @click.stop="$emit('select', task)">
+                    
+                    <!-- Drag Handle -->
+                    <div class="text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center w-4" :class="disableDrag ? 'hidden' : ''">
+                        <i class="fa-solid fa-grip-vertical text-xs"></i>
+                    </div>
+
+                    <!-- Expand/Collapse Toggle -->
+                    <div class="w-5 flex justify-center">
+                        <button v-if="task.children && task.children.length > 0" 
+                                @click.stop="task.expanded = !task.expanded" 
+                                class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fa-solid text-xs" :class="task.expanded ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                        </button>
+                        <div v-else class="w-5"></div>
+                    </div>
+
+                    <!-- Checkbox -->
+                    <button @click.stop="toggleComplete(task)" 
+                            class="flex-shrink-0 w-5 h-5 rounded border flex items-center justify-center transition-colors"
+                            :class="task.percentDone >= 100 ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-gray-300 text-transparent hover:border-indigo-400'">
+                        <i class="fa-solid fa-check text-xs"></i>
+                    </button>
+
+                    <!-- Priority indicator -->
+                    <div class="w-1.5 h-4 rounded-full flex-shrink-0" :class="getPriorityColor(task.priority)" :title="'优先级: ' + (task.priority || 0)"></div>
+
+                    <!-- Title & Comment Preview -->
+                    <div class="flex-1 min-w-0 flex flex-col justify-center">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="truncate font-medium text-gray-800" :class="{'line-through text-gray-500': task.percentDone >= 100}">
+                                {{ task.title }}
+                            </span>
+                            
+                            <!-- Tags inline display -->
+                            <div v-if="task.categories && task.categories.length > 0" class="flex gap-1">
+                                <span v-for="tag in task.categories" :key="tag" class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                                    {{ tag }}
+                                </span>
+                            </div>
+
+                            <!-- File Link Badge -->
+                            <button v-if="task.fileRefPath" @click.stop="$emit('open-file', task.fileRefPath)" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100 transition-colors" title="打开关联文件">
+                                <i class="fa-solid fa-paperclip"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Comment Preview -->
+                        <div v-if="task.comments" class="text-xs text-gray-400 truncate mt-0.5" :title="task.comments">
+                            <i class="fa-regular fa-comment-dots text-[10px] mr-1"></i>
+                            {{ task.comments }}
+                        </div>
+                    </div>
+
+                    <!-- Due Date -->
+                    <div v-if="task.dueDate" class="flex-shrink-0 text-xs flex items-center gap-1.5 px-2 py-1 rounded-md" 
+                         :class="getDueDateClass(task)">
+                        <i class="fa-regular fa-calendar"></i>
+                        <span>{{ task.dueDate }}</span>
+                        <span v-if="getDueDateWarning(task)" class="font-bold">
+                            <i class="fa-solid fa-circle-exclamation text-[10px] ml-0.5"></i>
+                        </span>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                        <button @click.stop="$emit('add-subtask', task)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-indigo-100 text-indigo-500 transition-colors" title="添加子任务">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                        </button>
+                        <button @click.stop="$emit('delete-task', task)" class="w-6 h-6 flex items-center justify-center rounded hover:bg-red-100 text-red-500 transition-colors" title="删除任务">
+                            <i class="fa-regular fa-trash-can text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recursive Children -->
+                <div v-if="task.expanded && task.children && task.children.length > 0" :class="task.isListHeader ? 'ml-4' : 'ml-8 border-l border-gray-100 pl-2 mt-1'">
+                    <task-list :tasks="task.children" :selected-id="selectedId" :disable-drag="disableDrag" @select="$emit('select', $event)" @add-subtask="$emit('add-subtask', $event)" @delete-task="$emit('delete-task', $event)" @drag-start="$emit('drag-start', $event)" @drag-over="$emit('drag-over', $event)" @drop="$emit('drop', $event)" @open-file="$emit('open-file', $event)"></task-list>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="script.js"></script>
+</body>
+</html>

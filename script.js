@@ -171,6 +171,25 @@ const app = createApp({
         // Selected Task State
         const selectedTask = ref(null);
 
+        // Confirmation Modal State
+        const confirmModal = reactive({
+            isOpen: false,
+            title: '',
+            message: '',
+            onConfirm: null
+        });
+
+        const showConfirm = (title, message, onConfirm) => {
+            confirmModal.title = title;
+            confirmModal.message = message;
+            confirmModal.onConfirm = onConfirm;
+            confirmModal.isOpen = true;
+        };
+
+        const closeConfirm = () => {
+            confirmModal.isOpen = false;
+        };
+
         watch(activeListId, () => {
             // When switching lists, restore the selected task for the new list if it exists
             if (activeList.value && activeList.value.selectedTaskId) {
@@ -408,14 +427,16 @@ const app = createApp({
 
         const removeList = (id) => {
             const list = todoLists.value.find(l => l.id === id);
-            if (list && confirm(`确定要关闭列表 "${list.name}" 吗？`)) {
-                todoLists.value = todoLists.value.filter(l => l.id !== id);
-                if (activeListId.value === id) {
-                    activeListId.value = todoLists.value.length > 0 ? todoLists.value[0].id : null;
-                }
-                if (selectedTask.value && !todoLists.value.some(l => findTaskInList(l.tasks, selectedTask.value.id))) {
-                    selectedTask.value = null;
-                }
+            if (list) {
+                showConfirm('关闭列表', `确定要关闭列表 "${list.name}" 吗？`, () => {
+                    todoLists.value = todoLists.value.filter(l => l.id !== id);
+                    if (activeListId.value === id) {
+                        activeListId.value = todoLists.value.length > 0 ? todoLists.value[0].id : null;
+                    }
+                    if (selectedTask.value && !todoLists.value.some(l => findTaskInList(l.tasks, selectedTask.value.id))) {
+                        selectedTask.value = null;
+                    }
+                });
             }
         };
 
@@ -473,7 +494,7 @@ const app = createApp({
         };
 
         const deleteTask = (task) => {
-            if (confirm(`确定要删除任务 "${task.title}" 及其所有子任务吗？`)) {
+            showConfirm('删除任务', `确定要删除任务 "${task.title}" 及其所有子任务吗？`, () => {
                 for (const list of todoLists.value) {
                     if (removeTaskFromList(list.tasks, task.id)) {
                         break;
@@ -482,7 +503,7 @@ const app = createApp({
                 if (selectedTask.value && selectedTask.value.id === task.id) {
                     selectedTask.value = null;
                 }
-            }
+            });
         };
 
         // Drag and Drop Logic
@@ -840,6 +861,12 @@ const app = createApp({
             return xmlString;
         };
 
+        const clearHistory = () => {
+            historyStack.value = [];
+            hasUncommittedChanges.value = false;
+            pushToHistory();
+        };
+
         const saveXML = async () => {
             if (!activeList.value) return;
             const xmlString = generateXMLStringForList(activeList.value);
@@ -855,6 +882,7 @@ const app = createApp({
                     const writable = await activeList.value.fileHandle.createWritable();
                     await writable.write(xmlString);
                     await writable.close();
+                    clearHistory();
                     alert('保存成功！');
                 } catch (err) {
                     console.error('Error saving file:', err);
@@ -887,6 +915,7 @@ const app = createApp({
                     activeList.value.fileHandle = handle;
                     activeList.value.originalFileName = handle.name;
                     activeList.value.name = handle.name;
+                    clearHistory();
                     alert('另存为成功！');
                 } catch (err) {
                     if (err.name !== 'AbortError') {
@@ -904,14 +933,14 @@ const app = createApp({
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
+                clearHistory();
             }
         };
 
-        const saveStateToDB = debounce(async () => {
-            const stateToSave = {
+        const serializeState = () => {
+            return {
                 activeListId: activeListId.value,
                 lists: todoLists.value.map(list => {
-                    // Extract expanded state of tasks to restore later
                     const expandedState = {};
                     const extractExpanded = (tasks) => {
                         tasks.forEach(t => {
@@ -928,13 +957,105 @@ const app = createApp({
                         xmlText: xmlText,
                         handle: toRaw(list.fileHandle),
                         originalFileName: list.originalFileName,
-                        selectedTaskId: list.selectedTaskId,
+                        selectedTaskId: activeList.value && activeList.value.id === list.id && selectedTask.value ? selectedTask.value.id : list.selectedTaskId,
                         expandedState: expandedState
                     };
                 })
             };
+        };
+
+        const saveStateToDB = debounce(async () => {
+            const stateToSave = serializeState();
             await dbSet('appState', stateToSave);
         }, 1000);
+
+        // Undo History Stack
+        const historyStack = ref([]);
+        const hasUncommittedChanges = ref(false);
+        let isRestoring = false;
+        let lastSavedStateJSON = '';
+
+        const pushToHistory = () => {
+            if (isRestoring) return;
+            const state = serializeState();
+            const stateJSON = JSON.stringify(state);
+            
+            if (stateJSON !== lastSavedStateJSON) {
+                historyStack.value.push(state);
+                lastSavedStateJSON = stateJSON;
+                if (historyStack.value.length > 50) {
+                    historyStack.value.shift();
+                }
+            }
+            hasUncommittedChanges.value = false;
+        };
+
+        const debouncedPushToHistory = debounce(pushToHistory, 500);
+
+        const canUndo = computed(() => historyStack.value.length > 1 || hasUncommittedChanges.value);
+
+        const restoreState = (savedState) => {
+            isRestoring = true;
+            
+            todoLists.value = savedState.lists.map(listData => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(listData.xmlText, "text/xml");
+                const root = doc.querySelector('TODOLIST');
+                let parsedTasks = [];
+                if (root) {
+                    parsedTasks = Array.from(root.childNodes)
+                        .filter(node => node.nodeType === Node.ELEMENT_NODE && node.tagName === 'TASK')
+                        .map(parseTaskNode);
+                        
+                    if (listData.expandedState) {
+                        const applyExpanded = (tasks) => {
+                            tasks.forEach(t => {
+                                t.expanded = !!listData.expandedState[t.id];
+                                if (t.children) applyExpanded(t.children);
+                            });
+                        };
+                        applyExpanded(parsedTasks);
+                    }
+                }
+                return {
+                    id: listData.id,
+                    name: listData.name,
+                    xmlDoc: doc,
+                    tasks: parsedTasks,
+                    fileHandle: listData.handle,
+                    originalFileName: listData.originalFileName,
+                    selectedTaskId: listData.selectedTaskId
+                };
+            });
+            activeListId.value = savedState.activeListId;
+
+            // Reset isRestoring after Vue updates
+            setTimeout(() => {
+                isRestoring = false;
+                saveStateToDB(); // ensure DB is updated with restored state
+            }, 0);
+        };
+
+        const undo = () => {
+            if (!canUndo.value) return;
+
+            let stateToRestore;
+
+            if (hasUncommittedChanges.value) {
+                // Uncommitted changes exist, restore the top of the stack
+                stateToRestore = historyStack.value[historyStack.value.length - 1];
+            } else {
+                // Current state is already the top of the stack, pop it and restore the previous one
+                historyStack.value.pop();
+                stateToRestore = historyStack.value[historyStack.value.length - 1];
+                lastSavedStateJSON = JSON.stringify(stateToRestore);
+            }
+
+            if (stateToRestore) {
+                restoreState(stateToRestore);
+                hasUncommittedChanges.value = false;
+            }
+        };
 
         onMounted(async () => {
             const savedState = await dbGet('appState');
@@ -979,9 +1100,16 @@ const app = createApp({
                 addNewList();
             }
 
-            // Set up auto-save
+            // Initialize history stack
+            pushToHistory();
+
+            // Set up auto-save and history tracking
             watch([todoLists, activeListId], () => {
-                saveStateToDB();
+                if (!isRestoring) {
+                    hasUncommittedChanges.value = true;
+                    debouncedPushToHistory();
+                    saveStateToDB();
+                }
             }, { deep: true });
         });
 
@@ -1000,6 +1128,8 @@ const app = createApp({
             loadXML,
             saveXML,
             saveAsXML,
+            undo,
+            canUndo,
             selectedTask,
             selectTask,
             addTask,
@@ -1012,7 +1142,9 @@ const app = createApp({
             openFileRef,
             newTagInput,
             addTag,
-            removeTag
+            removeTag,
+            confirmModal,
+            closeConfirm
         };
     }
 });

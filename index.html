@@ -185,6 +185,13 @@
                                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">到期时间</label>
                                 <input type="date" v-model="selectedTask.dueDate" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow text-gray-800">
                             </div>
+
+                            <div class="col-span-2">
+                                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">添加时间</label>
+                                <div class="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-700 text-sm">
+                                    {{ formatTaskCreatedAt(selectedTask.createdAt) }}
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Tags (Categories) -->
@@ -238,6 +245,18 @@
                     <p class="text-xs mt-1">在左侧列表中点击任务以查看和编辑详情</p>
                 </div>
             </aside>
+        </div>
+        <div v-if="toast.isOpen" class="fixed top-4 z-50 w-[340px] max-w-[calc(100vw-2rem)] transform"
+             :class="toast.type === 'error' ? 'right-4' : 'left-1/2 -translate-x-1/2'">
+            <div class="bg-white border border-gray-200 rounded-xl shadow-lg px-4 py-3 flex items-start gap-3">
+                <div class="mt-0.5" :class="toast.type === 'error' ? 'text-red-600' : 'text-emerald-600'">
+                    <i class="fa-solid" :class="toast.type === 'error' ? 'fa-circle-xmark' : 'fa-circle-check'"></i>
+                </div>
+                <div class="flex-1 text-sm text-gray-800 leading-relaxed break-words">{{ toast.message }}</div>
+                <button @click="closeToast" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
         </div>
         <!-- Custom Confirm Modal -->
         <div v-if="confirmModal.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity">

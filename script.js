@@ -182,12 +182,48 @@ const app = createApp({
         const showConfirm = (title, message, onConfirm) => {
             confirmModal.title = title;
             confirmModal.message = message;
-            confirmModal.onConfirm = onConfirm;
+            confirmModal.onConfirm = async () => {
+                try {
+                    await onConfirm?.();
+                } finally {
+                    closeConfirm();
+                }
+            };
             confirmModal.isOpen = true;
         };
 
         const closeConfirm = () => {
             confirmModal.isOpen = false;
+            confirmModal.title = '';
+            confirmModal.message = '';
+            confirmModal.onConfirm = null;
+        };
+
+        const toast = reactive({
+            isOpen: false,
+            message: '',
+            type: 'success'
+        });
+        let toastTimer = null;
+
+        const showToast = (message, type = 'success', duration = 2200) => {
+            if (toastTimer) clearTimeout(toastTimer);
+            toast.message = message;
+            toast.type = type;
+            toast.isOpen = true;
+            toastTimer = setTimeout(() => {
+                toast.isOpen = false;
+            }, duration);
+        };
+
+        const closeToast = () => {
+            if (toastTimer) {
+                clearTimeout(toastTimer);
+                toastTimer = null;
+            }
+            toast.isOpen = false;
+            toast.message = '';
+            toast.type = 'success';
         };
 
         watch(activeListId, () => {
@@ -398,6 +434,18 @@ const app = createApp({
             return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
         };
 
+        const pad2 = (n) => String(n).padStart(2, '0');
+
+        const nowToTodoDateTimeString = () => {
+            const d = new Date();
+            return `${d.getFullYear()}/${pad2(d.getMonth() + 1)}/${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+        };
+
+        const formatTaskCreatedAt = (value) => {
+            if (!value) return '—';
+            return String(value).replace(/\//g, '-');
+        };
+
         const createNewList = (name = '未命名列表') => {
             const id = generateId();
             const doc = new DOMParser().parseFromString('<?xml version="1.0" encoding="utf-16"?><TODOLIST></TODOLIST>', "text/xml");
@@ -444,14 +492,17 @@ const app = createApp({
         const createNewTaskObject = (title = '新任务', doc) => {
             const id = generateId();
             const node = doc.createElement('TASK');
+            const createdAt = nowToTodoDateTimeString();
             node.setAttribute('ID', id);
             node.setAttribute('TITLE', title);
+            node.setAttribute('CREATEDATESTRING', createdAt);
             return {
                 id,
                 title,
                 percentDone: 0,
                 priority: 0,
                 dueDate: '',
+                createdAt,
                 fileRefPath: '',
                 comments: '',
                 categories: [],
@@ -746,6 +797,8 @@ const app = createApp({
                 if (dueDate.length > 10) dueDate = dueDate.substring(0, 10);
             }
 
+            const createdAt = (node.getAttribute('CREATEDATESTRING') || '').trim();
+
             // Extract CATEGORY (Tags)
             const categories = [];
             Array.from(node.childNodes).forEach(child => {
@@ -762,6 +815,7 @@ const app = createApp({
                 percentDone: parseInt(node.getAttribute('PERCENTDONE') || '0', 10),
                 priority: parseInt(node.getAttribute('PRIORITY') || '0', 10),
                 dueDate: dueDate,
+                createdAt,
                 fileRefPath: fileRefPath,
                 comments: comments,
                 categories: categories,
@@ -783,6 +837,12 @@ const app = createApp({
                 node.setAttribute('DUEDATESTRING', task.dueDate.replace(/-/g, '/'));
             } else {
                 node.removeAttribute('DUEDATESTRING');
+            }
+
+            if (task.createdAt) {
+                node.setAttribute('CREATEDATESTRING', task.createdAt);
+            } else {
+                node.removeAttribute('CREATEDATESTRING');
             }
 
             // Update FILEREFPATH
@@ -883,13 +943,13 @@ const app = createApp({
                     await writable.write(xmlString);
                     await writable.close();
                     clearHistory();
-                    alert('保存成功！');
+                    showToast('保存成功', 'success');
                 } catch (err) {
                     console.error('Error saving file:', err);
-                    alert('保存失败: ' + err.message);
+                    showToast('保存失败: ' + err.message, 'error', 3500);
                 }
             } else {
-                saveAsXML();
+                await saveAsXML();
             }
         };
 
@@ -916,11 +976,11 @@ const app = createApp({
                     activeList.value.originalFileName = handle.name;
                     activeList.value.name = handle.name;
                     clearHistory();
-                    alert('另存为成功！');
+                    showToast('另存为成功', 'success');
                 } catch (err) {
                     if (err.name !== 'AbortError') {
                         console.error('Error saving file:', err);
-                        alert('另存为失败: ' + err.message);
+                        showToast('另存为失败: ' + err.message, 'error', 3500);
                     }
                 }
             } else {
@@ -934,6 +994,7 @@ const app = createApp({
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 clearHistory();
+                showToast('已下载 XML 文件', 'success');
             }
         };
 
@@ -1144,7 +1205,10 @@ const app = createApp({
             addTag,
             removeTag,
             confirmModal,
-            closeConfirm
+            closeConfirm,
+            toast,
+            closeToast,
+            formatTaskCreatedAt
         };
     }
 });

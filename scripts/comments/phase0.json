@@ -1,0 +1,15 @@
+{
+  "updates": [
+    {
+      "identifier": "INH-1133",
+      "state": "Backlog",
+      "marker": "<!-- mtl:phase0-stabilization -->",
+      "comment": "## Phase 0 基线校正 / Baseline Correction\n\n**状态修正：Done → Backlog**\n\n本 Issue（GATE-M10 GA 退出门禁）此前被错误地标记为 Done，但 M6–M10 的全部 93 个 Issue 实际仍处于 Backlog，尚无任何实现代码。GA 门禁在客观上不可能已通过，因此按交付计划 Phase 0.4 的要求将其退回 Backlog，避免虚假的验收信号。\n\n### 当前真实基线（已验证）\n\n- Git HEAD：`1b46c87`（分支 `feat/m2-m3-ipc-integration`，已推送至 origin/main）\n- 自动化测试：`cargo test` **50 项全部通过**\n  - `m4_qa_tests` 16 项\n  - `m5_qa_tests` 16 项\n  - `round_trip_test` 17 项\n  - doc-test 1 项\n- 已完成里程碑：M0–M5\n- 未完成里程碑：M6、M7、M8、M9、M10（全部 Backlog）\n\n### Phase 0 已执行的稳定化工作\n\n1. **Git 卫生**：`node_modules/` 已从版本控制中移除（4375 个文件），`.gitignore` 现覆盖 `node_modules`、`dist`、`src-tauri/target`、`Data`、`.env`。\n2. **密钥泄露修复**：Linear API Key 曾被硬编码在 42 个脚本中并已存在于提交 `e041918`。该提交**尚未推送**，因此已通过 `git reset --mixed fb6ee9c` 撤销并以干净内容重新提交；仓库历史中不再包含该密钥。所有脚本改为从 `LINEAR_API_KEY` 环境变量 / `.env` 读取，并新增 `.env.example`。\n3. **防乱码同步链路**：新增 `scripts/lib/linear-client.cjs` 与 `scripts/linear-sync.cjs`。所有 GraphQL 请求体均由 `JSON.stringify` 生成、以显式 `utf8` 编码为 Buffer，`Content-Length` 取 `Buffer.byteLength`，响应以 `res.setEncoding('utf8')` 解码；同步链路完全绕开 PowerShell，从根本上消除中文 Mojibake。\n4. **构建环境修复**：Windows 系统代理 `127.0.0.1:50095` 已失效，导致 cargo 与 git 全部网络请求失败。已确认通过 `no_proxy=\"*\"` 可正常访问 crates.io 镜像与 GitHub。\n\n### GATE-M10 的真实验收差距\n\nGA 门禁要求「所有 Blocker = 0」「M0–M9 自动化测试全部通过」「RC 全矩阵通过」。其中：\n\n- QA-M10 矩阵 **E**（关系/附件/富文本）依赖 M6、M7\n- QA-M10 矩阵 **F**（跨文档事务与崩溃恢复）依赖 M8\n- QA-M10 矩阵 **G**（搜索/视图/Quick Add）依赖 M9\n- QA-M10 矩阵 **H**（Windows 便携与净机测试）需要在**无网络、无管理员权限、未安装 Node/Rust 的干净 Win10 + Win11 虚拟机**中人工执行，无法在当前开发环境内自动化完成\n\n因此在 M6–M9 完成并人工执行矩阵 H 之前，本门禁**不得**被标记为 Done。"
+    },
+    {
+      "identifier": "INH-718",
+      "marker": "<!-- mtl:phase0-stabilization -->",
+      "comment": "## M10 Epic — Phase 0 基线已建立\n\nM10 的前置稳定化工作已完成，现具备开工条件。\n\n### 已验证基线\n\n| 项目 | 状态 |\n|------|------|\n| Git HEAD | `1b46c87`（已推送 origin/main） |\n| `cargo test` | **50/50 通过**（m4_qa 16 + m5_qa 16 + round_trip 17 + doc 1） |\n| 依赖完整性 | 已补齐 Cargo.toml：sha2 / rand / walkdir / chrono / regex / tempfile / zip / scraper |\n| 密钥卫生 | Linear API Key 已从全部 42 个脚本中移除，改为 `.env` + 环境变量 |\n| 同步链路 | 新增 UTF-8 安全的 `scripts/lib/linear-client.cjs`、`scripts/linear-sync.cjs` |\n\n### 关键修正\n\n`INH-1133`（GATE-M10）此前被错误标记为 Done，但 M6–M10 共 93 个 Issue 全部仍在 Backlog。已退回 Backlog，以消除虚假验收信号。\n\n### M10 内部依赖提醒\n\nM10 的 QA 矩阵 E/F/G 分别依赖 M6/M7、M8、M9 的实现；矩阵 H 需要干净虚拟机人工执行。M10 的 RD 任务（基准测试、性能剖析、便携化加固、迁移框架、发布物）大部分可独立于 M6–M9 推进，已按此顺序开工。"
+    }
+  ]
+}

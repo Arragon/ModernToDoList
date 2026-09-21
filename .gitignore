@@ -11,10 +11,19 @@ scripts/_linear_state.json
 scripts/_linear_state.md
 scripts/_*_out.txt
 
-# Tauri build artifacts
+# Tauri build artifacts — anchored to the repo root so that documentation
+# directories such as docs/release/ are NOT accidentally ignored.
 src-tauri/target/
 src-tauri/gen/
-dist/
+/dist/
 node_modules/
-release/
-Data/
+/release/
+/Data/
+
+# Generated benchmark datasets (can exceed 100k tasks; regenerate deterministically)
+/data/benchmarks/
+/benchmarks-out/
+
+# Runtime asset and workspace metadata directories
+.assets/
+.moderntodo/

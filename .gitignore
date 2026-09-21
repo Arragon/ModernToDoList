@@ -27,3 +27,6 @@ node_modules/
 # Runtime asset and workspace metadata directories
 .assets/
 .moderntodo/
+
+# Isolated cargo target dir used for authoritative verification runs
+src-tauri/target-final/

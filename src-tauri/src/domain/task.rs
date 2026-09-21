@@ -13,7 +13,10 @@
 
 use serde::{Deserialize, Serialize};
 
+use super::attachment::AttachmentRef;
 use super::encoding::XmlEncodingMeta;
+use super::participant::ParticipantRef;
+use super::progress_link::ProgressLink;
 use super::types::TaskId;
 
 /// A single task in the domain model.
@@ -67,10 +70,22 @@ pub struct Task {
     pub pos_string: Option<String>,
     /// Allocated to (from `ALLOCATEDTO`).
     pub allocated_to: Vec<String>,
+    /// Typed participant refs (M6). Mirrors `allocated_to` in source order;
+    /// kept as a SEPARATE field and synchronized by `domain::participant`
+    /// helpers. Serialization remains driven by the native `ALLOCATEDTO`
+    /// attribute, so XML compatibility is unaffected.
+    pub participants: Vec<ParticipantRef>,
     /// Allocated by (from `ALLOCATEDBY`).
     pub allocated_by: Option<String>,
     /// File links (from `<FILEREFPATH>` children).
     pub file_links: Vec<TaskFileLink>,
+    /// Typed attachment metadata (M6, from the custom `MTDL_ATTACHMENTS`
+    /// attribute; each entry is mirrored by a native `FILEREFPATH` child).
+    /// Empty when a document predates M6 — the index layer synthesizes
+    /// refs from `file_links` in that case.
+    pub attachments: Vec<AttachmentRef>,
+    /// Progress links (M6, from the custom `MTDL_PROGRESS_LINKS` attribute).
+    pub progress_links: Vec<ProgressLink>,
     /// Categories/tags (from `<CATEGORY>` children).
     pub categories: Vec<TaskCategory>,
     /// Dependencies (from `<DEPENDENCY>` children).
@@ -131,8 +146,11 @@ impl Task {
             pos: 0,
             pos_string: None,
             allocated_to: Vec::new(),
+            participants: Vec::new(),
             allocated_by: None,
             file_links: Vec::new(),
+            attachments: Vec::new(),
+            progress_links: Vec::new(),
             categories: Vec::new(),
             dependencies: Vec::new(),
             comments: None,
@@ -273,7 +291,13 @@ pub struct TaskDependency {
     /// The dependency type (from `<DEPENDENCYTYPE>`).
     /// 0=Finish-to-Finish, 1=Start-to-Start, etc.
     pub dependency_type: u8,
-    /// Raw XML content for unknown sub-elements. Preserved for lossless round-trip.
+    /// Serialized form of the original `<DEPENDENCY>` element, set ONLY
+    /// when it carries extra data (attributes such as the M6
+    /// `MTDL_DOCUMENTID` external-reference marker, unknown child
+    /// elements, comments/CDATA, or non-whitespace extra text).
+    /// `mappers::write_dependency` rebuilds the element from this raw form
+    /// (updating TASKID/DEPENDENCYTYPE from the typed fields) so unknown
+    /// dependency data survives a parse→serialize round-trip unchanged.
     pub raw_xml: Option<String>,
 }
 

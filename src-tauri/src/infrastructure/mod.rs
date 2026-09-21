@@ -9,6 +9,9 @@ pub mod migration;
 pub mod schema;
 pub mod watcher;
 
+pub mod saved_views;
+pub mod search_fts;
+
 // Re-exports
 #[allow(unused_imports)]
 pub use db::{DatabaseManager, DatabaseMode, DatabaseError};

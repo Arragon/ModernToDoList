@@ -35,6 +35,91 @@ export const confirmDialog = ref({
   onConfirm: null as (() => void) | null,
 });
 
+/**
+ * In-app path prompt.
+ *
+ * Tauri's native dialog plugin is not bundled with this build, so path input
+ * (workspace folder, attachment source) falls back to this modal. `promptForPath`
+ * resolves with `null` when the user cancels or another prompt is already open.
+ */
+export interface PathPromptOptions {
+  title: string;
+  message?: string;
+  placeholder?: string;
+  mode: "directory" | "file";
+  defaultValue?: string;
+}
+
+interface PathPromptState {
+  visible: boolean;
+  options: PathPromptOptions;
+  resolve: ((value: string | null) => void) | null;
+}
+
+export const pathPrompt = ref<PathPromptState>({
+  visible: false,
+  options: { title: "", mode: "directory" },
+  resolve: null,
+});
+
+export function promptForPath(options: PathPromptOptions): Promise<string | null> {
+  if (pathPrompt.value.visible) {
+    return Promise.resolve(null);
+  }
+  return new Promise<string | null>((resolve) => {
+    pathPrompt.value = { visible: true, options, resolve };
+  });
+}
+
+export function resolvePathPrompt(value: string | null): void {
+  const resolve = pathPrompt.value.resolve;
+  pathPrompt.value = {
+    visible: false,
+    options: { title: "", mode: "directory" },
+    resolve: null,
+  };
+  if (resolve) resolve(value);
+}
+
+/**
+ * In-app single-line text prompt (rename view, bulk participant names, …).
+ * Resolves with `null` when cancelled or when another prompt is already open.
+ */
+export interface TextPromptOptions {
+  title: string;
+  message?: string;
+  placeholder?: string;
+  defaultValue?: string;
+  confirmLabel?: string;
+}
+
+interface TextPromptState {
+  visible: boolean;
+  options: TextPromptOptions;
+  resolve: ((value: string | null) => void) | null;
+}
+
+export const textPrompt = ref<TextPromptState>({
+  visible: false,
+  options: { title: "" },
+  resolve: null,
+});
+
+export function promptForText(options: TextPromptOptions): Promise<string | null> {
+  if (textPrompt.value.visible) {
+    return Promise.resolve(null);
+  }
+  return new Promise<string | null>((resolve) => {
+    textPrompt.value = { visible: true, options, resolve };
+  });
+}
+
+export function resolveTextPrompt(value: string | null): void {
+  const resolve = textPrompt.value.resolve;
+  textPrompt.value = { visible: false, options: { title: "" }, resolve: null };
+  if (resolve) resolve(value);
+}
+
 export function showToast(message: string, type: ToastType = "info", timeout = 3000) {
   const id = ++toastIdCounter;
   toasts.value.push({ id, message, type, timeout });

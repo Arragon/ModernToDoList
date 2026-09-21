@@ -1,0 +1,2 @@
+Transfer fixture asset: build specification payload.
+Referenced by source-project.xml task 6 via a document-relative FILEREFPATH.

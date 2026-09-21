@@ -4,7 +4,7 @@
 //! uses these to create or upgrade the database schema.
 
 /// Current schema version. Increment when adding new migrations.
-pub const SCHEMA_VERSION: u32 = 1;
+pub const SCHEMA_VERSION: u32 = 2;
 
 /// SQL to create the `schema_migrations` tracking table.
 pub const CREATE_SCHEMA_MIGRATIONS: &str = r#"
@@ -153,6 +153,68 @@ CREATE TABLE IF NOT EXISTS recovery_records (
 )
 "#;
 
+/// SQL to create the `task_search_plain` table (M9, RD-M9-001~013).
+///
+/// A plain (non-FTS) mirror of the searchable text for every task.
+/// It always works — even when the SQLite build lacks FTS5 — and powers
+/// the LIKE-based substring fallback required for CJK queries (the
+/// unicode61 tokenizer does not segment Chinese/Japanese/Korean text).
+///
+/// Like every other table here, it is a DISPOSABLE derived cache that can
+/// be rebuilt from an XML scan at any time. It is never a business source
+/// of truth.
+pub const CREATE_TASK_SEARCH_PLAIN: &str = r#"
+CREATE TABLE IF NOT EXISTS task_search_plain (
+    document_id TEXT NOT NULL,
+    task_id     TEXT NOT NULL,
+    title       TEXT NOT NULL DEFAULT '',
+    body        TEXT NOT NULL DEFAULT '',
+    tags        TEXT NOT NULL DEFAULT '',
+    participants TEXT NOT NULL DEFAULT '',
+    attachments TEXT NOT NULL DEFAULT '',
+    links       TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY (document_id, task_id)
+)
+"#;
+
+/// SQL to create the `task_search_fts` FTS5 virtual table (M9, RD-M9-001).
+///
+/// `document_id` and `task_id` are UNINDEXED identity columns used to join
+/// back to `task_index`. The indexed columns are: title, body (description
+/// plain text), tags, participants, attachments (display names) and links
+/// (progress-link labels).
+///
+/// NOTE: this statement is part of migration v2. The bundled rusqlite 0.32
+/// (libsqlite3-sys `bundled`) compiles SQLite with `-DSQLITE_ENABLE_FTS5`,
+/// so FTS5 is guaranteed available for this project's builds. If it is ever
+/// unavailable at runtime, `infrastructure::search_fts::ensure_search_schema`
+/// detects that and degrades to the LIKE fallback over `task_search_plain`.
+pub const CREATE_TASK_SEARCH_FTS: &str = r#"
+CREATE VIRTUAL TABLE IF NOT EXISTS task_search_fts USING fts5(
+    document_id UNINDEXED,
+    task_id UNINDEXED,
+    title,
+    body,
+    tags,
+    participants,
+    attachments,
+    links,
+    tokenize = 'unicode61'
+)
+"#;
+
+/// Index: CJK LIKE-fallback scans on title.
+pub const CREATE_IDX_SEARCH_PLAIN_TITLE: &str = r#"
+CREATE INDEX IF NOT EXISTS idx_task_search_plain_title
+ON task_search_plain(title)
+"#;
+
+/// Index: per-document clearing of the plain search table.
+pub const CREATE_IDX_SEARCH_PLAIN_DOC: &str = r#"
+CREATE INDEX IF NOT EXISTS idx_task_search_plain_doc
+ON task_search_plain(document_id)
+"#;
+
 /// Index: task lookup by parent for tree reconstruction.
 pub const CREATE_IDX_TASK_PARENT: &str = r#"
 CREATE INDEX IF NOT EXISTS idx_task_index_parent
@@ -207,6 +269,16 @@ pub fn migrations() -> Vec<(u32, &'static str, Vec<&'static str>)> {
                 CREATE_IDX_TAGS,
                 CREATE_IDX_PARTICIPANTS,
                 CREATE_IDX_DEPENDENCIES,
+            ],
+        ),
+        (
+            2,
+            "M9 search: FTS5 task_search_fts + LIKE-fallback task_search_plain",
+            vec![
+                CREATE_TASK_SEARCH_PLAIN,
+                CREATE_TASK_SEARCH_FTS,
+                CREATE_IDX_SEARCH_PLAIN_TITLE,
+                CREATE_IDX_SEARCH_PLAIN_DOC,
             ],
         ),
     ]

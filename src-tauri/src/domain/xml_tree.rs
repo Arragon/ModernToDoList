@@ -136,13 +136,19 @@ impl XmlElement {
 
     /// Returns the concatenated text content of this element's text children.
     ///
-    /// This collects all `XmlNode::Text` children and concatenates them.
-    /// For elements like `<COMMENTS>text</COMMENTS>`, this returns "text".
+    /// This collects all `XmlNode::Text` and `XmlNode::CData` children and
+    /// concatenates them in document order. For elements like
+    /// `<COMMENTS>text</COMMENTS>`, this returns "text".
+    ///
+    /// CDATA sections are included because they *are* character data: excluding
+    /// them made `<COMMENTS><![CDATA[<b>hi</b>]]></COMMENTS>` map to an empty
+    /// comment, which then overwrote the real content on save.
     pub fn text_content(&self) -> String {
         let mut result = String::new();
         for child in &self.children {
-            if let XmlNode::Text(text) = child {
-                result.push_str(text);
+            match child {
+                XmlNode::Text(text) | XmlNode::CData(text) => result.push_str(text),
+                _ => {}
             }
         }
         result

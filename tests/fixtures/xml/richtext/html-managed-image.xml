@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TODOLIST PROJECTNAME="M7 RichText" EARLIESTDUEDATE="0.00000000" LASTMOD="45259.84489583" LASTMODSTRING="2023-11-29 20:16" FILENAME="html-managed-image.xml" NEXTUNIQUEID="3" FILEVERSION="43" APPVER="9.0.14.0" FILEFORMAT="12">
+<TASK ID="1" TITLE="Image reference" REFID="0" COMMENTSTYPE="HTML" CREATEDBY="TestUser" PRIORITY="5" RISK="0" PERCENTDONE="0" POS="0" POSSTRING="1">
+    <COMMENTS><![CDATA[<p>See the screenshot:</p><img src="../.assets/doc-m7-images/images/3f2b9c1e-7a44-4d2b-9f1a-6c8e0d2b4a71.png" alt="截图"><p>And a remote image that must be dropped:</p><img src="https://evil.example/tracker.png"><p>And base64 that must be externalized:</p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="></p>]]></COMMENTS>
+</TASK>
+<TASK ID="2" TITLE="Traversing reference" REFID="0" COMMENTSTYPE="HTML" CREATEDBY="TestUser" PRIORITY="5" RISK="0" PERCENTDONE="0" POS="1" POSSTRING="2">
+    <COMMENTS><![CDATA[<img src="../.assets/doc-m7-images/images/../../../../Windows/win.ini"><img src="file:///C:/boot.png"><img src="//evil.example/x.png">]]></COMMENTS>
+</TASK>
+</TODOLIST>

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-defineProps<{
+withDefaults(defineProps<{
   value: string | null;
   label: string;
-}>();
+  disabled?: boolean;
+}>(), { disabled: false });
 
 const emit = defineEmits<{
   (e: "update:value", value: string | null): void;
@@ -21,6 +22,7 @@ function onChange(e: Event) {
       class="date-editor__input"
       type="date"
       :value="value ?? ''"
+      :disabled="disabled"
       @change="onChange"
     />
   </div>
@@ -48,5 +50,10 @@ function onChange(e: Event) {
 }
 .date-editor__input:focus {
   border-color: var(--color-border-focus);
+}
+.date-editor__input:disabled {
+  color: var(--color-text-disabled);
+  background: var(--color-bg-tertiary);
+  cursor: not-allowed;
 }
 </style>

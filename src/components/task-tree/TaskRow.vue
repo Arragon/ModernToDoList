@@ -1,11 +1,50 @@
 <script setup lang="ts">
+import { computed, ref } from "vue";
 import type { TaskRow as TaskRowData } from "../../stores/task-store";
-import { selectedTaskKey, toggleExpand, selectTask } from "../../stores/app-state";
+import {
+  childCount, getTask, isTaskBlocked, toggleGroup, toggleTaskStatus,
+} from "../../stores/task-store";
+import { selectedTaskKey, toggleExpand, selectTask, showToast } from "../../stores/app-state";
 import { toggleMultiSelect, clearMultiSelect, isMultiSelected } from "../../stores/filter-state";
+import { classifyDependency, outgoingDependencies } from "../../stores/relation-store";
+import { isCommandAvailable } from "../../stores/capability-store";
+import { Commands } from "../../ipc/commands";
 
 const props = defineProps<{
   row: TaskRowData;
 }>();
+
+const busy = ref(false);
+
+const isGroup = computed(() => props.row.kind === "group");
+const taskKey = computed(() => props.row.task.task_key);
+const children = computed(() => childCount(taskKey.value));
+const blocked = computed(() => !isGroup.value && isTaskBlocked(taskKey.value));
+const checkboxDisabled = computed(() =>
+  isGroup.value || busy.value || !isCommandAvailable(Commands.UPDATE_TASK_FIELD),
+);
+
+const blockReasons = computed<string[]>(() => {
+  if (!blocked.value) return [];
+  const reasons: string[] = [];
+  for (const dep of outgoingDependencies(taskKey.value)) {
+    const state = classifyDependency(dep, (key) => getTask(key) !== undefined);
+    const target = getTask(dep.depends_on_key);
+    const label = target?.title ?? dep.depends_on_key;
+    if (state === "circular") reasons.push(`circular reference: ${label}`);
+    else if (state === "unresolved") reasons.push(`unresolved reference: ${dep.depends_on_key}`);
+    else if (target && target.status !== "Completed" && target.status !== "Cancelled") {
+      reasons.push(`${label} (${target.status || "Not Started"})`);
+    }
+  }
+  return reasons;
+});
+
+const blockedTitle = computed(() =>
+  blockReasons.value.length > 0
+    ? `Blocked by ${blockReasons.value.length}: ${blockReasons.value.join("; ")}`
+    : "Blocked",
+);
 
 const priorityLabel = (p: number) => {
   if (p >= 4) return "Very High";
@@ -30,22 +69,45 @@ const statusIcon = (s: string) => {
   return "fa-circle";
 };
 
-const isSelected = () => selectedTaskKey.value === props.row.task.task_key;
+const isSelected = () => selectedTaskKey.value === taskKey.value;
 
 function handleClick(e: MouseEvent) {
-  if (e.ctrlKey || e.metaKey) {
-    toggleMultiSelect(props.row.task.task_key);
-  } else if (e.shiftKey) {
-    toggleMultiSelect(props.row.task.task_key);
+  if (isGroup.value) {
+    toggleGroup(props.row.groupLabel);
+    return;
+  }
+  if (e.ctrlKey || e.metaKey || e.shiftKey) {
+    toggleMultiSelect(taskKey.value);
   } else {
     clearMultiSelect();
   }
-  selectTask(props.row.task.task_key);
+  selectTask(taskKey.value);
 }
 
 function handleToggle(e: Event) {
   e.stopPropagation();
-  toggleExpand(props.row.task.task_key);
+  if (isGroup.value) {
+    toggleGroup(props.row.groupLabel);
+    return;
+  }
+  toggleExpand(taskKey.value);
+}
+
+async function handleCheckbox(e: Event) {
+  e.stopPropagation();
+  if (checkboxDisabled.value) return;
+  const checked = (e.target as HTMLInputElement).checked;
+  busy.value = true;
+  try {
+    const ok = await toggleTaskStatus(taskKey.value);
+    if (!ok && !isCommandAvailable(Commands.UPDATE_TASK_FIELD)) {
+      showToast("Task editing is unavailable: the backend has no update_task_field command", "warning");
+    }
+    // Restore the visual state when the mutation was rejected.
+    if (!ok) (e.target as HTMLInputElement).checked = !checked;
+  } finally {
+    busy.value = false;
+  }
 }
 
 function formatDate(d: string | null): string {
@@ -56,28 +118,56 @@ function formatDate(d: string | null): string {
 </script>
 
 <template>
+  <!-- Group header row (participant grouping view mode) -->
   <div
+    v-if="isGroup"
+    class="task-row task-row--group"
+    :data-task-key="row.task.task_key"
+    @click="handleClick($event)"
+  >
+    <button class="task-row__toggle" @click="handleToggle">
+      <i :class="row.isExpanded ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
+    </button>
+    <i class="fas fa-users task-row__group-icon"></i>
+    <span class="task-row__group-label">{{ row.groupLabel }}</span>
+    <span class="task-row__child-count">{{ row.groupSize }}</span>
+  </div>
+
+  <!-- Task row -->
+  <div
+    v-else
     class="task-row"
-    :class="{ 'task-row--selected': isSelected(), 'task-row--multi': isMultiSelected(row.task.task_key) }"
+    :class="{
+      'task-row--selected': isSelected(),
+      'task-row--multi': isMultiSelected(row.task.task_key),
+      'task-row--blocked': blocked,
+    }"
+    :data-task-key="row.task.task_key"
     :style="{ paddingLeft: `${row.depth * 20 + 8}px` }"
+    role="treeitem"
+    :aria-selected="isSelected()"
+    :aria-expanded="row.hasChildren ? row.isExpanded : undefined"
     @click="handleClick($event)"
   >
     <!-- Expand/collapse toggle -->
     <button
       v-if="row.hasChildren"
       class="task-row__toggle"
+      :aria-label="row.isExpanded ? 'Collapse' : 'Expand'"
       @click="handleToggle"
     >
       <i :class="row.isExpanded ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
     </button>
     <span v-else class="task-row__toggle-placeholder"></span>
 
-    <!-- Completion checkbox -->
+    <!-- Completion checkbox (Phase 0.1: enabled and wired to update_task_field) -->
     <label class="task-row__checkbox" @click.stop>
       <input
         type="checkbox"
         :checked="row.task.status === 'Completed'"
-        :disabled="true"
+        :disabled="checkboxDisabled"
+        :title="checkboxDisabled ? 'Task editing unavailable' : 'Toggle completion'"
+        @change="handleCheckbox"
       />
     </label>
 
@@ -87,6 +177,13 @@ function formatDate(d: string | null): string {
       :class="priorityClass(row.task.priority)"
       :title="`Priority: ${priorityLabel(row.task.priority)}`"
     ></span>
+
+    <!-- Blocked indicator (M6 dependencies) -->
+    <i
+      v-if="blocked"
+      class="task-row__blocked fas fa-link-slash"
+      :title="blockedTitle"
+    ></i>
 
     <!-- Title -->
     <span class="task-row__title">{{ row.task.title || '(Untitled)' }}</span>
@@ -110,9 +207,9 @@ function formatDate(d: string | null): string {
       {{ formatDate(row.task.due_date) }}
     </span>
 
-    <!-- Child count badge -->
-    <span v-if="row.hasChildren" class="task-row__child-count">
-      {{ row.task.task_key }}
+    <!-- Child count badge (Phase 0.1: real child count) -->
+    <span v-if="children > 0" class="task-row__child-count" :title="`${children} subtask(s)`">
+      {{ children }}
     </span>
   </div>
 </template>
@@ -137,6 +234,34 @@ function formatDate(d: string | null): string {
 }
 .task-row--selected:hover {
   background: var(--color-bg-active);
+}
+.task-row--multi {
+  box-shadow: inset 2px 0 0 var(--color-accent);
+}
+.task-row--blocked .task-row__title {
+  color: var(--color-text-secondary);
+  border-bottom: 1px dashed var(--color-warning);
+}
+
+.task-row--group {
+  background: var(--color-bg-tertiary);
+  border-bottom: 1px solid var(--color-border);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.task-row__group-icon {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+.task-row__group-label {
+  flex: 1;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .task-row__toggle {
@@ -164,11 +289,17 @@ function formatDate(d: string | null): string {
 .task-row__checkbox {
   flex-shrink: 0;
   cursor: pointer;
+  display: flex;
 }
 .task-row__checkbox input {
   width: 14px;
   height: 14px;
   cursor: pointer;
+  accent-color: var(--color-accent);
+}
+.task-row__checkbox input:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .task-row__priority {
@@ -182,6 +313,12 @@ function formatDate(d: string | null): string {
 .priority--medium { background: var(--priority-medium); }
 .priority--high { background: var(--priority-high); }
 .priority--very-high { background: var(--priority-very-high); }
+
+.task-row__blocked {
+  font-size: var(--text-xs);
+  color: var(--color-warning);
+  flex-shrink: 0;
+}
 
 .task-row__title {
   flex: 1;

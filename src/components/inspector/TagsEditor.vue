@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   tags: string[];
   label: string;
-}>();
+  disabled?: boolean;
+}>(), { disabled: false });
 
 const emit = defineEmits<{
   (e: "update:tags", tags: string[]): void;
@@ -13,6 +14,7 @@ const emit = defineEmits<{
 const newTag = ref("");
 
 function addTag() {
+  if (props.disabled) return;
   const tag = newTag.value.trim();
   if (tag) {
     emit("update:tags", [...props.tags, tag]);
@@ -21,6 +23,7 @@ function addTag() {
 }
 
 function removeTag(index: number) {
+  if (props.disabled) return;
   const updated = props.tags.filter((_, i) => i !== index);
   emit("update:tags", updated);
 }
@@ -39,15 +42,16 @@ function onKeydown(e: KeyboardEvent) {
     <div class="tags-editor__chips">
       <span v-for="(tag, i) in tags" :key="i" class="tags-editor__chip">
         {{ tag }}
-        <button class="tags-editor__remove" @click="removeTag(i)">&times;</button>
+        <button class="tags-editor__remove" :disabled="disabled" @click="removeTag(i)">&times;</button>
       </span>
     </div>
     <input
       class="tags-editor__input"
       type="text"
       v-model="newTag"
+      :disabled="disabled"
       @keydown="onKeydown"
-      :placeholder="`Add ${label.toLowerCase()}...`"
+      :placeholder="disabled ? 'Tag editing unavailable' : `Add ${label.toLowerCase()}...`"
     />
   </div>
 </template>
@@ -102,5 +106,14 @@ function onKeydown(e: KeyboardEvent) {
 }
 .tags-editor__input:focus {
   border-color: var(--color-border-focus);
+}
+.tags-editor__input:disabled {
+  color: var(--color-text-disabled);
+  background: var(--color-bg-tertiary);
+  cursor: not-allowed;
+}
+.tags-editor__remove:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 </style>

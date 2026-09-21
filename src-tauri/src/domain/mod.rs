@@ -76,3 +76,21 @@ pub use command::{UndoableCommand, UndoRedoManager, FieldUpdateCommand, TaskFiel
 // Workspace
 #[allow(unused_imports)]
 pub use workspace::{Workspace, WorkspaceMetadata, WorkspaceError, DocumentEntry, DocumentType, RecentWorkspace};
+
+// M6: Task Relations (TEMPORARY validation wiring — remove before handoff)
+pub mod attachment;
+pub mod dependency;
+pub mod participant;
+pub mod progress_link;
+
+pub mod comments;
+pub mod quick_add;
+pub mod sanitizer;
+pub mod search;
+pub mod smart_view;
+
+pub mod file_library;
+pub mod rich_text;
+pub mod transfer;
+pub mod transfer_journal;
+pub mod trash;

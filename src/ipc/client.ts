@@ -1,11 +1,17 @@
 import { invoke } from "@tauri-apps/api/core";
 import { Commands } from "./commands";
+import { safeInvoke, safeInvokeVoid } from "./safe";
+import type { IpcResult } from "./safe";
 import type {
   RuntimeInfo, ReadDocumentResponse, DocumentMetadataDto,
   ValidateDocumentResponse, AllocateTaskIdResponse,
   OpenSessionResponse, SaveDocumentResponse, SessionStatusResponse, UndoRedoResponse,
   WorkspaceInfo, DocumentInfo, IndexProgressInfo, DbStatus,
   TaskQueryResult, UpdateTaskFieldResponse, DeleteTaskResponse,
+  AddTaskRequest, AddTaskResponse, MutationAck,
+  ParticipantDto, DependencyDto, DependencyGraphDto, ProgressLinkDto,
+  AttachmentDto, AttachmentImportResult,
+  SearchResponseDto, SavedViewDto, QuickAddRequest,
 } from "./types";
 
 // -- M1: System --
@@ -53,14 +59,14 @@ export async function getTaskTags(taskKey: string): Promise<string[]> {
   return invoke<string[]>(Commands.GET_TASK_TAGS, { taskKey });
 }
 
-// -- M6: Task Mutation --
+// -- M6: Task Mutation (fail-soft: backends land incrementally) --
 export async function updateTaskField(
   sessionId: number,
   taskKey: string,
   field: string,
   value: string,
-): Promise<UpdateTaskFieldResponse> {
-  return invoke<UpdateTaskFieldResponse>(Commands.UPDATE_TASK_FIELD, {
+): Promise<IpcResult<UpdateTaskFieldResponse>> {
+  return safeInvoke<UpdateTaskFieldResponse>(Commands.UPDATE_TASK_FIELD, {
     sessionId, taskKey, field, value,
   });
 }
@@ -68,6 +74,277 @@ export async function updateTaskField(
 export async function deleteTask(
   sessionId: number,
   taskKey: string,
-): Promise<DeleteTaskResponse> {
-  return invoke<DeleteTaskResponse>(Commands.DELETE_TASK, { sessionId, taskKey });
+): Promise<IpcResult<DeleteTaskResponse>> {
+  return safeInvoke<DeleteTaskResponse>(Commands.DELETE_TASK, { sessionId, taskKey });
+}
+
+export async function addTask(
+  request: AddTaskRequest,
+): Promise<IpcResult<AddTaskResponse>> {
+  return safeInvoke<AddTaskResponse>(Commands.ADD_TASK, { request });
+}
+
+export async function setTaskTags(
+  sessionId: number,
+  taskKey: string,
+  documentId: string,
+  tags: string[],
+): Promise<IpcResult<MutationAck>> {
+  return safeInvoke<MutationAck>(Commands.SET_TASK_TAGS, {
+    sessionId, taskKey, documentId, tags,
+  });
+}
+
+// -- M6: Participants --
+export async function getParticipants(
+  taskKey: string,
+  documentId: string,
+): Promise<IpcResult<ParticipantDto[]>> {
+  return safeInvoke<ParticipantDto[]>(Commands.GET_PARTICIPANTS, { taskKey, documentId });
+}
+
+/** Distinct participant names across the workspace index (used for suggestions). */
+export async function listParticipants(
+  documentId?: string,
+): Promise<IpcResult<string[]>> {
+  return safeInvoke<string[]>(Commands.LIST_PARTICIPANTS, { documentId });
+}
+
+/** Bulk participant rows, used by the participant filter and grouping view. */
+export async function listTaskParticipants(
+  documentId?: string,
+): Promise<IpcResult<ParticipantDto[]>> {
+  return safeInvoke<ParticipantDto[]>(Commands.LIST_TASK_PARTICIPANTS, { documentId });
+}
+
+export async function addParticipant(
+  sessionId: number,
+  taskKey: string,
+  documentId: string,
+  displayName: string,
+  role = "allocated_to",
+): Promise<IpcResult<MutationAck>> {
+  return safeInvoke<MutationAck>(Commands.ADD_PARTICIPANT, {
+    sessionId, taskKey, documentId, displayName, role,
+  });
+}
+
+export async function removeParticipant(
+  sessionId: number,
+  taskKey: string,
+  documentId: string,
+  displayName: string,
+  role?: string,
+): Promise<IpcResult<MutationAck>> {
+  return safeInvoke<MutationAck>(Commands.REMOVE_PARTICIPANT, {
+    sessionId, taskKey, documentId, displayName, role,
+  });
+}
+
+// -- M6: Dependencies --
+export async function getDependencies(
+  taskKey: string,
+  documentId: string,
+): Promise<IpcResult<DependencyGraphDto>> {
+  return safeInvoke<DependencyGraphDto>(Commands.GET_DEPENDENCIES, { taskKey, documentId });
+}
+
+/** Every dependency edge in the workspace; drives the TaskRow blocked indicator. */
+export async function listDependencies(
+  documentId?: string,
+): Promise<IpcResult<DependencyDto[]>> {
+  return safeInvoke<DependencyDto[]>(Commands.LIST_DEPENDENCIES, { documentId });
+}
+
+export async function addDependency(
+  sessionId: number,
+  taskKey: string,
+  documentId: string,
+  dependsOnKey: string,
+  dependsOnDocumentId: string | null,
+  depType = 0,
+): Promise<IpcResult<MutationAck>> {
+  return safeInvoke<MutationAck>(Commands.ADD_DEPENDENCY, {
+    sessionId, taskKey, documentId, dependsOnKey, dependsOnDocumentId, depType,
+  });
+}
+
+export async function removeDependency(
+  sessionId: number,
+  taskKey: string,
+  documentId: string,
+  dependsOnKey: string,
+): Promise<IpcResult<MutationAck>> {
+  return safeInvoke<MutationAck>(Commands.REMOVE_DEPENDENCY, {
+    sessionId, taskKey, documentId, dependsOnKey,
+  });
+}
+
+// -- M6: Progress Links --
+export async function listProgressLinks(
+  taskKey: string,
+  documentId: string,
+): Promise<IpcResult<ProgressLinkDto[]>> {
+  return safeInvoke<ProgressLinkDto[]>(Commands.LIST_PROGRESS_LINKS, { taskKey, documentId });
+}
+
+export async function addProgressLink(
+  sessionId: number,
+  taskKey: string,
+  documentId: string,
+  label: string,
+  url: string,
+  provider?: string,
+): Promise<IpcResult<ProgressLinkDto>> {
+  return safeInvoke<ProgressLinkDto>(Commands.ADD_PROGRESS_LINK, {
+    sessionId, taskKey, documentId, label, url, provider,
+  });
+}
+
+export async function updateProgressLink(
+  sessionId: number,
+  linkId: string,
+  taskKey: string,
+  documentId: string,
+  label: string,
+  url: string,
+  provider?: string,
+): Promise<IpcResult<ProgressLinkDto>> {
+  return safeInvoke<ProgressLinkDto>(Commands.UPDATE_PROGRESS_LINK, {
+    sessionId, linkId, taskKey, documentId, label, url, provider,
+  });
+}
+
+export async function removeProgressLink(
+  sessionId: number,
+  linkId: string,
+  taskKey: string,
+  documentId: string,
+): Promise<IpcResult<MutationAck>> {
+  return safeInvoke<MutationAck>(Commands.REMOVE_PROGRESS_LINK, {
+    sessionId, linkId, taskKey, documentId,
+  });
+}
+
+// -- M6: Attachments --
+export async function listAttachments(
+  taskKey: string,
+  documentId: string,
+): Promise<IpcResult<AttachmentDto[]>> {
+  return safeInvoke<AttachmentDto[]>(Commands.LIST_ATTACHMENTS, { taskKey, documentId });
+}
+
+export async function addManagedAttachment(
+  sessionId: number,
+  taskKey: string,
+  documentId: string,
+  sourcePath: string,
+  displayName?: string,
+): Promise<IpcResult<AttachmentImportResult>> {
+  return safeInvoke<AttachmentImportResult>(Commands.ADD_MANAGED_ATTACHMENT, {
+    sessionId, taskKey, documentId, sourcePath, displayName,
+  });
+}
+
+export async function linkLocalAttachment(
+  sessionId: number,
+  taskKey: string,
+  documentId: string,
+  sourcePath: string,
+  displayName?: string,
+): Promise<IpcResult<AttachmentImportResult>> {
+  return safeInvoke<AttachmentImportResult>(Commands.LINK_LOCAL_ATTACHMENT, {
+    sessionId, taskKey, documentId, sourcePath, displayName,
+  });
+}
+
+export async function addUrlAttachment(
+  sessionId: number,
+  taskKey: string,
+  documentId: string,
+  url: string,
+  displayName?: string,
+): Promise<IpcResult<AttachmentImportResult>> {
+  return safeInvoke<AttachmentImportResult>(Commands.ADD_URL_ATTACHMENT, {
+    sessionId, taskKey, documentId, url, displayName,
+  });
+}
+
+export async function updateAttachment(
+  sessionId: number,
+  attachmentId: string,
+  taskKey: string,
+  documentId: string,
+  displayName: string,
+): Promise<IpcResult<AttachmentDto>> {
+  return safeInvoke<AttachmentDto>(Commands.UPDATE_ATTACHMENT, {
+    sessionId, attachmentId, taskKey, documentId, displayName,
+  });
+}
+
+export async function removeAttachment(
+  sessionId: number,
+  attachmentId: string,
+  taskKey: string,
+  documentId: string,
+): Promise<IpcResult<MutationAck>> {
+  return safeInvoke<MutationAck>(Commands.REMOVE_ATTACHMENT, {
+    sessionId, attachmentId, taskKey, documentId,
+  });
+}
+
+export async function openAttachment(
+  attachmentId: string,
+  taskKey: string,
+  documentId: string,
+): Promise<IpcResult<null>> {
+  return safeInvokeVoid(Commands.OPEN_ATTACHMENT, { attachmentId, taskKey, documentId });
+}
+
+export async function revealAttachment(
+  attachmentId: string,
+  taskKey: string,
+  documentId: string,
+): Promise<IpcResult<null>> {
+  return safeInvokeVoid(Commands.REVEAL_ATTACHMENT, { attachmentId, taskKey, documentId });
+}
+
+// -- M9: Search, Saved Views, Quick Add --
+export async function globalSearch(
+  query: string,
+  documentId?: string,
+  limit = 50,
+  offset = 0,
+): Promise<IpcResult<SearchResponseDto>> {
+  return safeInvoke<SearchResponseDto>(Commands.GLOBAL_SEARCH, {
+    query, documentId, limit, offset,
+  });
+}
+
+export async function listSavedViews(): Promise<IpcResult<SavedViewDto[]>> {
+  return safeInvoke<SavedViewDto[]>(Commands.LIST_SAVED_VIEWS, {});
+}
+
+export async function createSavedView(
+  name: string,
+  predicates: SavedViewDto["predicates"],
+): Promise<IpcResult<SavedViewDto>> {
+  return safeInvoke<SavedViewDto>(Commands.CREATE_SAVED_VIEW, { name, predicates });
+}
+
+export async function renameSavedView(
+  viewId: string,
+  name: string,
+): Promise<IpcResult<SavedViewDto>> {
+  return safeInvoke<SavedViewDto>(Commands.RENAME_SAVED_VIEW, { viewId, name });
+}
+
+export async function deleteSavedView(viewId: string): Promise<IpcResult<MutationAck>> {
+  return safeInvoke<MutationAck>(Commands.DELETE_SAVED_VIEW, { viewId });
+}
+
+export async function quickAddTask(
+  request: QuickAddRequest,
+): Promise<IpcResult<AddTaskResponse>> {
+  return safeInvoke<AddTaskResponse>(Commands.QUICK_ADD_TASK, { request });
 }

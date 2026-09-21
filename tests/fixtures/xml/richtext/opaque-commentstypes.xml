@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TODOLIST PROJECTNAME="M7 RichText" EARLIESTDUEDATE="0.00000000" LASTMOD="45259.84489583" LASTMODSTRING="2023-11-29 20:16" FILENAME="opaque-commentstypes.xml" NEXTUNIQUEID="4" FILEVERSION="43" APPVER="9.0.14.0" FILEFORMAT="12">
+<!-- RTF and unknown COMMENTSTYPE values must be preserved byte-for-byte and stay read-only -->
+<TASK ID="1" TITLE="RTF comment" REFID="0" COMMENTSTYPE="RTF" CREATEDBY="TestUser" PRIORITY="5" RISK="0" PERCENTDONE="0" POS="0" POSSTRING="1">
+    <COMMENTS>{\rtf1\ansi\deff0 {\fonttbl{\f0 Arial;}}\f0\fs24 RTF \'c4\'da\'c8\'dd must not be touched.\par}</COMMENTS>
+</TASK>
+<TASK ID="2" TITLE="Markdown comment" REFID="0" COMMENTSTYPE="MARKDOWN" CREATEDBY="TestUser" PRIORITY="5" RISK="0" PERCENTDONE="0" POS="1" POSSTRING="2">
+    <COMMENTS># Heading
+
+- bullet one
+- bullet two</COMMENTS>
+</TASK>
+<TASK ID="3" TITLE="Lowercase html comment" REFID="0" COMMENTSTYPE="html" M7UNKNOWNATTR="keep-me" CREATEDBY="TestUser" PRIORITY="5" RISK="0" PERCENTDONE="0" POS="2" POSSTRING="3">
+    <COMMENTS>&lt;p&gt;not parsed as markup&lt;/p&gt;</COMMENTS>
+    <UNKNOWN_ELEMENT M7KEEP="1">preserved</UNKNOWN_ELEMENT>
+</TASK>
+</TODOLIST>

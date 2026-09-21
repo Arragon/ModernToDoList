@@ -35,4 +35,46 @@ export const Commands = {
   // -- M6: Task Mutation --
   UPDATE_TASK_FIELD: "update_task_field",
   DELETE_TASK: "delete_task",
+  ADD_TASK: "add_task",
+  SET_TASK_TAGS: "set_task_tags",
+
+  // -- M6: Participants --
+  GET_PARTICIPANTS: "get_participants",
+  LIST_PARTICIPANTS: "list_participants",
+  LIST_TASK_PARTICIPANTS: "list_task_participants",
+  ADD_PARTICIPANT: "add_participant",
+  REMOVE_PARTICIPANT: "remove_participant",
+
+  // -- M6: Dependencies --
+  GET_DEPENDENCIES: "get_dependencies",
+  LIST_DEPENDENCIES: "list_dependencies",
+  ADD_DEPENDENCY: "add_dependency",
+  REMOVE_DEPENDENCY: "remove_dependency",
+
+  // -- M6: Progress Links --
+  LIST_PROGRESS_LINKS: "list_progress_links",
+  ADD_PROGRESS_LINK: "add_progress_link",
+  UPDATE_PROGRESS_LINK: "update_progress_link",
+  REMOVE_PROGRESS_LINK: "remove_progress_link",
+
+  // -- M6: Attachments --
+  LIST_ATTACHMENTS: "list_attachments",
+  ADD_MANAGED_ATTACHMENT: "add_managed_attachment",
+  LINK_LOCAL_ATTACHMENT: "link_local_attachment",
+  ADD_URL_ATTACHMENT: "add_url_attachment",
+  UPDATE_ATTACHMENT: "update_attachment",
+  REMOVE_ATTACHMENT: "remove_attachment",
+  OPEN_ATTACHMENT: "open_attachment",
+  REVEAL_ATTACHMENT: "reveal_attachment",
+
+  // -- M9: Productivity --
+  GLOBAL_SEARCH: "global_search",
+  LIST_SAVED_VIEWS: "list_saved_views",
+  CREATE_SAVED_VIEW: "create_saved_view",
+  RENAME_SAVED_VIEW: "rename_saved_view",
+  DELETE_SAVED_VIEW: "delete_saved_view",
+  QUICK_ADD_TASK: "quick_add_task",
+
+  // -- Platform plugins (already registered in src-tauri) --
+  SHELL_OPEN: "plugin:shell|open",
 } as const;

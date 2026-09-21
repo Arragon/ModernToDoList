@@ -5,6 +5,10 @@ pub mod domain;
 pub mod infrastructure;
 mod platform;
 
+pub mod benchmark;
+pub mod release;
+pub mod diagnostics;
+
 use commands::document::{
     allocate_task_id, get_document_metadata, read_and_parse_document,
     serialize_and_write_document, validate_document_cmd,
@@ -19,6 +23,18 @@ use commands::workspace::{
     get_workspace_status, list_documents, scan_and_index, rebuild_index, get_db_status,
 };
 use commands::task_query::{query_tasks, get_task_tags};
+use commands::search::{
+    get_shortcut_conflicts, list_app_commands, palette_query, rebuild_search_index_cmd,
+    resolve_task_jump, search_tasks,
+};
+use commands::views::{
+    create_saved_view, delete_saved_view, evaluate_saved_view, get_smart_view, list_saved_views,
+    rename_saved_view, reorder_saved_views, update_saved_view,
+};
+use commands::quick_add::{
+    get_global_shortcut_settings, parse_quick_add, quick_add_build_task,
+    set_global_quick_add_shortcut,
+};
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -87,6 +103,27 @@ pub fn run() {
             // M5: Task query commands
             query_tasks,
             get_task_tags,
+            // M9: Global search, command palette and shortcut conflicts
+            search_tasks,
+            rebuild_search_index_cmd,
+            palette_query,
+            list_app_commands,
+            get_shortcut_conflicts,
+            resolve_task_jump,
+            // M9: Smart views and saved views
+            get_smart_view,
+            create_saved_view,
+            list_saved_views,
+            rename_saved_view,
+            update_saved_view,
+            delete_saved_view,
+            reorder_saved_views,
+            evaluate_saved_view,
+            // M9: Quick Add and global shortcut
+            parse_quick_add,
+            quick_add_build_task,
+            get_global_shortcut_settings,
+            set_global_quick_add_shortcut,
         ])
         .setup(|app| {
             // Restore window state on startup (RD-M1-013)

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TODOLIST PROJECTNAME="M7 RichText" EARLIESTDUEDATE="0.00000000" LASTMOD="45259.84489583" LASTMODSTRING="2023-11-29 20:16" FILENAME="html-hostile.xml" NEXTUNIQUEID="2" FILEVERSION="43" APPVER="9.0.14.0" FILEFORMAT="12">
+<TASK ID="1" TITLE="Hostile HTML comment" REFID="0" COMMENTSTYPE="HTML" CREATEDBY="TestUser" PRIORITY="5" RISK="0" PERCENTDONE="0" CREATIONDATE="45259.82717593" CREATIONDATESTRING="2023-11-29 19:51" LASTMOD="45259.84489583" LASTMODSTRING="2023-11-29 20:16" LASTMODBY="TestUser" POS="0" POSSTRING="1">
+    <COMMENTS><![CDATA[<p onclick="steal()">Benign paragraph</p><script>alert(1)</script><img src="x" onerror="alert(2)"><iframe src="https://evil.example"></iframe><a href="javascript:alert(3)">click</a><a href="&#106;avascript:alert(4)">entity</a><svg onload="alert(5)"></svg><scr<script>ipt>alert(6)</script><object data="x.swf"></object><p style="behavior: url(#default#time2)">styled</p>]]></COMMENTS>
+</TASK>
+</TODOLIST>

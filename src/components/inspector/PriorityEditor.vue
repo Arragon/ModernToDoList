@@ -1,7 +1,8 @@
 <script setup lang="ts">
-defineProps<{
+withDefaults(defineProps<{
   value: number;
-}>();
+  disabled?: boolean;
+}>(), { disabled: false });
 
 const emit = defineEmits<{
   (e: "update:value", value: number): void;
@@ -23,7 +24,7 @@ function onChange(e: Event) {
 <template>
   <div class="priority-editor">
     <label class="field-label">Priority</label>
-    <select class="priority-editor__select" :value="value" @change="onChange">
+    <select class="priority-editor__select" :value="value" :disabled="disabled" @change="onChange">
       <option v-for="p in priorities" :key="p.value" :value="p.value">{{ p.label }}</option>
     </select>
   </div>
@@ -52,5 +53,10 @@ function onChange(e: Event) {
 }
 .priority-editor__select:focus {
   border-color: var(--color-border-focus);
+}
+.priority-editor__select:disabled {
+  color: var(--color-text-disabled);
+  background: var(--color-bg-tertiary);
+  cursor: not-allowed;
 }
 </style>

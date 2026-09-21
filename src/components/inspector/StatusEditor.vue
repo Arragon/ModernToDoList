@@ -1,7 +1,8 @@
 <script setup lang="ts">
-defineProps<{
+withDefaults(defineProps<{
   value: string;
-}>();
+  disabled?: boolean;
+}>(), { disabled: false });
 
 const emit = defineEmits<{
   (e: "update:value", value: string): void;
@@ -17,7 +18,7 @@ function onChange(e: Event) {
 <template>
   <div class="status-editor">
     <label class="field-label">Status</label>
-    <select class="status-editor__select" :value="value" @change="onChange">
+    <select class="status-editor__select" :value="value" :disabled="disabled" @change="onChange">
       <option v-for="s in statuses" :key="s" :value="s">{{ s }}</option>
     </select>
   </div>
@@ -46,5 +47,10 @@ function onChange(e: Event) {
 }
 .status-editor__select:focus {
   border-color: var(--color-border-focus);
+}
+.status-editor__select:disabled {
+  color: var(--color-text-disabled);
+  background: var(--color-bg-tertiary);
+  cursor: not-allowed;
 }
 </style>

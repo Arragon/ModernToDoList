@@ -35,6 +35,22 @@ use commands::quick_add::{
     get_global_shortcut_settings, parse_quick_add, quick_add_build_task,
     set_global_quick_add_shortcut,
 };
+// M6/M9 IPC bridge: task editing, relations, search/quick-add, attachments.
+use commands::task_edit::{
+    add_task, delete_task, global_search, quick_add_task, set_task_tags, update_task_field,
+};
+use commands::relations::{
+    add_dependency, add_managed_attachment, add_participant, add_progress_link,
+    add_url_attachment, get_dependencies, get_participants, link_local_attachment,
+    list_attachments, list_dependencies, list_participants, list_progress_links,
+    list_task_participants, remove_attachment, remove_dependency, remove_participant,
+    remove_progress_link, update_attachment, update_progress_link,
+};
+use commands::bridge::{open_attachment, reveal_attachment};
+// Re-exported so `tests/ipc_bridge_tests.rs` (an external integration test) can
+// drive the pure `*_core` bridge logic against the public domain types; the
+// `commands` module itself stays crate-private.
+pub use commands::{bridge, relations, task_edit};
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -124,6 +140,39 @@ pub fn run() {
             quick_add_build_task,
             get_global_shortcut_settings,
             set_global_quick_add_shortcut,
+            // M6 bridge: task mutation
+            update_task_field,
+            add_task,
+            delete_task,
+            set_task_tags,
+            // M6 bridge: participants
+            get_participants,
+            list_participants,
+            list_task_participants,
+            add_participant,
+            remove_participant,
+            // M6 bridge: dependencies
+            get_dependencies,
+            list_dependencies,
+            add_dependency,
+            remove_dependency,
+            // M6 bridge: progress links
+            list_progress_links,
+            add_progress_link,
+            update_progress_link,
+            remove_progress_link,
+            // M6 bridge: attachments
+            list_attachments,
+            add_managed_attachment,
+            link_local_attachment,
+            add_url_attachment,
+            update_attachment,
+            remove_attachment,
+            open_attachment,
+            reveal_attachment,
+            // M9 bridge: global search + quick add insertion
+            global_search,
+            quick_add_task,
         ])
         .setup(|app| {
             // Restore window state on startup (RD-M1-013)

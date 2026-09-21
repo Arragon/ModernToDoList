@@ -1,11 +1,11 @@
 # RC-M10 Blocker Review and 2.0 Scope Freeze
 
-Generated: 2026-09-21T23:00:37.768Z
+Generated: 2026-09-21T23:35:13.810Z
 Source: Linear project 72e576a7-e894-4e22-b52c-5d47d43a5912
 
 ## Verdict
 
-**Open M6-M10 issues: 28. Blocker count: 28.**
+**Open M6-M10 issues: 27. Blocker count: 27.**
 
 GATE-M10 (INH-1133) requires **all Blockers = 0** and **all P0/P1 data-safety issues = 0**. That precondition is NOT satisfied, so the GA gate cannot be passed and must remain open.
 
@@ -17,8 +17,8 @@ GATE-M10 (INH-1133) requires **all Blockers = 0** and **all P0/P1 data-safety is
 | Blocker-Persistence | 2 | 2 |
 | Blocker-Portable | 3 | 3 |
 | Blocker-Security | 0 | 0 |
-| Blocker-Core-UX | 18 | 18 |
-| **Total** | **28** | **28** |
+| Blocker-Core-UX | 17 | 17 |
+| **Total** | **27** | **27** |
 
 ## By milestone
 
@@ -26,7 +26,7 @@ GATE-M10 (INH-1133) requires **all Blockers = 0** and **all P0/P1 data-safety is
 |-----------|-------------|
 | M10 | 7 |
 | M6 | 7 |
-| M7 | 5 |
+| M7 | 4 |
 | M8 | 3 |
 | M9 | 6 |
 
@@ -59,7 +59,7 @@ GATE-M10 (INH-1133) requires **all Blockers = 0** and **all P0/P1 data-safety is
 
 _None open._
 
-## Blocker-Core-UX (18)
+## Blocker-Core-UX (17)
 
 | Issue | Pri | State | Title |
 |-------|-----|-------|-------|
@@ -72,7 +72,6 @@ _None open._
 | INH-1060 | Urgent | Backlog | GATE-M6 Task Relations Beta Exit Gate |
 | INH-1061 | Urgent | In Progress | RD-M7-001~002 Integrate minimal Tiptap OSS editor with explicit edit/preview modes |
 | INH-1062 | High | In Progress | RD-M7-003~010 Implement approved rich-text formatting toolbar |
-| INH-1073 | Urgent | In Progress | QA-M7-017 Run M0–M6 cumulative regression with Rich Content enabled |
 | INH-1074 | Urgent | Backlog | GATE-M7 Rich Content Beta Exit Gate |
 | INH-1094 | Urgent | Backlog | GATE-M8 Multi-Document Beta Exit Gate |
 | INH-1097 | Urgent | In Progress | RD-M9-008~013 Implement Global Search DTO/UI, keyboard navigation, task jump, Chinese fallback and incremental updates |

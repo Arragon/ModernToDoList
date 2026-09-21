@@ -20,10 +20,10 @@ use crate::domain::xml_serializer::serialize_xml;
 
 /// Per-session data held by the application.
 pub(crate) struct SessionEntry {
-    session: DocumentSession,
-    tree: TaskTree,
-    undo_manager: UndoRedoManager,
-    file_path: PathBuf,
+    pub(crate) session: DocumentSession,
+    pub(crate) tree: TaskTree,
+    pub(crate) undo_manager: UndoRedoManager,
+    pub(crate) file_path: PathBuf,
 }
 
 // SAFETY: SessionEntry is always accessed through a Mutex, so it never

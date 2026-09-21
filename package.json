@@ -1,15 +1,26 @@
 {
   "name": "moderntodolist",
-  "version": "1.0.0",
-  "description": "<!--\r  * @Author: lamires 1005682638@qq.com\r  * @Date: 2026-03-23 18:58:58\r  * @LastEditors: lamires 1005682638@qq.com\r  * @LastEditTime: 2026-03-23 18:59:11\r  * @FilePath: \\ModernToDoList\\readme.md\r  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE\r -->",
-  "main": "script.js",
+  "private": true,
+  "version": "2.0.0-dev",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "puppeteer": "^24.40.0"
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "@tauri-apps/api": "^2",
+    "@vitejs/plugin-vue": "^5",
+    "typescript": "~5.6.2",
+    "vite": "^6",
+    "vue-tsc": "^2",
+    "tailwindcss": "^4",
+    "@tailwindcss/vite": "^4",
+    "@fortawesome/fontawesome-free": "^6"
   }
 }

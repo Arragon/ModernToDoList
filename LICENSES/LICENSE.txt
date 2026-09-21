@@ -1,0 +1,12 @@
+ModernToDoList - Portable Windows Desktop Task Manager
+Copyright (c) 2024 ModernToDoList Team
+
+This software is provided as-is for development purposes.
+Final license terms to be determined before public release.
+
+--- Third-party licenses ---
+
+Tauri (https://tauri.app/) - MIT / Apache-2.0
+Vue.js (https://vuejs.org/) - MIT
+Tailwind CSS (https://tailwindcss.com/) - MIT
+Font Awesome (https://fontawesome.com/) - CC BY 4.0 / SIL OFL 1.1

@@ -1,0 +1,110 @@
+mod app;
+mod application;
+mod commands;
+pub mod domain;
+pub mod infrastructure;
+mod platform;
+
+use commands::document::{
+    allocate_task_id, get_document_metadata, read_and_parse_document,
+    serialize_and_write_document, validate_document_cmd,
+};
+use commands::session::{
+    close_document_session, get_session_status, open_document_session,
+    redo_last_command, save_document_atomic, undo_last_command, AppState,
+};
+use commands::system::{get_runtime_info, ping};
+use commands::workspace::{
+    WorkspaceState, create_workspace, open_workspace, close_workspace,
+    get_workspace_status, list_documents, scan_and_index, rebuild_index, get_db_status,
+};
+use commands::task_query::{query_tasks, get_task_tags};
+use tauri::Manager;
+
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    // Set up panic hook for crash logging (RD-M1-020)
+    app::setup_panic_hook();
+
+    // Ensure Data directory exists (RD-M1-008)
+    if let Err(e) = platform::windows::portable::ensure_data_dir() {
+        eprintln!("Failed to create Data directory: {e}");
+        // In a real scenario, we'd show a dialog here. For now, log and continue.
+    }
+
+    // Set WebView2 user data directory to portable Data/webview2/ (RD-M1-009)
+    // Must be done BEFORE any WebView2 environment is created.
+    app::configure_webview2_user_data_dir();
+
+    // WebView2 Runtime detection (RD-M1-016)
+    if !app::detect_webview2_runtime() {
+        eprintln!(
+            "WebView2 Runtime not detected. The application may not function correctly.\n\
+             Please install WebView2 Runtime from Microsoft."
+        );
+    }
+
+    tauri::Builder::default()
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            // Focus the first window when a second instance is launched
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.set_focus();
+            }
+        }))
+        .manage(AppState::new())
+        .manage({
+            let data_dir = platform::windows::portable::resolve_data_dir()
+                .unwrap_or_else(|_| std::path::PathBuf::from("Data"));
+            WorkspaceState::new(&data_dir)
+        })
+        .invoke_handler(tauri::generate_handler![
+            // System commands
+            ping,
+            get_runtime_info,
+            // M2: Document commands
+            read_and_parse_document,
+            serialize_and_write_document,
+            get_document_metadata,
+            validate_document_cmd,
+            allocate_task_id,
+            // M3: Session commands
+            open_document_session,
+            close_document_session,
+            save_document_atomic,
+            get_session_status,
+            undo_last_command,
+            redo_last_command,
+            // M4: Workspace commands
+            create_workspace,
+            open_workspace,
+            close_workspace,
+            get_workspace_status,
+            list_documents,
+            scan_and_index,
+            rebuild_index,
+            get_db_status,
+            // M5: Task query commands
+            query_tasks,
+            get_task_tags,
+        ])
+        .setup(|app| {
+            // Restore window state on startup (RD-M1-013)
+            if let Some(window) = app.get_webview_window("main") {
+                app::restore_window_state(&window);
+            }
+            Ok(())
+        })
+        .on_window_event(|window, event| {
+            // Save window state on close (RD-M1-013)
+            if let tauri::WindowEvent::CloseRequested { .. } = event {
+                // Get the webview window from the window reference
+                let label = window.label().to_string();
+                if let Some(webview_window) = window.get_webview_window(&label) {
+                    app::save_window_state(&webview_window);
+                }
+            }
+        })
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}

@@ -1,2 +1,20 @@
 /.vscode
 /lists
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Linear sync scratch output
+scripts/_linear_state.json
+scripts/_linear_state.md
+scripts/_*_out.txt
+
+# Tauri build artifacts
+src-tauri/target/
+src-tauri/gen/
+dist/
+node_modules/
+release/
+Data/

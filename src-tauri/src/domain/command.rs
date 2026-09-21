@@ -263,14 +263,34 @@ fn get_field(task: &Task, field: &TaskField) -> FieldValue {
     }
 }
 
+/// Formats an OLE Automation date as the `YYYY-MM-DD` display string TDL stores
+/// alongside the float. Returns `None` when the date is cleared or out of range,
+/// so the attribute is dropped rather than written empty.
+fn ole_date_string(ole: Option<f64>) -> Option<String> {
+    ole.and_then(super::smart_view::ole_to_naive_date)
+        .map(|d| d.format("%Y-%m-%d").to_string())
+}
+
 fn set_field(task: &mut Task, field: &TaskField, value: &FieldValue) {
     match (field, value) {
         (TaskField::Title, FieldValue::Text(v)) => task.title = v.clone(),
         (TaskField::Priority, FieldValue::Integer(v)) => task.priority = super::task::TaskPriority::new(*v as u8),
         (TaskField::Risk, FieldValue::Integer(v)) => task.risk = (*v as u8).min(10),
         (TaskField::PercentDone, FieldValue::Integer(v)) => task.percent_done = (*v as u8).min(100),
-        (TaskField::StartDate, FieldValue::Float(v)) => task.start_date = *v,
-        (TaskField::DueDate, FieldValue::Float(v)) => task.due_date = *v,
+        // TDL stores each date twice: an OLE Automation float (STARTDATE) and a
+        // display string (STARTDATESTRING, "YYYY-MM-DD"). mappers::write_task
+        // serializes both, so writing only the float left the string stale and
+        // legacy TDL kept showing the pre-edit date. Deriving the string here
+        // also makes undo correct, because get_field captures only the float and
+        // undo replays through this same function.
+        (TaskField::StartDate, FieldValue::Float(v)) => {
+            task.start_date = *v;
+            task.start_date_string = ole_date_string(*v);
+        }
+        (TaskField::DueDate, FieldValue::Float(v)) => {
+            task.due_date = *v;
+            task.due_date_string = ole_date_string(*v);
+        }
         (TaskField::Comments, FieldValue::Text(v)) => {
             if let Some(ref mut c) = task.comments {
                 c.content = v.clone();
@@ -317,6 +337,50 @@ impl TaskTree {
 
 #[cfg(test)]
 mod tests {
+    // Regression coverage for the stale date-string bug: TDL stores each date as
+    // an OLE float AND a "YYYY-MM-DD" display string, and mappers::write_task
+    // serializes both. set_field used to write only the float, so a date edit
+    // left STARTDATESTRING/DUEDATESTRING stale and legacy TDL kept showing the
+    // pre-edit date. Undo replays through the same path, so it was wrong in both
+    // directions.
+
+    #[test]
+    fn set_start_date_refreshes_display_string() {
+        let mut task = super::Task::new(super::TaskId::new("1"));
+        super::set_field(&mut task, &super::TaskField::StartDate, &super::FieldValue::Float(Some(45306.0)));
+        assert_eq!(task.start_date, Some(45306.0));
+        assert_eq!(task.start_date_string.as_deref(), Some("2024-01-15"));
+    }
+
+    #[test]
+    fn set_due_date_refreshes_display_string() {
+        let mut task = super::Task::new(super::TaskId::new("2"));
+        super::set_field(&mut task, &super::TaskField::DueDate, &super::FieldValue::Float(Some(45306.0)));
+        assert_eq!(task.due_date, Some(45306.0));
+        assert_eq!(task.due_date_string.as_deref(), Some("2024-01-15"));
+    }
+
+    #[test]
+    fn clearing_a_date_clears_its_display_string() {
+        let mut task = super::Task::new(super::TaskId::new("3"));
+        super::set_field(&mut task, &super::TaskField::DueDate, &super::FieldValue::Float(Some(45306.0)));
+        assert_eq!(task.due_date_string.as_deref(), Some("2024-01-15"));
+        super::set_field(&mut task, &super::TaskField::DueDate, &super::FieldValue::Float(None));
+        assert_eq!(task.due_date, None);
+        assert_eq!(task.due_date_string, None);
+    }
+
+    #[test]
+    fn undo_restores_both_the_float_and_the_display_string() {
+        let mut task = super::Task::new(super::TaskId::new("4"));
+        super::set_field(&mut task, &super::TaskField::StartDate, &super::FieldValue::Float(Some(45306.0)));
+        let captured = super::get_field(&task, &super::TaskField::StartDate);
+        super::set_field(&mut task, &super::TaskField::StartDate, &super::FieldValue::Float(Some(45671.0)));
+        assert_eq!(task.start_date_string.as_deref(), Some("2025-01-14"));
+        super::set_field(&mut task, &super::TaskField::StartDate, &captured);
+        assert_eq!(task.start_date, Some(45306.0));
+        assert_eq!(task.start_date_string.as_deref(), Some("2024-01-15"));
+    }
     use super::*;
     use crate::domain::task::{Task, TaskTree};
 

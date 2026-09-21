@@ -28,7 +28,7 @@ Status values: `MET` · `NOT MET` · `PARTIAL` · `CANNOT VERIFY HERE`.
 
 | # | Criterion | Status | Evidence |
 |---|-----------|--------|----------|
-| 2.1 | M0–M9 automated tests all pass | **MET** | Clean run in an isolated `CARGO_TARGET_DIR`: **1146 passed, 0 failed** across 16 targets — lib 581, m8_qa 295, m7_qa 118, m6_qa 18, m9_qa 17, round_trip 17, m4_qa 16, m5_qa 16, matrices A 14 / B 10 / C 10 / D 10, m10_benchmark 13, m10_portable 10, doc 1 (2 ignored: the full-scale benchmark generator and the release-ZIP generator, both run separately via their Node runners) |
+| 2.1 | M0–M9 automated tests all pass | **MET** | Clean run in an isolated `CARGO_TARGET_DIR`: **1197 passed, 0 failed** across 17 targets — lib 585, m8_qa 295, m7_qa 118, ipc_bridge 47, m6_qa 18, m9_qa 17, round_trip 17, m4_qa 16, m5_qa 16, matrices A 14 / B 10 / C 10 / D 10, m10_benchmark 13, m10_portable 10, doc 1 (2 ignored: the full-scale benchmark generator and the release-ZIP generator, both run separately via their Node runners) |
 | 2.2 | Frontend type-checks and builds | **MET** | `npm run build` (`vue-tsc --noEmit && vite build`): **0 TypeScript errors**, 129 modules transformed, 223.64 kB JS / 124.66 kB CSS |
 | 2.3 | XML round-trip compatibility intact | **MET** | `round_trip_test` 17/17 (encodings, unknown elements/attributes, comments, dependencies, FileLink, real-world fixture) plus matrix A 14/14 |
 | 2.4 | Index remains disposable | **MET** | `qa_m10_c09_gate_delete_index_db_rebuild_full_function` and `qa_m9_016` both delete `index.db`, rebuild from XML and assert full function |
@@ -87,6 +87,17 @@ session save rebuilds COMMENTS from `task.comments`, the user's comment text was
 destroyed on save**. Found by `qa_m10_a08`. Fixed by concatenating `Text` and `CData` in document
 order; the assertion was changed from documenting the defect to requiring the fix.
 
+**Fixed during this work — second real data-correctness bug:**
+`set_field` in `domain/command.rs` wrote only the OLE float for `StartDate`/`DueDate`, never the
+companion `start_date_string`/`due_date_string`, while `mappers::write_task` serialises **both**. So
+every date edit made through the mandated `FieldUpdateCommand` path left `STARTDATESTRING` /
+`DUEDATESTRING` stale in the saved XML, and legacy TDL kept displaying the pre-edit date. Undo was
+wrong in the same way, because `get_field` captures only the float and undo replays through
+`set_field`. Fixed by deriving the `YYYY-MM-DD` string from the OLE value inside `set_field`, which
+corrects both directions at once. Found by the IPC bridge work; covered by four new regression tests
+(`set_start_date_refreshes_display_string`, `set_due_date_refreshes_display_string`,
+`clearing_a_date_clears_its_display_string`, `undo_restores_both_the_float_and_the_display_string`).
+
 **Reported, not fixed:**
 - **F4** — `DeleteTaskCommand::undo` (`domain/command.rs`) re-appends tasks at the end of the
   sibling list, so delete+undo churns sibling order. IDs and content are intact. Asserted and
@@ -98,11 +109,18 @@ order; the assertion was changed from documenting the defect to requiring the fi
   attributes. Listed in the delivery plan's Phase 0 gap table and still open.
 
 **Verification debt:**
-- **27 IPC commands the frontend invokes did not exist in the backend** (`update_task_field`,
-  `add_task`, `delete_task`, `global_search`, `quick_add_task`, all participant/dependency/
-  progress-link/attachment commands). Found by diffing `src/ipc/commands.ts` against the registered
-  `#[tauri::command]` set. The frontend degrades gracefully rather than crashing, but the features
-  were non-functional. A bridge layer is in progress.
+- **RESOLVED — the 27 missing IPC commands.** `update_task_field`, `add_task`, `delete_task`,
+  `global_search`, `quick_add_task` and every participant / dependency / progress-link / attachment
+  command now exist in `commands/task_edit.rs` (7), `commands/relations.rs` (19) and
+  `commands/bridge.rs` (2). `invoke_handler` registers **69 commands**. Field mutations route through
+  `FieldUpdateCommand` + `UndoRedoManager`, so they are undoable and mark the session dirty for
+  autosave; `status` maps to `percent_done` because `Task` has no status field. Relation commands are
+  thin wrappers over the M6 domain APIs, so URL-scheme and path-traversal validation is neither
+  duplicated nor weakened. Covered by `tests/ipc_bridge_tests.rs` (43 tests).
+- **RESOLVED — rustc crash from the enlarged handler macro.** With ~69 commands the
+  `generate_handler!` expansion overflowed the compiler stack and aborted the bin target with
+  `0xc0000409 (STATUS_STACK_BUFFER_OVERRUN)`. Because the lib and every integration target compiled,
+  this presented as a link failure. `src-tauri/.cargo/config.toml` now sets `RUST_MIN_STACK=64MiB`.
 - **Tiptap is not integrated** — no `@tiptap/*` dependency, no `src/components/editor/`, no
   `RichTextEditor.vue`. INH-1061 and INH-1062 are therefore genuinely unimplemented, so M7's
   user-visible rich-text editing does not exist even though its backend is complete.
@@ -124,8 +142,8 @@ order; the assertion was changed from documenting the defect to requiring the fi
 1. Execute matrix H (15 cases) on clean Win10 and Win11 VMs and record results — **human-only**.
 2. Implement QA-M10 matrices E, F and G as standalone RC suites (32 cases).
 3. Integrate Tiptap and the rich-text editor UI (INH-1061, INH-1062).
-4. Complete and verify the IPC bridge so the frontend actually drives the backend, then perform real
-   runtime UI verification of the 10 issues held at `In Progress`.
+4. Perform real runtime UI verification of the 10 issues held at `In Progress`. The IPC bridge is now
+   complete, so these are blocked only on driving the packaged app — not on missing backend commands.
 5. Apply the version metadata to `tauri.conf.json` and produce a frozen release ZIP.
 6. Fix F4 and the `serialize_task_tree` subtree/attribute gap.
 7. Re-run `rc-blocker-review.cjs` until the count is 0, then freeze commit, version and ZIP hash.

@@ -11,7 +11,17 @@ path = "src/main.rs"
 
 [lib]
 name = "moderntodolist_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
+# rlib only. The Tauri template default is ["staticlib", "cdylib", "rlib"], but
+# staticlib/cdylib are only consumed by the iOS/Android mobile entry points, and
+# this product ships as a Windows portable desktop app. Keeping them made every
+# integration test target fail to link with "crate `X` required to be available
+# in rlib format, but was not found in this form" (and cascading
+# "can't find crate for moderntodolist_lib"), because cargo builds the
+# dependency graph for the static/cdylib units without the rlib metadata that
+# tests/*.rs need. `cargo test --lib` still passed, which made this easy to
+# misdiagnose as target-directory corruption. Restore staticlib/cdylib only if a
+# mobile target is ever added.
+crate-type = ["rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }

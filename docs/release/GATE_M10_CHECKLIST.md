@@ -28,7 +28,7 @@ Status values: `MET` · `NOT MET` · `PARTIAL` · `CANNOT VERIFY HERE`.
 
 | # | Criterion | Status | Evidence |
 |---|-----------|--------|----------|
-| 2.1 | M0–M9 automated tests all pass | **PARTIAL** | `cargo check --lib` clean with all 67 modules wired. Per-suite results were validated by each implementation stream in isolation (m6_qa 18, m7_qa 25, m8_qa 295, m9_qa 17, benchmark 43+13, portable 10, matrices A–D 44; baseline round_trip 17 + m4 16 + m5 16 + doc 1). **A single clean full-suite run is still pending** — see §7 |
+| 2.1 | M0–M9 automated tests all pass | **MET** | Clean run in an isolated `CARGO_TARGET_DIR`: **1146 passed, 0 failed** across 16 targets — lib 581, m8_qa 295, m7_qa 118, m6_qa 18, m9_qa 17, round_trip 17, m4_qa 16, m5_qa 16, matrices A 14 / B 10 / C 10 / D 10, m10_benchmark 13, m10_portable 10, doc 1 (2 ignored: the full-scale benchmark generator and the release-ZIP generator, both run separately via their Node runners) |
 | 2.2 | Frontend type-checks and builds | **MET** | `npm run build` (`vue-tsc --noEmit && vite build`): **0 TypeScript errors**, 129 modules transformed, 223.64 kB JS / 124.66 kB CSS |
 | 2.3 | XML round-trip compatibility intact | **MET** | `round_trip_test` 17/17 (encodings, unknown elements/attributes, comments, dependencies, FileLink, real-world fixture) plus matrix A 14/14 |
 | 2.4 | Index remains disposable | **MET** | `qa_m10_c09_gate_delete_index_db_rebuild_full_function` and `qa_m9_016` both delete `index.db`, rebuild from XML and assert full function |
@@ -109,11 +109,15 @@ order; the assertion was changed from documenting the defect to requiring the fi
 - **Frontend has had no runtime verification.** `npm run build` proves type-correctness only. The
   packaged Tauri/WebView2 app was never launched, so no UI behaviour is confirmed. Every
   frontend-bearing issue is held at `In Progress` for this reason.
-- **A single clean full-suite `cargo test` run has not yet been captured.** Eight concurrent cargo
-  processes corrupted the shared target directory, producing `only metadata stub found for rlib` and
-  cascading `internal compiler error: no resolution for an import`. These are build-artifact
-  collisions, **not** code defects — `cargo check --lib` is clean. The authoritative run is being
-  executed in an isolated `CARGO_TARGET_DIR` and this section must be updated with its totals.
+- **RESOLVED — a single clean full-suite `cargo test` run is now captured: 1146 passed, 0 failed.**
+  The earlier failures were **not** target-directory corruption. Root cause: `[lib] crate-type =
+  ["staticlib", "cdylib", "rlib"]` (the Tauri template default). `staticlib`/`cdylib` are consumed
+  only by the iOS/Android mobile entry points, and their presence made cargo build the dependency
+  graph without the rlib metadata that `tests/*.rs` link against, producing `crate X required to be
+  available in rlib format` and cascading `can't find crate for moderntodolist_lib`. It was easy to
+  misdiagnose as corruption because `cargo test --lib` passed (581) while every integration target
+  failed. Fixed by setting `crate-type = ["rlib"]`, which is correct for a Windows-only portable
+  desktop app; the reasoning is recorded in `Cargo.toml`.
 
 ## 8. What would close the gate
 

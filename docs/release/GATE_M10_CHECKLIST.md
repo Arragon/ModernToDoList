@@ -1,13 +1,16 @@
-# GATE-M10 — ModernToDoList 2.0 GA Exit Gate Checklist
+# GATE-M10 — ModernToDoList 2.0 GA Exit Gate — Audit Record
 
 **Linear:** INH-1133 · **Milestone:** M10 · **Priority:** P1
-**Predecessor:** RC-M10 (INH-1132) blocker review → `RC_M10_BLOCKER_REVIEW.md`
+**Audit date:** 2026-09-22 · **Repo:** `Arragon/ModernToDoList` · **Branch:** `feat/m2-m3-ipc-integration` → `main`
+**Predecessor:** RC-M10 (INH-1132) → `RC_M10_BLOCKER_REVIEW.md`
 
-Every criterion below is taken verbatim from the delivery plan
-(`.qoder/specs/M6-M10_Full_Delivery_60d4cd8c.md`, section 5.6). The gate passes only when **all**
-rows are `MET` with real evidence attached. A green build, a passing unit-test suite, or a
-substantial implementation effort is **not** by itself evidence that a row is met — each row names
-the specific artifact that proves it.
+## VERDICT: **NOT PASSED — gate remains open**
+
+Blocker count is **28**, not 0. Three RC matrices (E, F, G) are not implemented as standalone RC
+suites, and matrix **H** cannot be executed in this environment at all. Per the delivery plan,
+GATE-M10 requires *all* Blockers = 0 **and** the full RC matrix to pass. Neither holds.
+
+This document records what **is** verified, so the remaining gap is precise rather than vague.
 
 Status values: `MET` · `NOT MET` · `PARTIAL` · `CANNOT VERIFY HERE`.
 
@@ -15,82 +18,113 @@ Status values: `MET` · `NOT MET` · `PARTIAL` · `CANNOT VERIFY HERE`.
 
 ## 1. Blocker and data-safety criteria
 
-| # | Criterion | Status | Required evidence |
-|---|-----------|--------|-------------------|
-| 1.1 | All Blockers = 0 | | `RC_M10_BLOCKER_REVIEW.md` regenerated from live Linear state showing 0 open M6–M10 issues |
-| 1.2 | All P0/P1 data-safety issues = 0 | | Linear query filtered to priority Urgent/High with a data-safety label, returning empty |
-| 1.3 | No issue closed while its dependencies are open | | Confirm no GATE/RC issue is `Done` while its milestone's RD/QA issues are still Backlog |
-
-> Criterion 1.3 exists because this project already had one violation: GATE-M10 itself was marked
-> `Done` while all 93 M6–M10 issues sat in Backlog. That was corrected on 2026-09-22 (returned to
-> Backlog with an evidence comment). Re-check it at every gate review.
+| # | Criterion | Status | Evidence |
+|---|-----------|--------|----------|
+| 1.1 | All Blockers = 0 | **NOT MET** | `RC_M10_BLOCKER_REVIEW.md` regenerated from live Linear state: **28 open** (Data 5, Persistence 2, Portable 3, Security 0, Core-UX 18). Reduced from 94 at Phase 0 |
+| 1.2 | All P0/P1 data-safety issues = 0 | **NOT MET** | 5 Blocker-Data issues remain open: INH-1083 (transfer UX), INH-1129 (QA-M10-F), plus the data-safety aspects of the open gates |
+| 1.3 | No issue closed while its dependencies are open | **MET** | Verified by direct query. Phase 0 found INH-1133 marked `Done` with all 93 M6–M10 issues in Backlog; corrected to Backlog. Post-sync re-check: all 5 gates (INH-1060/1074/1094/1109/1133) are **not** Done while their dependencies remain open |
 
 ## 2. Automated test criteria
 
-| # | Criterion | Status | Required evidence |
-|---|-----------|--------|-------------------|
-| 2.1 | M0–M9 automated tests all pass | | Full `cargo test` transcript with per-suite counts, zero failures, zero ignored |
-| 2.2 | Frontend type-checks and builds | | `npm run build` (`vue-tsc --noEmit && vite build`) output with zero TS errors |
-| 2.3 | XML round-trip compatibility intact | | All `round_trip_test` cases pass — encodings, unknown elements/attributes, comments, dependencies, FileLink, real-world fixture |
-| 2.4 | Index remains disposable | | A test that deletes `index.db`, rebuilds from XML, and asserts identical query results |
+| # | Criterion | Status | Evidence |
+|---|-----------|--------|----------|
+| 2.1 | M0–M9 automated tests all pass | **PARTIAL** | `cargo check --lib` clean with all 67 modules wired. Per-suite results were validated by each implementation stream in isolation (m6_qa 18, m7_qa 25, m8_qa 295, m9_qa 17, benchmark 43+13, portable 10, matrices A–D 44; baseline round_trip 17 + m4 16 + m5 16 + doc 1). **A single clean full-suite run is still pending** — see §7 |
+| 2.2 | Frontend type-checks and builds | **MET** | `npm run build` (`vue-tsc --noEmit && vite build`): **0 TypeScript errors**, 129 modules transformed, 223.64 kB JS / 124.66 kB CSS |
+| 2.3 | XML round-trip compatibility intact | **MET** | `round_trip_test` 17/17 (encodings, unknown elements/attributes, comments, dependencies, FileLink, real-world fixture) plus matrix A 14/14 |
+| 2.4 | Index remains disposable | **MET** | `qa_m10_c09_gate_delete_index_db_rebuild_full_function` and `qa_m9_016` both delete `index.db`, rebuild from XML and assert full function |
 
 ## 3. RC full matrix (QA-M10 A–H)
 
-| Matrix | Cases | Linear | Status | Required evidence |
-|--------|-------|--------|--------|-------------------|
-| A — XML compatibility | A01~A13 | INH-1124 | | `m10_qa_a_xml_compat.rs` — 13 named tests, all pass |
-| B — Atomic save / recovery | B01~B10 | INH-1125 | | `m10_qa_b_atomic_save.rs` — 10 named tests, all pass |
-| C — Workspace / SQLite | C01~C10 | INH-1126 | | `m10_qa_c_workspace_sqlite.rs` — 10 named tests, all pass |
-| D — Core task UX | D01~D10 | INH-1127 | | `m10_qa_d_core_ux.rs` — 10 named tests, all pass |
-| E — Relations / attachments / rich content | E01~E12 | INH-1128 | | Requires M6 + M7 implemented; 12 named tests |
-| F — Cross-document transactions | F01~F10 | INH-1129 | | Requires M8 implemented; 10 named tests incl. crash recovery |
-| G — Productivity | G01~G10 | INH-1130 | | Requires M9 implemented; 10 named tests incl. Chinese search |
-| H — Windows Portable / clean machine | H01~H15 | INH-1131 | | **Human execution required** — `docs/qa/QA_M10_H_PORTABLE_PROTOCOL.md` result table, filled in for both Win10 and Win11 |
+| Matrix | Cases | Linear | Status | Evidence |
+|--------|-------|--------|--------|----------|
+| A — XML compatibility | A01~A13 | INH-1124 | **MET** | `m10_qa_a_xml_compat.rs` 14/14. Surfaced and fixed a real data-loss bug (§6) |
+| B — Atomic save / recovery | B01~B10 | INH-1125 | **MET** | `m10_qa_b_atomic_save.rs` 10/10. Permission-denied provoked for real via a read-only decoy at the deterministic `.doc.xml.tmp` path |
+| C — Workspace / SQLite | C01~C10 | INH-1126 | **MET** | `m10_qa_c_workspace_sqlite.rs` 10/10, stable over 4 repeat runs |
+| D — Core task UX | D01~D10 | INH-1127 | **MET** | `m10_qa_d_core_ux.rs` 10/10, asserting canonical TaskId stability |
+| E — Relations / attachments / rich content | E01~E12 | INH-1128 | **NOT MET** | No standalone RC suite. Underlying coverage exists (m6_qa 18, m7_qa 25) but is not organised or executed as the E matrix |
+| F — Cross-document transactions | F01~F10 | INH-1129 | **NOT MET** | No standalone RC suite. `m8_qa_tests` (295) covers the crash matrix and asserts the union-no-loss invariant, but not under the F numbering |
+| G — Productivity | G01~G10 | INH-1130 | **NOT MET** | No standalone RC suite. `m9_qa_tests` (17) covers search, CJK fallback, views and quick add, but not under the G numbering |
+| H — Windows Portable / clean machine | H01~H15 | INH-1131 | **CANNOT VERIFY HERE** | Requires clean Win10 + Win11 VMs, no network, no admin rights, no Node/Rust/Python/Git. Protocol delivered at `docs/qa/QA_M10_H_PORTABLE_PROTOCOL.md`; **0 of 15 cases executed** |
 
-**Matrix H cannot be automated.** It requires clean Windows 10 and Windows 11 VMs with no network,
-no administrator rights, and no Node/Rust/Python/Git toolchain installed. Until a human executes it
-and records results, criterion 3.H is `CANNOT VERIFY HERE` and **the gate cannot pass**. This is a
-hard structural limit, not a matter of effort.
+## 4. Explicit verification items (spec §5.6)
 
-## 4. Explicit GATE-M10 verification items (from spec section 5.6)
-
-| # | Criterion | Status | Required evidence |
-|---|-----------|--------|-------------------|
-| 4.1 | Delete `index.db` → rebuild → full function | | Test or manual run showing search, smart views, saved views, filters and counts all identical after rebuild |
-| 4.2 | Cross-file Move kill recovery | | Matrix F crash-recovery tests: kill at each phase boundary, assert no task lost (duplicate-not-loss) |
-| 4.3 | Win10 + Win11 clean VM | | Matrix H rows H01–H15 on both OSes |
-| 4.4 | No-network Portable run | | Matrix H case H03 with the vNIC disabled and zero outbound connections observed |
+| # | Criterion | Status | Evidence |
+|---|-----------|--------|----------|
+| 4.1 | Delete `index.db` → rebuild → full function | **MET** | Automated: `qa_m10_c09`, `qa_m10_c10`, `qa_m9_016` |
+| 4.2 | Cross-file Move kill recovery | **PARTIAL** | `m8_qa_tests` asserts no-task-loss at every crash point, but is not executed under the F-matrix numbering and has no clean full-suite confirmation |
+| 4.3 | Win10 + Win11 clean VM | **CANNOT VERIFY HERE** | Matrix H — no VMs available |
+| 4.4 | No-network Portable run | **CANNOT VERIFY HERE** | Matrix H case H03 |
 
 ## 5. Release artifact criteria
 
-| # | Criterion | Status | Required evidence |
-|---|-----------|--------|-------------------|
-| 5.1 | Release ZIP hash fixed | | Published SHA-256 of `ModernToDoList-2.0.0-Portable-win-x64.zip`, reproducible: building twice from the same inputs yields the same hash |
-| 5.2 | Migration test passes | | Versioned Data/settings/index migration tests across ≥3 versions, plus the failure→index-rebuild fallback |
-| 5.3 | Release notes complete | | `docs/release/RELEASE_NOTES_2.0.0.md` with the 2.0.0 changelog |
-| 5.4 | Licenses collected | | `LICENSES/` containing Rust crate licences (from `Cargo.lock`) and npm licences (from `package-lock.json`) |
-| 5.5 | Version metadata embedded | | EXE file version / product version / company present and matching 2.0.0 |
-| 5.6 | Manual update path documented | | `docs/release/MANUAL_UPDATE.md`, validated by matrix H case H15 |
-| 5.7 | WebView2 policy documented | | `docs/release/WEBVIEW2_POLICY.md`, validated by matrix H case H02 |
-| 5.8 | Commit and version frozen | | The RC commit SHA, version string and ZIP hash recorded in RC-M10 and immutable thereafter |
+| # | Criterion | Status | Evidence |
+|---|-----------|--------|----------|
+| 5.1 | Release ZIP hash fixed | **PARTIAL** | Deterministic ZIP implemented in `release/packaging.rs` with fixed timestamps and sorted entries; determinism proven by building twice and comparing SHA-256. The **release hash is not frozen** because RC-M10 has not frozen a commit |
+| 5.2 | Migration test passes | **MET** | `infrastructure/migration.rs` v0→3 Data migration, settings `schemaVersion` 0→2, and the failure→`rebuild_index_fallback` path; 14 lib tests |
+| 5.3 | Release notes complete | **MET** | `docs/release/RELEASE_NOTES_2.0.0.md` |
+| 5.4 | Licenses collected | **MET** | `LICENSES/RUST_DEPENDENCIES.md` (566 crates from `Cargo.lock`), `NPM_DEPENDENCIES.md` (152 packages from `package-lock.json`), `THIRD_PARTY_NOTICES.md` |
+| 5.5 | Version metadata embedded | **PARTIAL** | `release/version_metadata.rs` produces the metadata and a `tauri.conf.json` snippet, but `tauri.conf.json` was **not** modified (out of the implementation stream's file ownership). Must be applied before a real release build |
+| 5.6 | Manual update path documented | **MET (doc only)** | `docs/release/MANUAL_UPDATE.md`. Validation is matrix H case H15 → **CANNOT VERIFY HERE** |
+| 5.7 | WebView2 policy documented | **MET (doc only)** | `docs/release/WEBVIEW2_POLICY.md` + structured detection in `platform/windows/webview2.rs`. Validation is matrix H case H02 → **CANNOT VERIFY HERE** |
+| 5.8 | Commit and version frozen | **NOT MET** | Cannot freeze while blockers ≠ 0 |
 
 ## 6. Security criteria
 
-| # | Criterion | Status | Required evidence |
-|---|-----------|--------|-------------------|
-| 6.1 | No secret in the repository or its history | | `git grep` for the API-key pattern across all reachable commits returns empty; `.env` gitignored |
-| 6.2 | HTML sanitizer resists XSS | | Matrix E / QA-M7-007~009 adversarial cases: script, iframe, `on*` handlers, `javascript:`, `data:`, entity-encoded and mutation-XSS payloads all neutralised |
-| 6.3 | Attachment paths cannot traverse the asset root | | Tests asserting `../` and absolute-path escapes are rejected |
-| 6.4 | Crash dumps are privacy-safe | | Matrix H case H13: exported bundle contains no task content and no verbatim file paths (hashes only) |
+| # | Criterion | Status | Evidence |
+|---|-----------|--------|----------|
+| 6.1 | No secret in the repository or its history | **MET** | The Linear API key was hardcoded in 42 scripts and committed in `e041918`. That commit was **never pushed**, so it was reset and the work re-committed clean as `1b46c87`. `git grep` over all reachable commits returns empty; `.env` is gitignored; `.env.example` added. **The key itself should still be rotated** — it existed in plaintext on disk |
+| 6.2 | HTML sanitizer resists XSS | **MET** | `domain/sanitizer.rs` (1,942 LOC). `qa_m7_007_xss_payload_matrix_is_neutralized`, `qa_m7_008_dangerous_url_matrix_is_rejected`, `qa_m7_008_image_src_matrix_is_restricted_to_managed_paths`, `qa_m7_009_all_four_choke_points_sanitize`, plus `qa_m7_007_benign_formatting_survives_sanitation` guarding against over-sanitisation |
+| 6.3 | Attachment paths cannot traverse the asset root | **MET** | `attachment::safe_join` / `resolve_path` reject traversal; covered by QA-M6-011~017 |
+| 6.4 | Crash dumps are privacy-safe | **MET** | `diagnostics/crashlog.rs` — asserted that a path containing Chinese characters never appears verbatim; paths are hashed only. Live validation is matrix H case H13 → **CANNOT VERIFY HERE** |
 
----
+## 7. Known open defect and verification debt
 
-## Sign-off
+**Fixed during this work — real data loss:**
+`XmlElement::text_content()` (`domain/xml_tree.rs`) collected only `XmlNode::Text` and ignored
+`XmlNode::CData`. A CDATA-wrapped HTML comment — the pattern in the repo's own
+`comments/html-comment.xml` fixture — therefore mapped to an **empty** domain comment, and because
+session save rebuilds COMMENTS from `task.comments`, the user's comment text was **silently
+destroyed on save**. Found by `qa_m10_a08`. Fixed by concatenating `Text` and `CData` in document
+order; the assertion was changed from documenting the defect to requiring the fix.
 
-The gate may be moved to `Done` only when every row above is `MET` and the RC commit SHA, version
-string and ZIP SHA-256 are recorded. Any row that is `NOT MET`, `PARTIAL` or `CANNOT VERIFY HERE`
-means GATE-M10 stays open, and the specific unmet rows must be listed in the Linear comment so the
-gap is visible rather than implied.
+**Reported, not fixed:**
+- **F4** — `DeleteTaskCommand::undo` (`domain/command.rs`) re-appends tasks at the end of the
+  sibling list, so delete+undo churns sibling order. IDs and content are intact. Asserted and
+  documented in `qa_m10_d03`.
+- **F1/F2** — `xml_parser.rs:91` lets the XML declaration override BOM detection, so a UTF-8-BOM file
+  declaring `utf-8` loses its BOM on re-save, and a UTF-16 file with a contradicting declaration is
+  re-encoded to UTF-8. Pre-documented at the M2 gate; consistent files round-trip byte-identically.
+- **Spec §0.1 gap** — `commands/session.rs::serialize_task_tree` drops nested subtrees and root
+  attributes. Listed in the delivery plan's Phase 0 gap table and still open.
+
+**Verification debt:**
+- **27 IPC commands the frontend invokes did not exist in the backend** (`update_task_field`,
+  `add_task`, `delete_task`, `global_search`, `quick_add_task`, all participant/dependency/
+  progress-link/attachment commands). Found by diffing `src/ipc/commands.ts` against the registered
+  `#[tauri::command]` set. The frontend degrades gracefully rather than crashing, but the features
+  were non-functional. A bridge layer is in progress.
+- **Tiptap is not integrated** — no `@tiptap/*` dependency, no `src/components/editor/`, no
+  `RichTextEditor.vue`. INH-1061 and INH-1062 are therefore genuinely unimplemented, so M7's
+  user-visible rich-text editing does not exist even though its backend is complete.
+- **Frontend has had no runtime verification.** `npm run build` proves type-correctness only. The
+  packaged Tauri/WebView2 app was never launched, so no UI behaviour is confirmed. Every
+  frontend-bearing issue is held at `In Progress` for this reason.
+- **A single clean full-suite `cargo test` run has not yet been captured.** Eight concurrent cargo
+  processes corrupted the shared target directory, producing `only metadata stub found for rlib` and
+  cascading `internal compiler error: no resolution for an import`. These are build-artifact
+  collisions, **not** code defects — `cargo check --lib` is clean. The authoritative run is being
+  executed in an isolated `CARGO_TARGET_DIR` and this section must be updated with its totals.
+
+## 8. What would close the gate
+
+1. Execute matrix H (15 cases) on clean Win10 and Win11 VMs and record results — **human-only**.
+2. Implement QA-M10 matrices E, F and G as standalone RC suites (32 cases).
+3. Integrate Tiptap and the rich-text editor UI (INH-1061, INH-1062).
+4. Complete and verify the IPC bridge so the frontend actually drives the backend, then perform real
+   runtime UI verification of the 10 issues held at `In Progress`.
+5. Apply the version metadata to `tauri.conf.json` and produce a frozen release ZIP.
+6. Fix F4 and the `serialize_task_tree` subtree/attribute gap.
+7. Re-run `rc-blocker-review.cjs` until the count is 0, then freeze commit, version and ZIP hash.
 
 **Do not close this gate on the strength of passing unit tests alone.** Criteria 3.H, 4.3 and 4.4
 require physical clean-machine execution that no automated suite can substitute for.

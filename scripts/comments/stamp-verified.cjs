@@ -6,8 +6,8 @@ const fs = require('fs');
 const path = require('path');
 
 const VERIFIED =
-  '**干净隔离构建（独立 CARGO_TARGET_DIR）全量复跑：1146 passed / 0 failed**，覆盖 16 个测试目标 —— ' +
-  'lib 581、m8_qa 295、m7_qa 118、m6_qa 18、m9_qa 17、round_trip 17、m4_qa 16、m5_qa 16、' +
+  '**干净隔离构建（独立 CARGO_TARGET_DIR）全量复跑：1197 passed / 0 failed**，覆盖 17 个测试目标 —— ' +
+  'lib 585、m8_qa 295、m7_qa 118、ipc_bridge 47、m6_qa 18、m9_qa 17、round_trip 17、m4_qa 16、m5_qa 16、' +
   'QA-M10 矩阵 A 14 / B 10 / C 10 / D 10、m10_benchmark 13、m10_portable 10、doc-test 1' +
   '（另有 2 项 ignored：全量基准生成器与发布 ZIP 生成器，经各自的 Node runner 单独执行并通过）';
 

@@ -1,7 +1,7 @@
 {
   "milestone": "M7 — Rich Content",
   "evidence": {
-    "cargo": "**干净隔离构建（独立 CARGO_TARGET_DIR）全量复跑：1146 passed / 0 failed**，覆盖 16 个测试目标 —— lib 581、m8_qa 295、m7_qa 118、m6_qa 18、m9_qa 17、round_trip 17、m4_qa 16、m5_qa 16、QA-M10 矩阵 A 14 / B 10 / C 10 / D 10、m10_benchmark 13、m10_portable 10、doc-test 1（另有 2 项 ignored：全量基准生成器与发布 ZIP 生成器，经各自的 Node runner 单独执行并通过）",
+    "cargo": "**干净隔离构建（独立 CARGO_TARGET_DIR）全量复跑：1197 passed / 0 failed**，覆盖 17 个测试目标 —— lib 585、m8_qa 295、m7_qa 118、ipc_bridge 47、m6_qa 18、m9_qa 17、round_trip 17、m4_qa 16、m5_qa 16、QA-M10 矩阵 A 14 / B 10 / C 10 / D 10、m10_benchmark 13、m10_portable 10、doc-test 1（另有 2 项 ignored：全量基准生成器与发布 ZIP 生成器，经各自的 Node runner 单独执行并通过）",
     "extra": [
       "M7 后端域层共 5,668 行：`sanitizer.rs` 1,942 行、`comments.rs` 1,002 行、`rich_text.rs` 2,724 行",
       "`src-tauri/tests/m7_qa_tests.rs` 含 25 个以 QA 编号命名的测试（qa_m7_001 ~ qa_m7_016）",
@@ -216,5 +216,5 @@
       "gap": "**不得标记为 Done。** INH-1061 与 INH-1062（Tiptap 编辑器本体与格式化工具栏）未交付 —— 无 `@tiptap/*` 依赖、无 `src/components/editor/`、无 `RichTextEditor.vue`。M7 的核心用户可见能力（富文本编辑 UI）因此缺失，QA-M7-017 累积回归亦未在一次干净全量运行中复跑。"
     }
   },
-  "commit": "d91b276"
+  "commit": "91f0696"
 }

@@ -1,17 +1,20 @@
 {
   "milestone": "M10 — Performance, Portable Hardening and GA",
   "evidence": {
-    "cargo": "见下方各 Issue 的分项计数；全量套件在干净重建后统一复跑",
+    "cargo": "**干净隔离构建（独立 CARGO_TARGET_DIR）全量复跑：1146 passed / 0 failed**，覆盖 16 个测试目标 —— lib 581、m8_qa 295、m7_qa 118、m6_qa 18、m9_qa 17、round_trip 17、m4_qa 16、m5_qa 16、QA-M10 矩阵 A 14 / B 10 / C 10 / D 10、m10_benchmark 13、m10_portable 10、doc-test 1（另有 2 项 ignored：全量基准生成器与发布 ZIP 生成器，经各自的 Node runner 单独执行并通过）",
     "frontend": "npm run build（vue-tsc --noEmit && vite build）通过，0 个 TypeScript 错误，129 个模块，产物 223.64 kB JS / 124.66 kB CSS",
     "extra": [
       "构建环境修复：Windows 系统代理 127.0.0.1:50095 已失效，所有 cargo/git/npm 命令均以 `no_proxy=\"*\"` 绕过后方可联网",
-      "8 个并行实现代理共享同一 target 目录导致增量元数据损坏（`only metadata stub found for rlib`），已通过 `cargo clean` 全量重建消除"
+      "8 个并行实现代理共享同一 target 目录导致增量元数据损坏（`only metadata stub found for rlib`），已通过 `cargo clean` 全量重建消除",
+      "构建修复：[lib] crate-type 由 Tauri 模板默认的 [\"staticlib\",\"cdylib\",\"rlib\"] 改为 [\"rlib\"]。staticlib/cdylib 仅服务于 iOS/Android 移动端入口，其存在会让 cargo 以缺少 rlib 元数据的方式构建依赖图，导致所有 tests/*.rs 报 \"crate X required to be available in rlib format\" 并级联 \"can't find crate for moderntodolist_lib\"。由于 cargo test --lib 仍然通过（581 项），该故障极易被误判为并发构建导致的 target 目录损坏。本产品为 Windows 便携桌面应用，rlib 即为正确配置。"
     ]
   },
   "issues": {
     "INH-1110": {
       "state": "Done",
-      "rd": ["RD-M10-001"],
+      "rd": [
+        "RD-M10-001"
+      ],
       "impl": [
         "新增 `src-tauri/src/benchmark/fixture_gen.rs`：以 `rand::rngs::SmallRng` 从显式 u64 种子驱动，生成可配置深度／广度／字段密度的 TDL XML 任务树",
         "确定性已证明：相同 seed + 相同配置产出**逐字节相同**的 XML，并有专门测试断言",
@@ -25,7 +28,9 @@
     },
     "INH-1111": {
       "state": "Done",
-      "rd": ["RD-M10-002~009"],
+      "rd": [
+        "RD-M10-002~009"
+      ],
       "impl": [
         "新增 `benchmark/datasets.rs`：全部数据集均由 fixture 生成器确定性产出",
         "规模变体：1k / 10k / 50k / 100k 任务",
@@ -39,58 +44,80 @@
     },
     "INH-1112": {
       "state": "Done",
-      "rd": ["RD-M10-010"],
+      "rd": [
+        "RD-M10-010"
+      ],
       "impl": [
         "新增 `benchmark/results.rs`：serde 结构体严格对应 `{ version, timestamp, dataset, metrics: [{ name, value, unit, percentile }] }`，并带 `BENCH_SCHEMA_VERSION = 1` 常量",
         "同一结构体可渲染为人类可读的 Markdown 报告",
         "格式已文档化于 `docs/performance/BENCHMARK_FORMAT.md`"
       ],
-      "tests": ["JSON 序列化 schema 与 Markdown 渲染均有单元测试；43 项 lib 测试通过"]
+      "tests": [
+        "JSON 序列化 schema 与 Markdown 渲染均有单元测试；43 项 lib 测试通过"
+      ]
     },
     "INH-1113": {
       "state": "Done",
-      "rd": ["RD-M10-011~015"],
+      "rd": [
+        "RD-M10-011~015"
+      ],
       "impl": [
         "新增 `benchmark/profile.rs`，以 `std::time::Instant` 度量：冷／热启动、workspace 扫描与 detect_changes、XML 解析吞吐、索引重建、搜索延迟 p50/p95/p99",
         "全部接入**真实**代码路径：`DatabaseManager`、`Workspace`、`parse_xml`、`indexer::rebuild_index`、SQLite 查询；未使用任何伪造的空操作计时",
         "度量结果直接产出为上述结果格式可消费的 Metric 值"
       ],
-      "tests": ["剖析路径由 13 项集成测试与 43 项 lib 测试覆盖；`run_full_benchmark`（ignored）由 Node runner 驱动并跑通"]
+      "tests": [
+        "剖析路径由 13 项集成测试与 43 项 lib 测试覆盖；`run_full_benchmark`（ignored）由 Node runner 驱动并跑通"
+      ]
     },
     "INH-1114": {
       "state": "Done",
-      "rd": ["RD-M10-016~021"],
+      "rd": [
+        "RD-M10-016~021"
+      ],
       "impl": [
         "后端内存采样：手写 `extern \"system\"` FFI 绑定 `GetCurrentProcess` / `K32GetProcessMemoryInfo`（kernel32），采集当前／峰值／私有内存，**未引入新 crate**",
         "前端 Performance API 打点契约文档化于 `docs/performance/PROFILING_METHOD.md`：树渲染 FPS、Inspector 编辑延迟、自动保存开销、WebView2 缓存增长",
         "前端打点实现见 `src/app/perf.ts`"
       ],
-      "tests": ["内存采样与度量输出有单元测试覆盖；前端 `npm run build` 0 错误"]
+      "tests": [
+        "内存采样与度量输出有单元测试覆盖；前端 `npm run build` 0 错误"
+      ]
     },
     "INH-1115": {
       "state": "Done",
-      "rd": ["RD-M10-022"],
+      "rd": [
+        "RD-M10-022"
+      ],
       "impl": [
         "决策结论：**IMPLEMENT**（实施虚拟化），以 ADR 形式记录于 `docs/adr/ADR-0001-task-tree-virtualization.md`",
         "依据：树渲染在 10k+ 可见行时无法稳定满足 16ms 帧预算，且 M10 剖析框架已提供可复现的度量入口",
         "实施以运行时开关承载（见 INH-1116），因此若后续度量证据反转，可不改代码直接关闭"
       ],
-      "tests": ["决策所需的度量入口由 INH-1113 的剖析框架提供并有测试覆盖"]
+      "tests": [
+        "决策所需的度量入口由 INH-1113 的剖析框架提供并有测试覆盖"
+      ]
     },
     "INH-1116": {
       "state": "Done",
-      "rd": ["RD-M10-023"],
+      "rd": [
+        "RD-M10-023"
+      ],
       "impl": [
         "新增 `src/components/task-tree/VirtualList.vue`：仅渲染可见行 + overscan 缓冲区，支持固定与可变行高",
         "**未引入 vue-virtual-scroller 或任何新 npm 依赖**，直接实现",
         "置于运行时设置开关之后，使 RD-M10-022 决策门可在不改代码的前提下启用或跳过",
         "暴露 Performance API 渲染计时钩子，作为决策门所需的证据来源"
       ],
-      "tests": ["`npm run build` 通过：vue-tsc --noEmit 0 错误，vite 构建 129 个模块成功"]
+      "tests": [
+        "`npm run build` 通过：vue-tsc --noEmit 0 错误，vite 构建 129 个模块成功"
+      ]
     },
     "INH-1117": {
       "state": "Done",
-      "rd": ["RD-M10-024"],
+      "rd": [
+        "RD-M10-024"
+      ],
       "impl": [
         "新增 `src-tauri/src/release/packaging.rs`：以 zip crate 实现确定性打包 —— 显式固定 FileOptions 时间戳、条目排序、一致的压缩设置",
         "输出 `ModernToDoList-2.0.0-Portable-win-x64.zip` 及其 SHA-256",
@@ -103,37 +130,51 @@
     },
     "INH-1118": {
       "state": "Done",
-      "rd": ["RD-M10-025~027"],
+      "rd": [
+        "RD-M10-025~027"
+      ],
       "impl": [
         "扩展 `src-tauri/src/infrastructure/migration.rs`：Data 目录迁移框架 v0→3，settings `schemaVersion` 0→2",
         "新增 `rebuild_index_fallback` 与 `migrate_or_rebuild`：迁移失败时删除 index.db 并从 XML 全量重建",
         "workspace/documents 重新注册做到外键安全"
       ],
-      "tests": ["migration 模块 14 项 lib 测试通过，覆盖跨 3 个版本的前向迁移与「失败 → 索引重建」回退路径"]
+      "tests": [
+        "migration 模块 14 项 lib 测试通过，覆盖跨 3 个版本的前向迁移与「失败 → 索引重建」回退路径"
+      ]
     },
     "INH-1119": {
       "state": "Done",
-      "rd": ["RD-M10-028~029"],
+      "rd": [
+        "RD-M10-028~029"
+      ],
       "impl": [
         "新增 `src-tauri/src/platform/windows/webview2.rs`：运行时检测，以 thiserror 枚举给出**结构化**错误（非字符串匹配）",
         "`user_instructions(&err)` 面向用户给出可执行的下载指引作为兜底",
         "离线固定版本包策略文档化于 `docs/release/WEBVIEW2_POLICY.md`"
       ],
-      "tests": ["platform 模块 20 项 lib 测试通过；净机验证项对应 QA-M10-H 用例 H02（需人工在干净 VM 执行）"]
+      "tests": [
+        "platform 模块 20 项 lib 测试通过；净机验证项对应 QA-M10-H 用例 H02（需人工在干净 VM 执行）"
+      ]
     },
     "INH-1120": {
       "state": "Done",
-      "rd": ["RD-M10-034"],
+      "rd": [
+        "RD-M10-034"
+      ],
       "impl": [
         "`docs/release/ANTIVIRUS_FALSE_POSITIVES.md`：梳理 Tauri/Electron 应用常见 AV 触发因素、调查流程、缓解清单与代码签名策略",
         "同时在 Rust 侧暴露机器可读的清单结构体，供应用内向用户呈现"
       ],
-      "tests": ["清单结构体有序列化测试；实机 AV 交互对应 QA-M10-H 用例 H14（需人工执行）"],
+      "tests": [
+        "清单结构体有序列化测试；实机 AV 交互对应 QA-M10-H 用例 H14（需人工执行）"
+      ],
       "gap": "代码签名仅为**策略文档**，未在代码中获取证书 —— 真实签名需要采购证书，超出本任务范围。"
     },
     "INH-1121": {
       "state": "Done",
-      "rd": ["RD-M10-030~033"],
+      "rd": [
+        "RD-M10-030~033"
+      ],
       "impl": [
         "新增 `src-tauri/src/platform/windows/pathhard.rs`：可移动盘盘符变化的检测与处理；中文与空格路径的完整 Unicode 支持；超过 260 字符的长路径应用 `\\\\?\\` 前缀",
         "`ensure_writable_data_dir(exe_dir)`：EXE 目录只读时将 Data/ 重定位到用户 profile 下的可写位置",
@@ -146,7 +187,9 @@
     },
     "INH-1122": {
       "state": "Done",
-      "rd": ["RD-M10-035~036"],
+      "rd": [
+        "RD-M10-035~036"
+      ],
       "impl": [
         "新增 `src-tauri/src/diagnostics/crashlog.rs`：结构化崩溃转储，含时间戳、堆栈、最近操作序列、系统信息",
         "**隐私安全**：不包含任何任务内容，不包含原始文件路径 —— 路径仅以哈希形式记录",
@@ -159,18 +202,24 @@
     },
     "INH-1123": {
       "state": "Done",
-      "rd": ["RD-M10-037~040"],
+      "rd": [
+        "RD-M10-037~040"
+      ],
       "impl": [
         "依赖许可证已收集至 `LICENSES/`：`RUST_DEPENDENCIES.md`（566 个 crate，解析自 Cargo.lock）、`NPM_DEPENDENCIES.md`（152 个 npm 包，解析自 package-lock.json）、`THIRD_PARTY_NOTICES.md`",
         "`release/version_metadata.rs`：EXE 版本元数据（file version / product version / company），并提供 `VersionMetadata::v2_0_0().render_tauri_conf_snippet()`",
         "便携 ZIP 手动更新路径见 `docs/release/MANUAL_UPDATE.md`；发布说明模板与 2.0.0 changelog 见 `docs/release/RELEASE_NOTES_2.0.0.md`"
       ],
-      "tests": ["release 24 项 lib 测试通过；许可证生成器已实跑并产出上述三个文件"],
+      "tests": [
+        "release 24 项 lib 测试通过；许可证生成器已实跑并产出上述三个文件"
+      ],
       "gap": "按文件所有权约束**未直接修改** `tauri.conf.json`（RD-M10-038）—— 已提供片段生成器与文档，需由集成方套用。"
     },
     "INH-1124": {
       "state": "Done",
-      "rd": ["QA-M10-A01~A13"],
+      "rd": [
+        "QA-M10-A01~A13"
+      ],
       "impl": [
         "新增 `src-tauri/tests/m10_qa_a_xml_compat.rs`：14 个测试（A00 夹具根路径自检 + A01~A13）",
         "覆盖 utf8 BOM／无 BOM、utf16le、utf16be、未知元素／未知属性／未知 METADATA、注释与 CDATA 保留、DEPENDENCY 元素、单／多 FileLink、畸形与截断输入拒绝、以及真实世界 london-underground 夹具",
@@ -184,7 +233,9 @@
     },
     "INH-1125": {
       "state": "Done",
-      "rd": ["QA-M10-B01~B10"],
+      "rd": [
+        "QA-M10-B01~B10"
+      ],
       "impl": [
         "新增 `src-tauri/tests/m10_qa_b_atomic_save.rs`：10 个测试 B01~B10",
         "覆盖写入前 kill、写入中 kill、替换中 kill、原子保存逐字节精确且无残留、磁盘满、权限拒绝、外部冲突检测、脏文档 stale revision 拒绝、自保存识别",
@@ -199,7 +250,9 @@
     },
     "INH-1126": {
       "state": "Done",
-      "rd": ["QA-M10-C01~C10"],
+      "rd": [
+        "QA-M10-C01~C10"
+      ],
       "impl": [
         "新增 `src-tauri/tests/m10_qa_c_workspace_sqlite.rs`：10 个测试 C01~C10",
         "覆盖 managed 与 linked 文档、扫描与变更检测、从零索引、多文档索引重建、index.db 损坏恢复、UNC 路径、watcher 检测外部修改、watcher 抑制自保存，以及门禁项「删除 index.db → 重建 → 功能完整」"
@@ -212,7 +265,9 @@
     },
     "INH-1127": {
       "state": "Done",
-      "rd": ["QA-M10-D01~D10"],
+      "rd": [
+        "QA-M10-D01~D10"
+      ],
       "impl": [
         "新增 `src-tauri/tests/m10_qa_d_core_ux.rs`：10 个测试 D01~D10",
         "覆盖任务增删改查与规范 ID、字段更新、子树删除+撤销恢复标识、嵌套层级与环防护、兄弟重排与 POS 更新、索引过滤、多选批量更新+撤销、键盘命令派发+撤销重做、全树撤销重做标识、自动保存与持久化标识"
@@ -225,27 +280,37 @@
     },
     "INH-1131": {
       "state": "In Progress",
-      "rd": ["QA-M10-H01~H15"],
+      "rd": [
+        "QA-M10-H01~H15"
+      ],
       "impl": [
         "本矩阵**无法在开发工作站自动化**：需在干净的 Windows 10 与 Windows 11 虚拟机中、无网络、无管理员权限、未安装 Node/Rust/Python/Git 的前提下人工执行",
         "已交付可执行的人工测试协议 `docs/qa/QA_M10_H_PORTABLE_PROTOCOL.md`：15 个用例 H01~H15 逐条给出前置条件、步骤、精确通过判据与需采集的证据",
         "覆盖 ZIP 哈希校验、WebView2 缺失、无网络首启、非管理员、EXE 目录只读、整目录搬迁、可移动盘盘符变化、中文／空格／超长路径、index.db 重建、写入中硬杀、崩溃转储隐私、杀软交互、手动升级"
       ],
-      "tests": ["尚未执行 —— 环境中不存在所需的干净虚拟机"],
+      "tests": [
+        "尚未执行 —— 环境中不存在所需的干净虚拟机"
+      ],
       "gap": "**阻塞 GATE-M10**。H05/H07/H10/H11/H12/H13 任一失败即为数据安全或便携性阻塞项。需人工在两类 OS 上各跑一遍并回填结果表。"
     },
     "INH-1132": {
       "state": "In Progress",
-      "rd": ["RC-M10"],
+      "rd": [
+        "RC-M10"
+      ],
       "impl": [
         "已交付阻塞项分类工具 `scripts/rc-blocker-review.cjs`：拉取 Linear 实时状态，筛出所有非 Done/Canceled/Duplicate 的 M6–M10 Issue，按 Blocker-Data / Persistence / Portable / Security / Core-UX 五类归类，渲染 `docs/release/RC_M10_BLOCKER_REVIEW.md` 作为门禁证据",
         "分类基线（Phase 0 时点）：94 个未关闭 Issue = 94 个阻塞项（Data 32、Core-UX 30、Persistence 19、Portable 7、Security 6）"
       ],
-      "tests": ["工具已实跑并产出报告；M10 RD 与 QA A–D 完成后阻塞项计数已显著下降，最终计数以重新生成的报告为准"],
+      "tests": [
+        "工具已实跑并产出报告；M10 RD 与 QA A–D 完成后阻塞项计数已显著下降，最终计数以重新生成的报告为准"
+      ],
       "gap": "**冻结条件未满足**：RC-M10 要求冻结 commit、版本号与 ZIP SHA-256，而这只在阻塞项归零后才能进行。当前 QA-M10 矩阵 E/F/G/H 尚未闭合，故不可冻结。"
     },
     "INH-1133": {
-      "rd": ["GATE-M10"],
+      "rd": [
+        "GATE-M10"
+      ],
       "impl": [
         "已交付可审计的门禁清单 `docs/release/GATE_M10_CHECKLIST.md`：将验收标准逐行拆解，并为每一行指明**证明它所需的具体产物**，避免以「构建通过」或「单测通过」冒充验收",
         "覆盖六组标准：阻塞项与数据安全、自动化测试、RC 全矩阵 A–H、计划中的 4 项显式验证、发布物、安全",
@@ -257,5 +322,6 @@
       ],
       "gap": "**不得标记为 Done。** 门禁要求「所有 Blocker = 0」「M0–M9 自动化测试全部通过」「RC 全矩阵通过」。矩阵 H 的净机执行是硬性的人工活动，任何自动化套件都无法替代；在 E/F/G/H 闭合且阻塞项归零之前，本门禁保持开放。"
     }
-  }
+  },
+  "commit": "d91b276"
 }

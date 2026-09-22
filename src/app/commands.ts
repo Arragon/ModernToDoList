@@ -611,6 +611,10 @@ async function ensureActiveDocument(): Promise<void> {
 }
 
 async function afterWorkspaceOpened(): Promise<void> {
+  // Index first: list_documents / query_tasks read the SQLite index, so without
+  // a scan a freshly opened workspace shows no documents or tasks and task
+  // creation has no document to attach to.
+  await scanAndIndex();
   await loadTasks();
   await refreshRelations();
   await loadSavedViews(true);

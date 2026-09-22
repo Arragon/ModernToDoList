@@ -2,7 +2,7 @@ import { computed, ref } from "vue";
 import type { TaskSummary } from "../ipc/types";
 import * as ipc from "../ipc/client";
 import { ipcFailureMessage } from "../ipc/safe";
-import { selectedTaskKey, expandedTaskKeys, documents, showToast } from "./app-state";
+import { selectedTaskKey, expandedTaskKeys, documents, showToast, workspace, scanAndIndex, refreshDocuments } from "./app-state";
 import { isFilterActive, applyFilters, filterState } from "./filter-state";
 import {
   participantsByTaskMap, isBlockedBy, dependencyMap,
@@ -444,7 +444,7 @@ export async function createTask(input: {
   /** Pre-allocated TaskId (from `allocate_task_id`); null lets the backend pick. */
   taskKey?: string | null;
 }): Promise<string | null> {
-  const documentId = input.documentId ?? firstDocumentId();
+  const documentId = input.documentId ?? (firstDocumentId() ?? await bootstrapDefaultDocument());
   if (!documentId) {
     showToast("No document is available to add a task to", "warning");
     return null;
@@ -506,4 +506,31 @@ export async function createTask(input: {
 
 function firstDocumentId(): string | null {
   return documents.value.length > 0 ? documents.value[0].id : null;
+}
+
+/** Minimal, valid empty TDL document used to bootstrap a brand-new workspace. */
+const EMPTY_TDL = `<?xml version="1.0" encoding="utf-8"?>
+<TODOLIST PROJECTNAME="" EARLIESTDUEDATE="0.00000000" LASTMOD="0.00000000" LASTMODSTRING="" FILENAME="ToDoList.tdl" NEXTUNIQUEID="1" FILEVERSION="43" APPVER="9.0.14.0" FILEFORMAT="12">
+</TODOLIST>
+`;
+
+/**
+ * Creates the first task document in a workspace that has none, so a brand-new
+ * workspace can accept its first task. Writes a minimal TDL via the existing
+ * serialize command, then re-scans so the index (and `documents`) picks it up.
+ * Returns the new document id, or null when it could not be created.
+ */
+async function bootstrapDefaultDocument(): Promise<string | null> {
+  const root = workspace.value?.root_path;
+  if (!root) return null;
+  const path = `${root.replace(/[\\/]$/, "")}\\ToDoList.tdl`;
+  try {
+    await ipc.serializeAndWriteDocument(EMPTY_TDL, path, "utf-8");
+  } catch (e) {
+    showToast(`Could not create a task document: ${e}`, "error");
+    return null;
+  }
+  await scanAndIndex();
+  await refreshDocuments();
+  return firstDocumentId();
 }

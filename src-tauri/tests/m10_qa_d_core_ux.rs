@@ -250,9 +250,9 @@ fn qa_m10_d02_update_task_fields() {
 /// (duplicate-not-loss at the UX level: nothing is lost by a delete+undo
 /// cycle).
 ///
-/// Also documents finding F4 (minor): undo of a root-level delete re-appends
-/// the task at the END of the root list instead of its original position
-/// (no data loss; ordering only).
+/// Also covers finding F4 (now fixed): undo of a delete re-inserts the task at
+/// its original sibling/root index rather than appending it at the end, so
+/// traversal order is stable across a delete+undo cycle.
 #[test]
 fn qa_m10_d03_delete_subtree_undo_restores_identity() {
     let (mut tree, _doc) = load_fixture();
@@ -267,6 +267,7 @@ fn qa_m10_d03_delete_subtree_undo_restores_identity() {
             saved_tasks: Vec::new(),
             saved_root_ids: Vec::new(),
             parent_id: None,
+            saved_index: 0,
             executed: false,
         }),
         &mut tree,
@@ -292,15 +293,15 @@ fn qa_m10_d03_delete_subtree_undo_restores_identity() {
     assert_eq!(tree.get(&TaskId::new("2")).unwrap().dependencies[0].task_id, "3",
         "relation data restored");
 
-    // Finding F4 (minor bug): root ORDER after undo is [4, 1] — the restored
-    // root task is appended instead of re-inserted at position 0, so the
-    // depth-first traversal starts with task 4. No data loss; ordering only.
+    // Finding F4 (fixed): the restored root task is re-inserted at its original
+    // index (0) rather than appended, so root order and the depth-first
+    // traversal are preserved exactly through delete+undo.
     let roots: Vec<&str> = tree.root_ids().iter().map(|i| i.as_str()).collect();
-    assert_eq!(roots, ["4", "1"], "documents the current (buggy) ordering after undo");
+    assert_eq!(roots, ["1", "4"], "F4 fixed: undo restores the root at its original index");
     assert_eq!(
         tree.depth_first_ids().iter().map(|i| i.as_str().to_string()).collect::<Vec<_>>(),
-        ["4", "1", "2", "3"],
-        "F4: traversal order churns after delete+undo of a root task"
+        ["1", "2", "3", "4"],
+        "F4 fixed: traversal order is stable across delete+undo of a root task"
     );
 
     // Redo deletes again.
@@ -608,6 +609,7 @@ fn qa_m10_d09_undo_redo_full_tree_identity() {
             saved_tasks: Vec::new(),
             saved_root_ids: Vec::new(),
             parent_id: None,
+            saved_index: 0,
             executed: false,
         }),
         &mut tree,

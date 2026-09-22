@@ -649,6 +649,7 @@ pub fn delete_task_core(
         saved_tasks: Vec::new(),
         saved_root_ids: Vec::new(),
         parent_id: None,
+        saved_index: 0,
         executed: false,
     };
     undo.execute(Box::new(cmd), tree);

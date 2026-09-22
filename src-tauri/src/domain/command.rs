@@ -137,6 +137,10 @@ pub struct DeleteTaskCommand {
     pub saved_tasks: Vec<Task>,
     pub saved_root_ids: Vec<TaskId>,
     pub parent_id: Option<TaskId>,
+    /// Original index of `task_id` within its parent's children (or the root
+    /// list when `parent_id` is None), captured before removal so undo restores
+    /// the exact sibling position instead of appending (finding F4).
+    pub saved_index: usize,
     pub executed: bool,
 }
 
@@ -149,6 +153,20 @@ impl UndoableCommand for DeleteTaskCommand {
         // Find parent
         self.parent_id = find_parent(tree, &self.task_id);
 
+        // Capture the sibling position before removal so undo restores it exactly
+        // instead of appending (finding F4).
+        self.saved_index = match &self.parent_id {
+            Some(pid) => tree
+                .get(pid)
+                .and_then(|p| p.children.iter().position(|c| c == &self.task_id))
+                .unwrap_or(0),
+            None => tree
+                .root_ids()
+                .iter()
+                .position(|c| c == &self.task_id)
+                .unwrap_or(0),
+        };
+
         // Remove
         tree.remove_task(&self.task_id);
         self.executed = true;
@@ -160,15 +178,16 @@ impl UndoableCommand for DeleteTaskCommand {
         for task in &self.saved_tasks {
             tree.add_task(task.clone());
         }
-        // Restore parent's children reference
+        // Restore parent's children reference at the original sibling position.
         if let Some(ref pid) = self.parent_id {
             if let Some(parent) = tree.get_mut(pid) {
                 if !parent.children.contains(&self.task_id) {
-                    parent.children.push(self.task_id.clone());
+                    let pos = self.saved_index.min(parent.children.len());
+                    parent.children.insert(pos, self.task_id.clone());
                 }
             }
-        } else {
-            tree.add_root_id(self.task_id.clone());
+        } else if !tree.root_ids().contains(&self.task_id) {
+            tree.add_root_id_at(self.task_id.clone(), self.saved_index);
         }
         self.executed = false;
     }
@@ -597,5 +616,66 @@ mod tests {
         mgr.undo(&mut tree);
         assert_eq!(mgr.undo_count(), 4);
         assert_eq!(mgr.redo_count(), 1);
+    }
+
+    fn delete_cmd(id: &str) -> DeleteTaskCommand {
+        DeleteTaskCommand {
+            task_id: TaskId::new(id),
+            saved_tasks: Vec::new(),
+            saved_root_ids: Vec::new(),
+            parent_id: None,
+            saved_index: 0,
+            executed: false,
+        }
+    }
+
+    /// F4: undoing a delete must restore the task at its original sibling index,
+    /// not append it at the end (which silently reordered the document).
+    #[test]
+    fn delete_undo_restores_nested_sibling_position() {
+        let mut tree = TaskTree::new();
+        let mut parent = Task::new(TaskId::new("P"));
+        parent.children = vec![TaskId::new("A"), TaskId::new("B"), TaskId::new("C")];
+        tree.add_task(parent);
+        for id in ["A", "B", "C"] {
+            tree.add_task(Task::new(TaskId::new(id)));
+        }
+        tree.add_root_id(TaskId::new("P"));
+
+        let mut mgr = UndoRedoManager::new();
+        mgr.execute(Box::new(delete_cmd("B")), &mut tree);
+        assert_eq!(
+            tree.get(&TaskId::new("P")).unwrap().children,
+            vec![TaskId::new("A"), TaskId::new("C")],
+            "delete detaches B from its parent"
+        );
+
+        mgr.undo(&mut tree);
+        assert_eq!(
+            tree.get(&TaskId::new("P")).unwrap().children,
+            vec![TaskId::new("A"), TaskId::new("B"), TaskId::new("C")],
+            "F4: undo restores B at index 1, not appended"
+        );
+    }
+
+    /// F4 at the root level: the same position fidelity for top-level tasks.
+    #[test]
+    fn delete_undo_restores_root_position() {
+        let mut tree = TaskTree::new();
+        for id in ["R0", "R1", "R2"] {
+            tree.add_task(Task::new(TaskId::new(id)));
+            tree.add_root_id(TaskId::new(id));
+        }
+
+        let mut mgr = UndoRedoManager::new();
+        mgr.execute(Box::new(delete_cmd("R1")), &mut tree);
+        assert_eq!(tree.root_ids(), &[TaskId::new("R0"), TaskId::new("R2")]);
+
+        mgr.undo(&mut tree);
+        assert_eq!(
+            tree.root_ids(),
+            &[TaskId::new("R0"), TaskId::new("R1"), TaskId::new("R2")],
+            "F4: undo restores R1 at its original root index"
+        );
     }
 }

@@ -318,10 +318,14 @@ pub fn strip_html(html: &str) -> String {
         if in_tag {
             if c == '>' {
                 in_tag = false;
-                // look back at the tag we just closed
+                // Look back at the tag we just closed. `i` is an index into the
+                // char vector, so the tag must be reconstructed in char space —
+                // byte-slicing `html`/`lower` with it panicked on any multibyte
+                // text (e.g. an HTML comment containing CJK before a tag's `>`),
+                // which took down the whole search-index rebuild.
                 let tag_end = i;
-                let tag_start = html[..tag_end].rfind('<').unwrap_or(0);
-                let tag = &lower[tag_start..tag_end + 1];
+                let tag_start = bytes[..tag_end].iter().rposition(|&ch| ch == '<').unwrap_or(0);
+                let tag: String = bytes[tag_start..=tag_end].iter().collect::<String>().to_lowercase();
                 if tag.starts_with("<script") {
                     script_depth += 1;
                     in_script = true;
@@ -334,7 +338,7 @@ pub fn strip_html(html: &str) -> String {
                 } else if tag.starts_with("</style") {
                     script_depth = script_depth.saturating_sub(1);
                     in_script = script_depth > 0;
-                } else if is_block_tag(tag) && !out.is_empty() && !out.ends_with('\n') {
+                } else if is_block_tag(&tag) && !out.is_empty() && !out.ends_with('\n') {
                     out.push('\n');
                 }
             }

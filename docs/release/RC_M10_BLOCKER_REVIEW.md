@@ -1,11 +1,11 @@
 # RC-M10 Blocker Review and 2.0 Scope Freeze
 
-Generated: 2026-09-22T00:17:45.074Z
+Generated: 2026-09-22T00:18:24.635Z
 Source: Linear project 72e576a7-e894-4e22-b52c-5d47d43a5912
 
 ## Verdict
 
-**Open M6-M10 issues: 27. Blocker count: 27.**
+**Open M6-M10 issues: 24. Blocker count: 24.**
 
 GATE-M10 (INH-1133) requires **all Blockers = 0** and **all P0/P1 data-safety issues = 0**. That precondition is NOT satisfied, so the GA gate cannot be passed and must remain open.
 
@@ -13,32 +13,30 @@ GATE-M10 (INH-1133) requires **all Blockers = 0** and **all P0/P1 data-safety is
 
 | Category | Open | P1/Urgent+High |
 |----------|------|----------------|
-| Blocker-Data | 5 | 5 |
+| Blocker-Data | 3 | 3 |
 | Blocker-Persistence | 2 | 2 |
 | Blocker-Portable | 3 | 3 |
 | Blocker-Security | 0 | 0 |
-| Blocker-Core-UX | 17 | 17 |
-| **Total** | **27** | **27** |
+| Blocker-Core-UX | 16 | 16 |
+| **Total** | **24** | **24** |
 
 ## By milestone
 
 | Milestone | Open issues |
 |-----------|-------------|
-| M10 | 7 |
+| M10 | 4 |
 | M6 | 7 |
 | M7 | 4 |
 | M8 | 3 |
 | M9 | 6 |
 
-## Blocker-Data (5)
+## Blocker-Data (3)
 
 | Issue | Pri | State | Title |
 |-------|-----|-------|-------|
 | INH-1043 | High | In Progress | RD-M6-004~006 Implement Participant Inspector chips, add/remove and bulk edit |
 | INH-1053 | High | In Progress | RD-M6-041~045 Implement Attachment list UI, drag-in, open/reveal and missing-file states |
 | INH-1083 | Urgent | In Progress | RD-M8-024~031 Implement cross-document transfer UX: Copy/Move pickers, drag-to-document, progress and recovery results |
-| INH-1128 | Urgent | Backlog | QA-M10-E01~E12 Relations, attachments and Rich Content RC matrix |
-| INH-1129 | Urgent | Backlog | QA-M10-F01~F10 Cross-document transaction and crash recovery RC matrix |
 
 ## Blocker-Persistence (2)
 
@@ -59,7 +57,7 @@ GATE-M10 (INH-1133) requires **all Blockers = 0** and **all P0/P1 data-safety is
 
 _None open._
 
-## Blocker-Core-UX (17)
+## Blocker-Core-UX (16)
 
 | Issue | Pri | State | Title |
 |-------|-----|-------|-------|
@@ -77,7 +75,6 @@ _None open._
 | INH-1097 | Urgent | In Progress | RD-M9-008~013 Implement Global Search DTO/UI, keyboard navigation, task jump, Chinese fallback and incremental updates |
 | INH-1102 | High | In Progress | RD-M9-031~034 Finalize Command Registry and Ctrl+K palette |
 | INH-1109 | Urgent | Backlog | GATE-M9 Productivity Feature Complete Exit Gate |
-| INH-1130 | Urgent | Backlog | QA-M10-G01~G10 Productivity search, views and Quick Add RC matrix |
 | INH-1132 | Urgent | In Progress | RC-M10 Blocker review and 2.0 scope freeze |
 | INH-1133 | Urgent | Backlog | GATE-M10 ModernToDoList 2.0 GA Exit Gate |
 

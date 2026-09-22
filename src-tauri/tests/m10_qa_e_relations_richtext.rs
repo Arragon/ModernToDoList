@@ -626,31 +626,40 @@ fn qa_m10_e06_hostile_html_sanitized_commit_roundtrip_and_search() {
     assert_eq!(page.results[0].matched_field, MatchedField::Description);
     assert_eq!(search(&conn, "onclick").total, 0, "sanitized payload is not searchable");
 
-    // ── PRODUCT BUG E-F2 (reported, deliberately NOT worked around) ──
-    // `search::strip_html` confuses CHAR indices with BYTE indices
-    // (src-tauri/src/domain/search.rs:322-324): `tag_end = i` indexes the
-    // `Vec<char>` but is then used to slice `html`/`lower` by BYTE. Any
-    // HTML comment with a multi-byte (e.g. CJK) character before a tag's
-    // closing `>` panics `task_description_text` — and with it
-    // `SearchDocument::from_task` / `rebuild_search_index` / the whole
-    // search-index build for documents carrying CJK rich text. The
-    // assertion below pins the current (buggy) behaviour as a tripwire:
-    // when the bug is fixed this assert fails and the test must be updated
-    // to require correct extraction.
+    // ── REGRESSION: product bug E-F2, now FIXED ──
+    // `search::strip_html` used to confuse CHAR indices with BYTE indices
+    // (src-tauri/src/domain/search.rs): `tag_end = i` indexed the `Vec<char>`
+    // but was then used to slice `html`/`lower` by BYTE. Any HTML comment with
+    // a multi-byte (e.g. CJK) character before a tag's closing `>` panicked
+    // `task_description_text` — and with it `SearchDocument::from_task` /
+    // `rebuild_search_index` / the whole search-index build for documents
+    // carrying CJK rich text. The tag is now reconstructed in char space, so
+    // extraction is correct for any Unicode content. This assertion was a
+    // tripwire pinned to the buggy behaviour; it now requires correct output.
     let mut cjk_html = Task::new(TaskId::new("9"));
     cjk_html.comments_type = CommentType::Html;
     cjk_html.comments = Some(TaskComment {
         comment_type: CommentType::Html,
         content: "<p>评审记录</p>".to_string(),
     });
-    let panicked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        search::task_description_text(&cjk_html)
-    }))
-    .is_err();
-    assert!(
-        panicked,
-        "E-F2 appears FIXED: strip_html now survives CJK HTML — update this test to assert \
-         task_description_text(&cjk_html) == \"评审记录\""
+    assert_eq!(
+        search::task_description_text(&cjk_html),
+        "评审记录",
+        "E-F2 regression: CJK HTML must extract cleanly, not panic"
+    );
+    // The original panic trigger: a comment carrying CJK before a tag's `>`.
+    let mut cjk_comment_html = Task::new(TaskId::new("10"));
+    cjk_comment_html.comments_type = CommentType::Html;
+    cjk_comment_html.comments = Some(TaskComment {
+        comment_type: CommentType::Html,
+        content: "<!-- 评审备注 --><p>待办事项</p>".to_string(),
+    });
+    assert_eq!(
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            search::task_description_text(&cjk_comment_html)
+        }))
+        .expect("E-F2 regression: a CJK HTML comment must not panic strip_html"),
+        "待办事项"
     );
     // PLAIN_TEXT CJK comments take the as-is path and are unaffected.
     let mut cjk_plain = Task::new(TaskId::new("9"));

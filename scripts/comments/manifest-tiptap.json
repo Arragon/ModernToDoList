@@ -1,6 +1,6 @@
 {
   "milestone": "M7 — Tiptap 富文本编辑器（进行中）",
-  "commit": "PENDING",
+  "commit": "b353f7e",
   "evidence": {
     "cargo": "后端未受影响：干净隔离构建全量 **1234 passed / 0 failed**（20 个目标）",
     "frontend": "npm run build（vue-tsc --noEmit && vite build）通过，**0 个 TypeScript 错误**",
@@ -11,7 +11,9 @@
   "issues": {
     "INH-1061": {
       "state": "In Progress",
-      "rd": ["RD-M7-001~002"],
+      "rd": [
+        "RD-M7-001~002"
+      ],
       "impl": [
         "**已完成**：新增 12 个 Tiptap OSS 依赖（`@tiptap/vue-3`、`@tiptap/core`、`@tiptap/starter-kit`、`@tiptap/pm` 及 extension-link / image / underline / text-align / color / text-style（含 FontSize）/ highlight / code-block-lowlight，均为 3.31.3）",
         "**已完成**：`src/components/editor/RichTextEditor.vue` —— 显式 Edit / Preview 双模式；预览走**独立的净化渲染路径**（`sanitizeForPreview`），绝不复用编辑器实时 DOM",
@@ -29,7 +31,9 @@
     },
     "INH-1062": {
       "state": "In Progress",
-      "rd": ["RD-M7-003~010"],
+      "rd": [
+        "RD-M7-003~010"
+      ],
       "impl": [
         "**已完成**：`src/components/editor/RichTextToolbar.vue` —— 按批准清单实现全部控件：Bold、Italic、Underline、Strike、H1–H3、字号（受限集合 12/14/16/18/24/32px）、文字颜色（7 色，取自 tokens.css 对应色值并以字面量存储，因传统 TDL 无法解析我们的 CSS 变量）、无序列表、有序列表、引用、链接、行内代码、代码块",
         "**已完成**：工具栏状态反映当前选区 —— 通过监听 Tiptap `transaction` 事件驱动重渲染，`isActive` / `getAttributes('textStyle')` 实时高亮当前标记与字号、颜色",
@@ -37,7 +41,9 @@
         "**已完成**：链接控件为内联输入而非 `window.prompt`（WebView 中不可靠），且**仅接受 http/https**，与后端净化器一致，避免用户输入在保存时被静默剥离",
         "**有意不实现**：文本对齐与高亮**不设按钮** —— 二者在 `extensions.ts` 中仅为容忍粘贴而注册，批准的控件清单中不含它们；图片控件同样不提供，因插图属 M7 受管资产管线而非格式化范畴"
       ],
-      "tests": ["`npm run build` 通过，`vue-tsc --noEmit` 0 个 TypeScript 错误；工具栏每个控件均核对过其产出的标记／属性确实在后端白名单之内"],
+      "tests": [
+        "`npm run build` 通过，`vue-tsc --noEmit` 0 个 TypeScript 错误；工具栏每个控件均核对过其产出的标记／属性确实在后端白名单之内"
+      ],
       "gap": "**未完成**：与 INH-1061 同因 —— 工具栏随编辑器组件一同存在但未被挂载，故快捷键映射、选区状态同步与链接弹窗的**运行时行为均未验证**。类型检查通过不等于功能正确。"
     }
   }

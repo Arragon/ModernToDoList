@@ -294,7 +294,11 @@ fn set_field(task: &mut Task, field: &TaskField, value: &FieldValue) {
         (TaskField::Comments, FieldValue::Text(v)) => {
             if let Some(ref mut c) = task.comments {
                 c.content = v.clone();
-            } else {
+            } else if !v.is_empty() {
+                // Undoing a first-ever comments edit replays the captured empty
+                // value. Materializing a TaskComment here made the next save emit
+                // a <COMMENTS> element the document never had, so only create one
+                // when there is actual content.
                 task.comments = Some(super::task::TaskComment {
                     comment_type: task.comments_type.clone(),
                     content: v.clone(),
@@ -380,6 +384,52 @@ mod tests {
         super::set_field(&mut task, &super::TaskField::StartDate, &captured);
         assert_eq!(task.start_date, Some(45306.0));
         assert_eq!(task.start_date_string.as_deref(), Some("2024-01-15"));
+    }
+
+    /// Undoing the first-ever comments edit must not leave an empty comment
+    /// behind, or the next save adds a `<COMMENTS>` element the document never
+    /// had. Reported by the QA-M10-E pass as finding E-F1.
+    #[test]
+    fn undo_of_first_comments_edit_does_not_materialize_an_empty_comment() {
+        let mut task = super::Task::new(super::TaskId::new("c1"));
+        assert!(task.comments.is_none(), "fixture task starts with no comments");
+
+        let captured = super::get_field(&task, &super::TaskField::Comments);
+        super::set_field(
+            &mut task,
+            &super::TaskField::Comments,
+            &super::FieldValue::Text("评审记录".to_string()),
+        );
+        assert_eq!(task.comments.as_ref().map(|c| c.content.as_str()), Some("评审记录"));
+
+        // Undo replays the captured (empty) value.
+        super::set_field(&mut task, &super::TaskField::Comments, &captured);
+        assert!(
+            task.comments.is_none(),
+            "undo of a first comments edit must restore None, not Some(\"\")"
+        );
+    }
+
+    /// A task that already has a comments element keeps it when cleared, so an
+    /// explicitly emptied comment is not silently dropped from the document.
+    #[test]
+    fn clearing_an_existing_comment_keeps_the_element() {
+        let mut task = super::Task::new(super::TaskId::new("c2"));
+        task.comments = Some(super::TaskComment {
+            comment_type: task.comments_type.clone(),
+            content: "原有内容".to_string(),
+        });
+
+        super::set_field(
+            &mut task,
+            &super::TaskField::Comments,
+            &super::FieldValue::Text(String::new()),
+        );
+        assert_eq!(
+            task.comments.as_ref().map(|c| c.content.as_str()),
+            Some(""),
+            "an existing COMMENTS element is preserved, only its content is cleared"
+        );
     }
     use super::*;
     use crate::domain::task::{Task, TaskTree};

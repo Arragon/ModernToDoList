@@ -465,3 +465,133 @@ fn build_task_node(
 
     Some(XmlNode::Element(elem))
 }
+
+#[cfg(test)]
+mod serialize_task_tree_tests {
+    //! Regression coverage for the session save path.
+    //!
+    //! `serialize_task_tree` used to build a fresh `<TODOLIST NEXTUNIQUEID="1">`
+    //! and emit only root-level tasks into empty `<TASK>` elements. Since
+    //! `write_task` preserves the nested `<TASK>` children already present on the
+    //! element it is given, an empty element meant every subtask vanished on
+    //! save, along with the root attributes, comments and original encoding.
+    //! These tests are in-module because the function is private to `commands`.
+
+    use super::*;
+    use crate::domain::xml_parser::parse_xml;
+
+    const NESTED: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
+<TODOLIST NEXTUNIQUEID="42" VERSION="2.0" PROJECT="评审计划">
+<!-- 项目级备注：必须存活 -->
+<TASK ID="1" TITLE="根任务" PERCENTDONE="0">
+<TASK ID="2" TITLE="子任务" PERCENTDONE="50">
+<TASK ID="3" TITLE="孙任务" PRIORITY="7"/>
+</TASK>
+<UNKNOWNPLUGIN DATA="keep-me"/>
+</TASK>
+<TASK ID="4" TITLE="第二个根任务"/>
+</TODOLIST>"#;
+
+    fn tree_and_doc(xml: &str) -> (TaskTree, crate::domain::xml_tree::XmlDocument) {
+        let doc = parse_xml(xml.as_bytes()).expect("fixture must parse");
+        let mut tree = TaskTree::new();
+        extract_tasks_for_session(&doc.root, &mut tree);
+        (tree, doc)
+    }
+
+    #[test]
+    fn save_preserves_every_nested_task() {
+        let (tree, doc) = tree_and_doc(NESTED);
+        assert_eq!(tree.len(), 4, "fixture has 4 tasks at three depths");
+
+        let out = serialize_task_tree(&tree, &doc);
+        let reparsed = parse_xml(&out).expect("saved output must reparse");
+
+        let mut after = TaskTree::new();
+        extract_tasks_for_session(&reparsed.root, &mut after);
+        assert_eq!(
+            after.len(),
+            tree.len(),
+            "save must not drop nested tasks (was: only root level survived)"
+        );
+        for id in ["1", "2", "3", "4"] {
+            assert!(
+                after.get(&crate::domain::TaskId::new(id)).is_some(),
+                "task {id} must survive the save"
+            );
+        }
+    }
+
+    #[test]
+    fn save_preserves_nesting_depth_and_order() {
+        let (tree, doc) = tree_and_doc(NESTED);
+        let out = serialize_task_tree(&tree, &doc);
+        let reparsed = parse_xml(&out).expect("saved output must reparse");
+
+        let mut after = TaskTree::new();
+        extract_tasks_for_session(&reparsed.root, &mut after);
+
+        let root = after.get(&crate::domain::TaskId::new("1")).expect("task 1");
+        assert_eq!(root.children.len(), 1, "task 1 keeps its single child");
+        let child = after.get(&root.children[0]).expect("child");
+        assert_eq!(child.children.len(), 1, "task 2 keeps its single child");
+        assert_eq!(
+            after.root_ids().len(),
+            tree.root_ids().len(),
+            "root task count and order are preserved"
+        );
+    }
+
+    #[test]
+    fn save_preserves_root_attributes_comments_and_unknown_elements() {
+        let (tree, doc) = tree_and_doc(NESTED);
+        let out = serialize_task_tree(&tree, &doc);
+        let text = String::from_utf8_lossy(&out);
+
+        let reparsed = parse_xml(&out).expect("saved output must reparse");
+        assert_eq!(
+            reparsed.root.get_attr("NEXTUNIQUEID"),
+            Some("42"),
+            "root NEXTUNIQUEID must not be reset to 1"
+        );
+        assert_eq!(reparsed.root.get_attr("PROJECT"), Some("评审计划"));
+        assert!(
+            text.contains("项目级备注：必须存活"),
+            "root-level comment must survive the save"
+        );
+        assert!(
+            text.contains("UNKNOWNPLUGIN"),
+            "unknown plugin element must survive the save"
+        );
+    }
+
+    #[test]
+    fn save_preserves_the_original_encoding_metadata() {
+        let (tree, doc) = tree_and_doc(NESTED);
+        let out = serialize_task_tree(&tree, &doc);
+        let reparsed = parse_xml(&out).expect("saved output must reparse");
+        assert_eq!(
+            reparsed.meta.encoding, doc.meta.encoding,
+            "the source encoding must be reused, not forced to UTF-8"
+        );
+    }
+
+    #[test]
+    fn edited_field_is_written_without_losing_siblings() {
+        let (mut tree, doc) = tree_and_doc(NESTED);
+        let id = crate::domain::TaskId::new("2");
+        tree.get_mut(&id).expect("task 2").title = "改名后的子任务".to_string();
+
+        let out = serialize_task_tree(&tree, &doc);
+        let reparsed = parse_xml(&out).expect("saved output must reparse");
+
+        let mut after = TaskTree::new();
+        extract_tasks_for_session(&reparsed.root, &mut after);
+        assert_eq!(after.len(), 4, "editing one task must not drop the others");
+        assert_eq!(after.get(&id).expect("task 2").title, "改名后的子任务");
+        assert!(
+            after.get(&crate::domain::TaskId::new("3")).is_some(),
+            "the edited task's own child must still be present"
+        );
+    }
+}

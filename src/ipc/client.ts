@@ -12,6 +12,7 @@ import type {
   ParticipantDto, DependencyDto, DependencyGraphDto, ProgressLinkDto,
   AttachmentDto, AttachmentImportResult,
   SearchResponseDto, SavedViewDto, QuickAddRequest,
+  TaskCommentsResponse,
 } from "./types";
 
 // -- M1: System --
@@ -307,6 +308,15 @@ export async function revealAttachment(
   documentId: string,
 ): Promise<IpcResult<null>> {
   return safeInvokeVoid(Commands.REVEAL_ATTACHMENT, { attachmentId, taskKey, documentId });
+}
+
+// -- M7: Task comments / description --
+/** Reads a task's COMMENTSTYPE + content. Fail-soft: the inspector hides the section if unavailable. */
+export async function getTaskComments(
+  sessionId: number,
+  taskKey: string,
+): Promise<IpcResult<TaskCommentsResponse>> {
+  return safeInvoke<TaskCommentsResponse>(Commands.GET_TASK_COMMENTS, { sessionId, taskKey });
 }
 
 // -- M9: Search, Saved Views, Quick Add --

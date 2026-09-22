@@ -51,8 +51,15 @@ const props = withDefaults(
     /** Pins managed image references during sanitisation. */
     documentId?: string | null;
     disabled?: boolean;
+    /**
+     * Whether the owner can actually persist a COMMENTSTYPE change. The backend
+     * has no write path for the type attribute yet, so the Inspector passes
+     * false and the "Convert to Rich Text" affordance is hidden rather than
+     * shown broken. Flip to true once conversion is wired end to end.
+     */
+    convertSupported?: boolean;
   }>(),
-  { commentsTypeAttr: null, documentId: null, disabled: false }
+  { commentsTypeAttr: null, documentId: null, disabled: false, convertSupported: true }
 );
 
 const emit = defineEmits<{
@@ -64,7 +71,7 @@ const emit = defineEmits<{
 const commentsType = computed(() => parseCommentsType(props.commentsTypeAttr));
 const mode = computed(() => editorModeFor(commentsType.value));
 const readOnly = computed(() => isReadOnly(commentsType.value) || props.disabled);
-const canConvert = computed(() => canConvertToRichText(commentsType.value) && !props.disabled);
+const canConvert = computed(() => canConvertToRichText(commentsType.value) && props.convertSupported && !props.disabled);
 const indicator = computed(() => typeIndicator(commentsType.value));
 
 // ── Edit / Preview ───────────────────────────────────────────────────────────

@@ -67,6 +67,9 @@ export const Commands = {
   OPEN_ATTACHMENT: "open_attachment",
   REVEAL_ATTACHMENT: "reveal_attachment",
 
+  // -- M7: Task comments / description --
+  GET_TASK_COMMENTS: "get_task_comments",
+
   // -- M9: Productivity --
   GLOBAL_SEARCH: "global_search",
   LIST_SAVED_VIEWS: "list_saved_views",

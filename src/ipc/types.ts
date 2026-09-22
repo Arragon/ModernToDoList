@@ -268,6 +268,17 @@ export interface AttachmentImportResult {
   message: string | null;
 }
 
+// -- M7: Task comments / description --
+
+export interface TaskCommentsResponse {
+  task_key: string;
+  /** Verbatim COMMENTSTYPE attribute value ("" when the task has none). */
+  comments_type: string;
+  /** Stored content: raw text for PLAIN_TEXT, HTML for HTML. */
+  content: string;
+  has_comments: boolean;
+}
+
 // -- M9: Search --
 
 export interface SearchHitDto {

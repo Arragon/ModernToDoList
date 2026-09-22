@@ -23,6 +23,7 @@ import ParticipantsEditor from "./ParticipantsEditor.vue";
 import DependencyEditor from "./DependencyEditor.vue";
 import ProgressLinksEditor from "./ProgressLinksEditor.vue";
 import AttachmentListEditor from "./AttachmentListEditor.vue";
+import DescriptionEditor from "./DescriptionEditor.vue";
 import EmptyState from "../common/EmptyState.vue";
 
 const taskTags = ref<string[]>([]);
@@ -176,6 +177,12 @@ async function onTagsUpdate(tags: string[]): Promise<void> {
           @update:percent-done="onPercentDoneUpdate"
           @update:risk="onRiskUpdate"
           @update:completed-date="onCompletedDateUpdate"
+        />
+
+        <DescriptionEditor
+          :task-key="task.task_key"
+          :document-id="task.document_id"
+          :disabled="!canEditField"
         />
       </div>
     </div>

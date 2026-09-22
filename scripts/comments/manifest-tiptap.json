@@ -1,11 +1,11 @@
 {
   "milestone": "M7 — Tiptap 富文本编辑器（进行中）",
-  "commit": "d987c0e",
+  "commit": "568a878",
   "evidence": {
     "cargo": "后端干净隔离构建全量 **1241 passed / 0 failed**（20 个目标）",
-    "frontend": "npm run build（vue-tsc --noEmit && vite build）通过，**0 个 TypeScript 错误**",
+    "frontend": "npm run build（vue-tsc --noEmit && vite build）通过，**0 个 TypeScript 错误**；编辑器挂载后构建产物由 129 个模块增至 **398 个模块**（bundle 841 kB），证明 Tiptap 已进入实际打包路径",
     "extra": [
-      "**状态为进行中，不得视为已交付功能**：编辑器组件与其支撑层已完成并通过类型检查，但**尚未挂载到 Inspector**，因此在应用中不可达。以下逐项说明已完成与未完成部分。"
+      "**状态仍为进行中，不得视为已交付功能**：编辑器组件与支撑层已完成、已挂载到 Inspector 并通过类型检查，查看与编辑描述的前端接线已就位；但（a）转换 COMMENTSTYPE 的后端写入通道尚不存在，「转换为富文本」入口被隐藏，(b) 本环境无法启动打包后的 Tauri/WebView2 应用，**任何 UI 运行时行为均未经验证**。以下逐项说明已完成与未完成部分。"
     ]
   },
   "issues": {
@@ -27,7 +27,7 @@
         "`npm run build` 通过：`vue-tsc --noEmit` **0 个 TypeScript 错误**，vite 构建成功",
         "后端 M7 契约测试保持全绿：`m7_qa_tests` 118 项、`qa_m7_006_viewing_never_creates_or_converts_comments`、`qa_m7_016_no_per_keystroke_snapshot_or_serialization`"
       ],
-      "gap": "**未完成：编辑器尚未挂载到 UI。** `src/components/inspector/Inspector.vue` 目前没有描述／注释编辑区（该文件不含任何 comments 相关代码），`task-store` 亦无 comments 读写 API，因此 `RichTextEditor.vue` 未被任何组件引用 —— 构建产物模块数与体积未变（仍为 129 个模块 / 223.64 kB），证明 Tiptap 尚未进入实际打包路径。要真正交付还需：(1) 确认任务 DTO 携带 COMMENTSTYPE 与 COMMENTS 内容；(2) 在 Inspector 增加描述区并挂载本组件；(3) 将 `update:modelValue` 接到 `update_task_field(field=\"comments\")`；(4) 提供转换确认弹窗与可撤销接线；(5) 运行时验证。此外，本环境无法启动打包后的 Tauri/WebView2 应用，**任何 UI 运行时行为均未经验证**。 **进展**：后端读取通道已补齐 —— 新增 get_task_comments IPC 命令，返回逐字 COMMENTSTYPE、存储内容与 has_comments（确保仅查看任务绝不会创建 COMMENTS 元素），已注册到 invoke_handler（现 71 个命令），并有 4 项测试覆盖 CDATA 包裹的 HTML、纯文本、无法识别的 COMMENTSTYPE 逐字保留、以及未知／空白 task_key 返回错误而非 panic。因此挂载编辑器所缺的后端前置条件已满足；剩余工作为前端 IPC 绑定、任务 DTO 扩展与 Inspector 描述区。"
+      "gap": "**已挂载（前端接线完成，运行时未验证）。** 进展：(1) 新增 get_task_comments IPC 命令（返回逐字 COMMENTSTYPE、存储内容与 has_comments，确保仅查看任务绝不创建 COMMENTS 元素），已注册到 invoke_handler，4 项测试覆盖 CDATA HTML／纯文本／无法识别类型逐字保留／未知 task_key 返回错误而非 panic；(2) 前端新增 `getTaskComments` fail-soft 绑定与 `TaskCommentsResponse` 类型；(3) 新增 `DescriptionEditor.vue` 并挂载到 `Inspector.vue` 描述区 —— 经 get_task_comments 读取、经 `update_task_field(field=\"comments\")` 提交，任务切换／卸载时 flush 去抖提交，读取通道不可用时隐藏该区；(4) `RichTextEditor` 新增 `convertSupported` 属性，Inspector 传 false。构建产物由 129 增至 **398 个模块**，证明 Tiptap 已进入打包路径。 **仍未完成**：(a) **转换（PLAIN_TEXT→HTML）无后端写入通道** —— `update_task_field` 不接受 COMMENTSTYPE 字段，故「转换为富文本」入口被隐藏而非提供后静默失败，INH-1062 保持开放；(b) **本环境无法启动打包后的 Tauri/WebView2 应用，任何 UI 运行时行为均未经验证** —— 类型检查通过不等于功能正确，需人工在应用中验证查看／编辑／去抖提交／切换任务不串档／撤销等；(c) 任务 DTO（TaskSummary）未携带 COMMENTSTYPE/COMMENTS，描述内容按需经 get_task_comments 拉取而非随查询返回。"
     },
     "INH-1062": {
       "state": "In Progress",
@@ -44,7 +44,7 @@
       "tests": [
         "`npm run build` 通过，`vue-tsc --noEmit` 0 个 TypeScript 错误；工具栏每个控件均核对过其产出的标记／属性确实在后端白名单之内"
       ],
-      "gap": "**未完成**：与 INH-1061 同因 —— 工具栏随编辑器组件一同存在但未被挂载，故快捷键映射、选区状态同步与链接弹窗的**运行时行为均未验证**。类型检查通过不等于功能正确。 **进展**：后端读取通道已补齐 —— 新增 get_task_comments IPC 命令，返回逐字 COMMENTSTYPE、存储内容与 has_comments（确保仅查看任务绝不会创建 COMMENTS 元素），已注册到 invoke_handler（现 71 个命令），并有 4 项测试覆盖 CDATA 包裹的 HTML、纯文本、无法识别的 COMMENTSTYPE 逐字保留、以及未知／空白 task_key 返回错误而非 panic。因此挂载编辑器所缺的后端前置条件已满足；剩余工作为前端 IPC 绑定、任务 DTO 扩展与 Inspector 描述区。"
+      "gap": "**部分完成：工具栏随编辑器一同挂载，但转换功能未实现、运行时未验证。** 进展：编辑器（含工具栏）已挂载到 Inspector 描述区，构建产物由 129 增至 398 个模块，快捷键映射、选区状态同步与内联链接弹窗已进入实际打包路径。 **仍未完成**：(a) **转换为核心缺口** —— `update_task_field` 无 COMMENTSTYPE 写入分支，PLAIN_TEXT→HTML 转换无后端通道，故 `RichTextEditor` 的 `convertSupported` 由 Inspector 置为 false，「转换为富文本」按钮被隐藏（而非显示后静默失败）；要交付需新增可撤销、确认门控的 COMMENTSTYPE 写入命令并接线；(b) **运行时行为未验证** —— 本环境无法启动打包后的 Tauri/WebView2 应用，工具栏每个控件的实际渲染、快捷键与链接弹窗均只通过类型检查，需人工在应用中验证。类型检查通过不等于功能正确。"
     }
   }
 }

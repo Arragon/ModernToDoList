@@ -57,6 +57,10 @@ pub enum FieldValue {
     Integer(u32),
     Float(Option<f64>),
     StringList(Vec<String>),
+    /// The field was absent (no element at all), as opposed to present-but-empty.
+    /// Comments needs this so undoing the first-ever edit restores `None` rather
+    /// than materializing an empty `<COMMENTS>` the document never had (E-F1).
+    Absent,
 }
 
 impl UndoableCommand for FieldUpdateCommand {
@@ -257,7 +261,10 @@ fn get_field(task: &Task, field: &TaskField) -> FieldValue {
         TaskField::PercentDone => FieldValue::Integer(task.percent_done as u32),
         TaskField::StartDate => FieldValue::Float(task.start_date),
         TaskField::DueDate => FieldValue::Float(task.due_date),
-        TaskField::Comments => FieldValue::Text(task.comments.as_ref().map(|c| c.content.clone()).unwrap_or_default()),
+        TaskField::Comments => match &task.comments {
+            Some(c) => FieldValue::Text(c.content.clone()),
+            None => FieldValue::Absent,
+        },
         TaskField::AllocatedTo => FieldValue::StringList(task.allocated_to.clone()),
         TaskField::Categories => FieldValue::StringList(task.categories.iter().map(|c| c.name.clone()).collect()),
     }
@@ -305,6 +312,9 @@ fn set_field(task: &mut Task, field: &TaskField, value: &FieldValue) {
                 });
             }
         }
+        // Undoing the first-ever comments edit replays the captured absence, so
+        // the element the document never had is not materialized (E-F1).
+        (TaskField::Comments, FieldValue::Absent) => task.comments = None,
         (TaskField::AllocatedTo, FieldValue::StringList(v)) => task.allocated_to = v.clone(),
         (TaskField::Categories, FieldValue::StringList(v)) => {
             task.categories = v.iter().map(|n| super::task::TaskCategory { name: n.clone() }).collect();
@@ -386,27 +396,24 @@ mod tests {
         assert_eq!(task.start_date_string.as_deref(), Some("2024-01-15"));
     }
 
-    /// KNOWN GAP E-F1 (deliberately pinned, not fixed).
+    /// E-F1 (fixed): undoing the first-ever comments edit must restore `None`,
+    /// not an empty `<COMMENTS>` element.
     ///
-    /// Undoing the first-ever comments edit cannot restore `None`, because
-    /// `FieldValue::Text` has no way to represent "this task had no COMMENTS
-    /// element" — `get_field` captures `""` for both an absent element and a
-    /// genuinely empty one. So undo leaves `Some(TaskComment { content: "" })`
-    /// and the next save emits a `<COMMENTS>` element the document never had.
-    /// No content is lost; the defect is a spurious empty element.
-    ///
-    /// The `!v.is_empty()` guard in `set_field` only helps the narrower case of
-    /// writing `""` to a task that never had comments. Fixing E-F1 properly
-    /// needs an absence-carrying `FieldValue` variant, which changes the undo
-    /// representation for every field and is out of scope here.
-    ///
-    /// This assertion must be inverted to `is_none()` once that lands.
+    /// `get_field` now captures `FieldValue::Absent` when a task has no comments
+    /// element, so undo replays the absence and drops the element the document
+    /// never had. Previously `Text("")` stood in for both "absent" and "genuinely
+    /// empty", so undo left `Some(TaskComment { content: "" })` behind.
     #[test]
-    fn undo_of_first_comments_edit_leaves_an_empty_comment_known_gap_e_f1() {
+    fn undo_of_first_comments_edit_restores_absence_e_f1() {
         let mut task = super::Task::new(super::TaskId::new("c1"));
         assert!(task.comments.is_none(), "fixture task starts with no comments");
 
         let captured = super::get_field(&task, &super::TaskField::Comments);
+        assert!(
+            matches!(captured, super::FieldValue::Absent),
+            "an absent COMMENTS element must be captured as Absent, not empty Text"
+        );
+
         super::set_field(
             &mut task,
             &super::TaskField::Comments,
@@ -415,10 +422,39 @@ mod tests {
         assert_eq!(task.comments.as_ref().map(|c| c.content.as_str()), Some("评审记录"));
 
         super::set_field(&mut task, &super::TaskField::Comments, &captured);
+        assert!(
+            task.comments.is_none(),
+            "E-F1: undo of the first comments edit must restore None, not Some(\"\")"
+        );
+    }
+
+    /// A genuinely empty (but present) COMMENTS element is still captured as
+    /// `Text("")`, so undo restores the empty element rather than dropping it —
+    /// the absence fix must not swallow a real, deliberately-empty comment.
+    #[test]
+    fn undo_restores_a_present_but_empty_comment_as_present() {
+        let mut task = super::Task::new(super::TaskId::new("c3"));
+        task.comments = Some(crate::domain::task::TaskComment {
+            comment_type: task.comments_type.clone(),
+            content: String::new(),
+        });
+
+        let captured = super::get_field(&task, &super::TaskField::Comments);
+        assert!(
+            matches!(captured, super::FieldValue::Text(ref s) if s.is_empty()),
+            "a present-but-empty element is Text(\"\"), distinguishable from Absent"
+        );
+
+        super::set_field(
+            &mut task,
+            &super::TaskField::Comments,
+            &super::FieldValue::Text("新内容".to_string()),
+        );
+        super::set_field(&mut task, &super::TaskField::Comments, &captured);
         assert_eq!(
             task.comments.as_ref().map(|c| c.content.as_str()),
             Some(""),
-            "E-F1: undo restores empty content but cannot restore None"
+            "undo keeps the element present, just empty again"
         );
     }
 

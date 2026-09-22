@@ -1114,26 +1114,18 @@ fn qa_m10_e11_unified_undo_across_relation_types() {
     assert_eq!(tree.get(&TaskId::new("1")).unwrap().title, "Alpha renamed");
     assert_eq!(tree.get(&TaskId::new("1")).unwrap().dependencies.len(), 1);
 
-    // Full unwind → the original tree, with ONE documented deviation
-    // (finding E-F1, minor): `TaskField::Comments` cannot represent "no
-    // comments" — `get_field` captures `unwrap_or_default()` (command.rs
-    // L260) and `set_field` materializes `Some(TaskComment)` (command.rs
-    // L294-303) — so undoing the FIRST comments edit leaves an empty
-    // `Some(TaskComment{content:""})` instead of `None`. No user content is
-    // lost; the only effect is that a post-undo save would add an empty
-    // `<COMMENTS></COMMENTS>` element to a document that had none.
-    let mut expected = original.clone();
-    expected.get_mut(&TaskId::new("1")).unwrap().comments = Some(TaskComment {
-        comment_type: CommentType::Plain,
-        content: String::new(),
-    });
+    // Full unwind → the original tree exactly. E-F1 is now fixed: `get_field`
+    // captures `FieldValue::Absent` for a task with no COMMENTS element and
+    // `set_field` restores `None`, so undoing the FIRST comments edit no longer
+    // leaves a spurious empty `Some(TaskComment{content:""})` behind. The unwind
+    // is therefore byte-exact with no documented deviation.
     for _ in 0..6 {
         assert!(u.undo(&mut tree).is_some());
     }
-    assert_eq!(tree, expected, "mixed relation edits must unwind exactly (modulo E-F1)");
+    assert_eq!(tree, original, "mixed relation edits must unwind exactly");
     assert_eq!(
         commit_tree_to_bytes(xml, &tree),
-        commit_tree_to_bytes(xml, &expected),
+        commit_tree_to_bytes(xml, &original),
         "byte-identical document after full unwind"
     );
     let t1 = tree.get(&TaskId::new("1")).unwrap();
@@ -1141,7 +1133,7 @@ fn qa_m10_e11_unified_undo_across_relation_types() {
     assert!(t1.allocated_to.is_empty() && t1.participants.is_empty());
     assert!(t1.dependencies.is_empty() && t1.progress_links.is_empty());
     assert!(t1.attachments.is_empty() && t1.file_links.is_empty());
-    assert_eq!(t1.comments.as_ref().map(|c| c.content.as_str()), Some(""), "E-F1: empty, never stale content");
+    assert!(t1.comments.is_none(), "E-F1 fixed: undo restores absence, not an empty element");
 
     // Full redo → exact mutated tree.
     for _ in 0..6 {

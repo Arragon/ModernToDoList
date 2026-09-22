@@ -3,10 +3,11 @@
  * Windows default browser, revealing a path in Explorer, and picking a
  * directory/file.
  *
- * `tauri-plugin-shell` is registered in `src-tauri/src/lib.rs` and
- * `shell:allow-open` is granted in `src-tauri/capabilities/default.json`, so the
- * shell path is the primary route. The dialog plugin is *not* bundled, therefore
- * pickers fall back to the in-app path prompt (see `PathInputDialog.vue`). Every
+ * `tauri-plugin-shell` and `tauri-plugin-dialog` are registered in
+ * `src-tauri/src/lib.rs`, with `shell:allow-open` and `dialog:default` granted in
+ * `src-tauri/capabilities/default.json`. Pickers therefore open the native
+ * Windows Explorer dialog via `plugin:dialog|open`; if that is ever unavailable
+ * they fall back to the in-app path prompt (see `PathInputDialog.vue`). Every
  * route fails soft with a toast rather than throwing.
  */
 import { invoke } from "@tauri-apps/api/core";
@@ -112,7 +113,7 @@ async function tryNativeDialog(options: PickOptions): Promise<string | null | un
     ? { directory: true, multiple: false, title: options.title, defaultPath: options.defaultValue }
     : { directory: false, multiple: false, title: options.title, defaultPath: options.defaultValue };
 
-  const result = await safeInvoke<string | string[] | null>("plugin:dialog|pick", {
+  const result = await safeInvoke<string | string[] | null>("plugin:dialog|open", {
     options: dialogOptions,
   });
   if (!result.ok) return undefined;

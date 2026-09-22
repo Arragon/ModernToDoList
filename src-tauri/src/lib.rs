@@ -37,7 +37,8 @@ use commands::quick_add::{
 };
 // M6/M9 IPC bridge: task editing, relations, search/quick-add, attachments.
 use commands::task_edit::{
-    add_task, delete_task, global_search, quick_add_task, set_task_tags, update_task_field,
+    add_task, delete_task, get_task_comments, global_search, quick_add_task, set_task_tags,
+    update_task_field,
 };
 use commands::relations::{
     add_dependency, add_managed_attachment, add_participant, add_progress_link,
@@ -142,6 +143,7 @@ pub fn run() {
             set_global_quick_add_shortcut,
             // M6 bridge: task mutation
             update_task_field,
+            get_task_comments,
             add_task,
             delete_task,
             set_task_tags,

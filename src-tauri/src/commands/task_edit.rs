@@ -375,6 +375,118 @@ pub fn update_task_field(
     )
 }
 
+// ── get_task_comments ─────────────────────────────────────────────────────────
+
+/// Response of `get_task_comments`.
+///
+/// `comments_type` is the verbatim COMMENTSTYPE attribute so the frontend can
+/// drive editor-mode selection and preserve unrecognised values as read-only.
+/// `content` is the stored comment body: raw text for PLAIN_TEXT, HTML for HTML.
+#[derive(Debug, Clone, Serialize)]
+pub struct TaskCommentsResponse {
+    pub task_key: String,
+    pub comments_type: String,
+    pub content: String,
+    /// False when the task has no COMMENTS element at all. The editor must not
+    /// create one merely because the task was viewed.
+    pub has_comments: bool,
+}
+
+/// Core logic for `get_task_comments`, kept free of Tauri types so it can be
+/// exercised directly.
+pub fn get_task_comments_core(
+    tree: &TaskTree,
+    task_key: &str,
+) -> Result<TaskCommentsResponse, String> {
+    let task_id = safe_task_id(task_key)?;
+    let task = tree
+        .get(&task_id)
+        .ok_or_else(|| format!("Task '{}' not found", task_key))?;
+    Ok(TaskCommentsResponse {
+        task_key: task_id.as_str().to_string(),
+        comments_type: task.comments_type.as_attr_value().to_string(),
+        content: task.comments.as_ref().map(|c| c.content.clone()).unwrap_or_default(),
+        has_comments: task.comments.is_some(),
+    })
+}
+
+/// Reads a task's COMMENTSTYPE and COMMENTS content from the open session.
+///
+/// This is the read counterpart to `update_task_field(field = "comments")` and
+/// the prerequisite for mounting the M7 rich-text editor: the task DTO returned
+/// by `query_tasks` carries neither field, so the editor had no way to load
+/// existing content or to know whether the type was editable.
+#[tauri::command]
+pub fn get_task_comments(
+    session_id: u64,
+    task_key: String,
+    state: State<'_, AppState>,
+) -> Result<TaskCommentsResponse, String> {
+    let sessions = state.sessions.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let entry = sessions
+        .get(&session_id)
+        .ok_or_else(|| format!("Session {} not found", session_id))?;
+    get_task_comments_core(&entry.tree, &task_key)
+}
+
+#[cfg(test)]
+mod get_task_comments_tests {
+    use super::get_task_comments_core;
+    use crate::commands::bridge::build_tree_from_bytes;
+
+    // `str::as_bytes` is a const fn, so this stays a `&[u8]` constant while
+    // allowing the CJK content that a byte-string literal would reject.
+    const DOC: &[u8] = r#"<?xml version="1.0" encoding="UTF-8"?>
+<TODOLIST NEXTUNIQUEID="3">
+<TASK ID="1" TITLE="html task" COMMENTSTYPE="HTML"><COMMENTS><![CDATA[<p>评审记录</p>]]></COMMENTS></TASK>
+<TASK ID="2" TITLE="plain task" COMMENTSTYPE="PLAIN_TEXT"><COMMENTS>买牛奶</COMMENTS></TASK>
+<TASK ID="3" TITLE="opaque task" COMMENTSTYPE="SOMETHING_ODD"/>
+</TODOLIST>"#
+        .as_bytes();
+
+    #[test]
+    fn reads_cdata_wrapped_html_content() {
+        let tree = build_tree_from_bytes(DOC).expect("fixture parses");
+        let got = get_task_comments_core(&tree, "1").expect("task 1");
+        assert_eq!(got.comments_type, "HTML");
+        assert!(got.has_comments);
+        // Also an end-to-end check of the text_content() CData fix: before it,
+        // this mapped to an empty string and the content was lost on save.
+        assert!(
+            got.content.contains("<p>评审记录</p>"),
+            "CDATA content must reach the caller, got {:?}",
+            got.content
+        );
+    }
+
+    #[test]
+    fn reads_plain_text_content_verbatim() {
+        let tree = build_tree_from_bytes(DOC).expect("fixture parses");
+        let got = get_task_comments_core(&tree, "2").expect("task 2");
+        assert_eq!(got.comments_type, "PLAIN_TEXT");
+        assert_eq!(got.content, "买牛奶");
+    }
+
+    #[test]
+    fn preserves_an_unrecognised_comments_type_verbatim() {
+        let tree = build_tree_from_bytes(DOC).expect("fixture parses");
+        let got = get_task_comments_core(&tree, "3").expect("task 3");
+        assert_eq!(
+            got.comments_type, "SOMETHING_ODD",
+            "an unknown COMMENTSTYPE must be returned verbatim so the UI can mark it read-only"
+        );
+        assert!(!got.has_comments, "no COMMENTS element means has_comments is false");
+        assert_eq!(got.content, "");
+    }
+
+    #[test]
+    fn rejects_an_unknown_task_key_without_panicking() {
+        let tree = build_tree_from_bytes(DOC).expect("fixture parses");
+        assert!(get_task_comments_core(&tree, "999").is_err());
+        assert!(get_task_comments_core(&tree, "   ").is_err());
+    }
+}
+
 // ── add_task / quick_add_task ─────────────────────────────────────────────────
 
 /// Core logic shared by `add_task` and `quick_add_task`.

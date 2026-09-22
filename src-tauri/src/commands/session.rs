@@ -24,6 +24,11 @@ pub(crate) struct SessionEntry {
     pub(crate) tree: TaskTree,
     pub(crate) undo_manager: UndoRedoManager,
     pub(crate) file_path: PathBuf,
+    /// The document exactly as parsed at open time. Saving rebuilds from this so
+    /// everything the task tree does not model — XML declaration and encoding,
+    /// root attributes, comments, unknown elements, and each task's unknown
+    /// attributes/children — survives a save instead of being discarded.
+    pub(crate) source_doc: crate::domain::xml_tree::XmlDocument,
 }
 
 // SAFETY: SessionEntry is always accessed through a Mutex, so it never
@@ -151,6 +156,7 @@ pub fn open_document_session(
         tree,
         undo_manager: UndoRedoManager::new(),
         file_path,
+        source_doc: doc.clone(),
     };
 
     let mut sessions = state.sessions.lock().map_err(|e| format!("Lock error: {}", e))?;
@@ -199,7 +205,7 @@ pub fn save_document_atomic(
     // Serialize the document to bytes
     // We need to rebuild the XML document from the task tree
     // For now, we serialize using the current tree state
-    let xml_bytes = serialize_task_tree(&entry.tree);
+    let xml_bytes = serialize_task_tree(&entry.tree, &entry.source_doc);
 
     let config = SaveConfig {
         target_path: entry.file_path.clone(),
@@ -350,24 +356,112 @@ fn extract_tasks_for_session(
 /// This is a simplified serialization for the save pipeline.
 /// In a full implementation, this would reconstruct the XmlDocument
 /// from the TaskTree using the write_task mapper.
-fn serialize_task_tree(tree: &TaskTree) -> Vec<u8> {
-    use crate::domain::encoding::XmlEncodingMeta;
-    use crate::domain::xml_tree::{XmlDocument, XmlElement, XmlNode};
+/// Rebuilds the document bytes from the task tree, starting from the document as
+/// it was parsed so that everything the tree does not model survives: the
+/// original XML declaration and encoding, root attributes, comments, unknown
+/// elements, and each task's unknown attributes and children.
+///
+/// This used to construct a fresh `<TODOLIST NEXTUNIQUEID="1">` and emit only
+/// root-level tasks into brand-new empty `<TASK>` elements. Because
+/// `mappers::write_task` preserves nested `<TASK>` children found on the element
+/// it is given, feeding it an empty element meant **every nested task was
+/// silently discarded on save**, and the file was re-encoded as UTF-8 regardless
+/// of its original encoding.
+fn serialize_task_tree(
+    tree: &TaskTree,
+    source: &crate::domain::xml_tree::XmlDocument,
+) -> Vec<u8> {
     use crate::domain::mappers::write_task;
+    use crate::domain::xml_tree::{XmlDocument, XmlElement, XmlNode};
+    let _ = write_task; // used by build_task_node
 
-    let meta = XmlEncodingMeta::default_utf8();
-    let mut root = XmlElement::new("TODOLIST");
-    root.set_attr("NEXTUNIQUEID", "1");
+    // Index the original TASK elements by ID so each can be updated in place.
+    let mut originals: HashMap<String, XmlElement> = HashMap::new();
+    collect_task_elements(&source.root, &mut originals);
 
-    // Write root-level tasks
-    for root_id in tree.root_ids() {
-        if let Some(task) = tree.get(root_id) {
-            let mut task_elem = XmlElement::new("TASK");
-            write_task(task, &mut task_elem);
-            root.children.push(XmlNode::Element(task_elem));
+    let mut root = source.root.clone();
+    let rebuilt: Vec<XmlNode> = tree
+        .root_ids()
+        .iter()
+        .filter_map(|id| build_task_node(tree, id, &mut originals))
+        .collect();
+
+    root.children = splice_tasks(root.children, rebuilt);
+
+    serialize_xml(&XmlDocument::new(source.meta.clone(), root))
+}
+
+/// Replaces the TASK children of `children` with `tasks`, keeping every non-TASK
+/// node (comments, unknown elements, whitespace) in its original position and
+/// putting the tasks where the first TASK element appeared.
+fn splice_tasks(
+    children: Vec<crate::domain::xml_tree::XmlNode>,
+    tasks: Vec<crate::domain::xml_tree::XmlNode>,
+) -> Vec<crate::domain::xml_tree::XmlNode> {
+    use crate::domain::xml_tree::XmlNode;
+    let mut out: Vec<XmlNode> = Vec::with_capacity(children.len());
+    let mut placed = false;
+    for child in children {
+        if matches!(&child, XmlNode::Element(e) if e.tag == "TASK") {
+            if !placed {
+                out.extend(tasks.iter().cloned());
+                placed = true;
+            }
+            continue;
+        }
+        out.push(child);
+    }
+    if !placed {
+        out.extend(tasks);
+    }
+    out
+}
+
+/// Indexes every `<TASK>` element in the subtree by its ID attribute.
+fn collect_task_elements(
+    elem: &crate::domain::xml_tree::XmlElement,
+    out: &mut HashMap<String, crate::domain::xml_tree::XmlElement>,
+) {
+    use crate::domain::xml_tree::XmlNode;
+    for child in &elem.children {
+        if let XmlNode::Element(e) = child {
+            if e.tag == "TASK" {
+                if let Some(id) = e.get_attr("ID") {
+                    out.insert(id.to_string(), e.clone());
+                }
+            }
+            collect_task_elements(e, out);
         }
     }
+}
 
-    let doc = XmlDocument::new(meta, root);
-    serialize_xml(&doc)
+/// Rebuilds one task element and recurses into its children, so additions,
+/// deletions and reordering in the tree are all reflected in the output.
+fn build_task_node(
+    tree: &TaskTree,
+    id: &crate::domain::TaskId,
+    originals: &mut HashMap<String, crate::domain::xml_tree::XmlElement>,
+) -> Option<crate::domain::xml_tree::XmlNode> {
+    use crate::domain::mappers::write_task;
+    use crate::domain::xml_tree::{XmlElement, XmlNode};
+
+    let task = tree.get(id)?;
+    let mut elem = originals
+        .remove(id.as_str())
+        .unwrap_or_else(|| XmlElement::new("TASK"));
+
+    // Refreshes known attributes/elements while preserving unknown ones.
+    write_task(task, &mut elem);
+
+    // Nested tasks are rebuilt from the tree rather than inherited from the
+    // stale element, so structural edits are honoured.
+    let nested: Vec<XmlNode> = task
+        .children
+        .iter()
+        .filter_map(|child_id| build_task_node(tree, child_id, originals))
+        .collect();
+
+    elem.children = splice_tasks(elem.children, nested);
+
+    Some(XmlNode::Element(elem))
 }

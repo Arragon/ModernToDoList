@@ -8,6 +8,10 @@ import {
 import { canRedo, canUndo, closeAllSessions, isDirty } from "../../stores/session-store";
 import { openCommandPalette, openGlobalSearch } from "../../stores/ui-store";
 import { executeCommand } from "../../app/commands";
+import { useT } from "../../app/i18n";
+import { locale, theme, toggleLocale, toggleTheme } from "../../stores/ui-prefs";
+
+const t = useT();
 
 const hasWorkspace = () => workspace.value !== null;
 const workspaceName = () => workspace.value?.name ?? "";
@@ -44,24 +48,41 @@ async function closeCurrentWorkspace() {
           <i class="fas fa-terminal"></i>
         </button>
       </div>
+      <div class="sidebar__quick sidebar__prefs">
+        <button
+          class="sidebar__quick-btn"
+          :title="t('prefs.language')"
+          @click="toggleLocale()"
+        >
+          <i class="fas fa-language"></i>
+          <span class="sidebar__prefs-label">{{ locale === 'zh' ? '中' : 'EN' }}</span>
+        </button>
+        <button
+          class="sidebar__quick-btn"
+          :title="t('prefs.theme')"
+          @click="toggleTheme()"
+        >
+          <i :class="theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon'"></i>
+        </button>
+      </div>
     </div>
 
     <div class="sidebar__content">
       <div v-if="!hasWorkspace()" class="sidebar__empty">
-        <p class="sidebar__hint">Open or create a workspace to get started</p>
+        <p class="sidebar__hint">{{ t('sidebar.emptyHint') }}</p>
         <button class="btn btn-primary" @click="executeCommand('workspace.open')">
-          <i class="fas fa-folder-open"></i> Open Workspace
+          <i class="fas fa-folder-open"></i> {{ t('sidebar.openWorkspace') }}
         </button>
         <button class="btn" @click="executeCommand('workspace.create')">
-          <i class="fas fa-folder-plus"></i> New Workspace
+          <i class="fas fa-folder-plus"></i> {{ t('sidebar.newWorkspace') }}
         </button>
       </div>
 
       <template v-else>
         <div class="sidebar__section">
-          <div class="sidebar__section-title">Documents ({{ documentCount }})</div>
+          <div class="sidebar__section-title">{{ t('sidebar.documents') }} ({{ documentCount }})</div>
           <div v-if="documentCount === 0" class="sidebar__hint">
-            No documents found — run Scan &amp; Index.
+            {{ t('sidebar.noDocuments') }}
           </div>
           <div v-for="doc in documents" :key="doc.id" class="sidebar__item" :title="doc.file_path">
             <i class="fas fa-file-lines"></i>
@@ -70,8 +91,8 @@ async function closeCurrentWorkspace() {
           </div>
 
           <div class="sidebar__actions">
-            <button class="btn" @click="scanAndIndex()" title="Scan & Index">
-              <i class="fas fa-magnifying-glass"></i> Scan
+            <button class="btn" @click="scanAndIndex()" :title="t('action.scanIndex')">
+              <i class="fas fa-magnifying-glass"></i> {{ t('action.scanIndex') }}
             </button>
             <button class="btn" @click="rebuildIndex()" title="Rebuild Index">
               <i class="fas fa-arrows-rotate"></i> Rebuild
@@ -89,7 +110,7 @@ async function closeCurrentWorkspace() {
           </div>
           <div class="sidebar__actions">
             <button class="btn" title="Save (Ctrl+S)" @click="executeCommand('file.save')">
-              <i class="fas fa-floppy-disk"></i> Save
+              <i class="fas fa-floppy-disk"></i> {{ t('action.save') }}
             </button>
             <button
               class="btn"
@@ -125,7 +146,7 @@ async function closeCurrentWorkspace() {
 
     <div class="sidebar__footer">
       <button v-if="hasWorkspace()" class="btn" @click="closeCurrentWorkspace()">
-        <i class="fas fa-folder-minus"></i> Close
+        <i class="fas fa-folder-minus"></i> {{ t('sidebar.closeWorkspace') }}
       </button>
     </div>
   </aside>
@@ -186,6 +207,11 @@ async function closeCurrentWorkspace() {
 .sidebar__quick-btn:disabled {
   color: var(--color-text-disabled);
   cursor: not-allowed;
+}
+.sidebar__prefs-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  margin-left: 2px;
 }
 .sidebar__content {
   flex: 1;

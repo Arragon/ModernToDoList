@@ -90,3 +90,35 @@
   --z-toast: 300;
   --z-tooltip: 400;
 }
+
+/* Dark theme: override only the color tokens; layout/type stay shared. */
+[data-theme="dark"] {
+  --color-bg-primary: #16181d;
+  --color-bg-secondary: #1c1f26;
+  --color-bg-tertiary: #232730;
+  --color-bg-hover: #2a2f3a;
+  --color-bg-selected: #303748;
+  --color-bg-active: #3a4254;
+
+  --color-text-primary: #e6e8ee;
+  --color-text-secondary: #b6bcc8;
+  --color-text-muted: #8a919e;
+  --color-text-disabled: #5c6370;
+
+  --color-border: #2e333d;
+  --color-border-hover: #414855;
+  --color-border-focus: #7c8cf8;
+
+  --color-accent: #7c8cf8;
+  --color-accent-hover: #93a1ff;
+  --color-accent-light: #262b3d;
+
+  --color-success: #48bb78;
+  --color-warning: #ecc94b;
+  --color-error: #fc8181;
+  --color-info: #63b3ed;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+}

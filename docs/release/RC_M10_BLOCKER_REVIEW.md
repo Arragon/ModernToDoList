@@ -1,6 +1,6 @@
 # RC-M10 Blocker Review and 2.0 Scope Freeze
 
-Generated: 2026-09-22T00:18:24.635Z
+Generated: 2026-09-22T15:45:40.114Z
 Source: Linear project 72e576a7-e894-4e22-b52c-5d47d43a5912
 
 ## Verdict

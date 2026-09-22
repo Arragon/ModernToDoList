@@ -6,8 +6,8 @@
 
 ## VERDICT: **NOT PASSED — gate remains open**
 
-Blocker count is **28**, not 0. Three RC matrices (E, F, G) are not implemented as standalone RC
-suites, and matrix **H** cannot be executed in this environment at all. Per the delivery plan,
+Blocker count is **24**, not 0. Matrix **H** cannot be executed in this environment at all, and the
+Tiptap editor (INH-1061/1062) plus runtime UI verification remain open. Per the delivery plan,
 GATE-M10 requires *all* Blockers = 0 **and** the full RC matrix to pass. Neither holds.
 
 This document records what **is** verified, so the remaining gap is precise rather than vague.
@@ -28,7 +28,7 @@ Status values: `MET` · `NOT MET` · `PARTIAL` · `CANNOT VERIFY HERE`.
 
 | # | Criterion | Status | Evidence |
 |---|-----------|--------|----------|
-| 2.1 | M0–M9 automated tests all pass | **MET** | Clean run in an isolated `CARGO_TARGET_DIR`: **1197 passed, 0 failed** across 17 targets — lib 585, m8_qa 295, m7_qa 118, ipc_bridge 47, m6_qa 18, m9_qa 17, round_trip 17, m4_qa 16, m5_qa 16, matrices A 14 / B 10 / C 10 / D 10, m10_benchmark 13, m10_portable 10, doc 1 (2 ignored: the full-scale benchmark generator and the release-ZIP generator, both run separately via their Node runners) |
+| 2.1 | M0–M9 automated tests all pass | **MET** | Clean run in an isolated `CARGO_TARGET_DIR`: **1234 passed, 0 failed** across 20 targets — lib 590, m8_qa 295, m7_qa 118, ipc_bridge 47, m6_qa 18, m9_qa 17, round_trip 17, m4_qa 16, m5_qa 16, matrices A 14 / B 10 / C 10 / D 10 / E 12 / F 10 / G 10, m10_benchmark 13, m10_portable 10, doc 1 (2 ignored: the full-scale benchmark generator and the release-ZIP generator, both run separately via their Node runners) |
 | 2.2 | Frontend type-checks and builds | **MET** | `npm run build` (`vue-tsc --noEmit && vite build`): **0 TypeScript errors**, 129 modules transformed, 223.64 kB JS / 124.66 kB CSS |
 | 2.3 | XML round-trip compatibility intact | **MET** | `round_trip_test` 17/17 (encodings, unknown elements/attributes, comments, dependencies, FileLink, real-world fixture) plus matrix A 14/14 |
 | 2.4 | Index remains disposable | **MET** | `qa_m10_c09_gate_delete_index_db_rebuild_full_function` and `qa_m9_016` both delete `index.db`, rebuild from XML and assert full function |
@@ -41,9 +41,9 @@ Status values: `MET` · `NOT MET` · `PARTIAL` · `CANNOT VERIFY HERE`.
 | B — Atomic save / recovery | B01~B10 | INH-1125 | **MET** | `m10_qa_b_atomic_save.rs` 10/10. Permission-denied provoked for real via a read-only decoy at the deterministic `.doc.xml.tmp` path |
 | C — Workspace / SQLite | C01~C10 | INH-1126 | **MET** | `m10_qa_c_workspace_sqlite.rs` 10/10, stable over 4 repeat runs |
 | D — Core task UX | D01~D10 | INH-1127 | **MET** | `m10_qa_d_core_ux.rs` 10/10, asserting canonical TaskId stability |
-| E — Relations / attachments / rich content | E01~E12 | INH-1128 | **NOT MET** | No standalone RC suite. Underlying coverage exists (m6_qa 18, m7_qa 25) but is not organised or executed as the E matrix |
-| F — Cross-document transactions | F01~F10 | INH-1129 | **NOT MET** | No standalone RC suite. `m8_qa_tests` (295) covers the crash matrix and asserts the union-no-loss invariant, but not under the F numbering |
-| G — Productivity | G01~G10 | INH-1130 | **NOT MET** | No standalone RC suite. `m9_qa_tests` (17) covers search, CJK fallback, views and quick add, but not under the G numbering |
+| E — Relations / attachments / rich content | E01~E12 | INH-1128 | **MET** | `m10_qa_e_relations_richtext.rs` 12/12, asserting cross-cutting invariants (relations survive a save AND stay searchable AND round-trip losslessly) |
+| F — Cross-document transactions | F01~F10 | INH-1129 | **MET** | `m10_qa_f_crossdoc.rs` 10/10; every crash point asserts the union-no-loss invariant |
+| G — Productivity | G01~G10 | INH-1130 | **MET** | `m10_qa_g_productivity.rs` 10/10, including a real CJK case where plain FTS5 returns nothing and the LIKE fallback hits |
 | H — Windows Portable / clean machine | H01~H15 | INH-1131 | **CANNOT VERIFY HERE** | Requires clean Win10 + Win11 VMs, no network, no admin rights, no Node/Rust/Python/Git. Protocol delivered at `docs/qa/QA_M10_H_PORTABLE_PROTOCOL.md`; **0 of 15 cases executed** |
 
 ## 4. Explicit verification items (spec §5.6)
@@ -98,6 +98,26 @@ corrects both directions at once. Found by the IPC bridge work; covered by four 
 (`set_start_date_refreshes_display_string`, `set_due_date_refreshes_display_string`,
 `clearing_a_date_clears_its_display_string`, `undo_restores_both_the_float_and_the_display_string`).
 
+**Fixed during this work — third real data-loss bug, on the primary save path:**
+`serialize_task_tree` (`commands/session.rs`) built a fresh `<TODOLIST NEXTUNIQUEID="1">` and emitted
+only **root-level** tasks into brand-new empty `<TASK>` elements. Because `mappers::write_task`
+preserves the nested `<TASK>` children already present on the element it is handed, passing an empty
+element meant **every subtask was silently discarded on save**. It also dropped the original root
+attributes, comments and unknown elements, and forced UTF-8 regardless of the source encoding. This
+is the Phase 0.1 "simplified session serialization" gap, sitting on the path used by both `file.save`
+and autosave. Fixed by retaining the parsed `XmlDocument` on `SessionEntry` and rebuilding from it:
+original `<TASK>` elements are indexed by ID and updated in place, nested tasks are rebuilt
+recursively from the tree, non-TASK nodes keep their positions, and the source encoding meta is
+reused. Covered by five new in-module regression tests.
+
+**Fixed during this work — fourth defect, a crash in search indexing:**
+`strip_html` (`domain/search.rs`) indexed a `Vec<char>` with `i` but then used `i` to byte-slice the
+source strings, so any HTML comment containing a multibyte character before a tag's closing `>`
+panicked. Through `task_description_text` → `SearchDocument::from_task` this crashed
+`rebuild_search_index` for any document carrying CJK rich text. Fixed by reconstructing the tag in
+char space. `qa_m10_e06` had pinned the buggy behaviour as a tripwire and named the assertion to use
+once fixed; it is now a regression test.
+
 **Reported, not fixed:**
 - **F4** — `DeleteTaskCommand::undo` (`domain/command.rs`) re-appends tasks at the end of the
   sibling list, so delete+undo churns sibling order. IDs and content are intact. Asserted and
@@ -140,7 +160,8 @@ corrects both directions at once. Found by the IPC bridge work; covered by four 
 ## 8. What would close the gate
 
 1. Execute matrix H (15 cases) on clean Win10 and Win11 VMs and record results — **human-only**.
-2. Implement QA-M10 matrices E, F and G as standalone RC suites (32 cases).
+2. ~~Implement QA-M10 matrices E, F and G as standalone RC suites (32 cases).~~ **Done** — 32 cases,
+   all passing.
 3. Integrate Tiptap and the rich-text editor UI (INH-1061, INH-1062).
 4. Perform real runtime UI verification of the 10 issues held at `In Progress`. The IPC bridge is now
    complete, so these are blocked only on driving the packaged app — not on missing backend commands.

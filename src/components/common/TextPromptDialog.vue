@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
 import { resolveTextPrompt, textPrompt } from "../../stores/app-state";
+import { t, useT } from "../../app/i18n";
 
+const tr = useT();
 const inputEl = ref<HTMLInputElement | null>(null);
 const draft = ref("");
 const error = ref("");
@@ -21,7 +23,7 @@ watch(visible, async (open) => {
 function confirm(): void {
   const value = draft.value.trim();
   if (!value) {
-    error.value = "This field cannot be empty";
+    error.value = t("prompt.error.required");
     return;
   }
   resolveTextPrompt(value);
@@ -50,19 +52,21 @@ function onKeydown(e: KeyboardEvent): void {
         <p v-if="options.message" class="prompt-dialog__message">{{ options.message }}</p>
 
         <input
+          id="text-prompt-input"
           ref="inputEl"
           v-model="draft"
           class="prompt-dialog__input"
           type="text"
+          name="value"
           :placeholder="options.placeholder ?? ''"
           @keydown="onKeydown"
         />
         <p v-if="error" class="prompt-dialog__error">{{ error }}</p>
 
         <div class="prompt-dialog__actions">
-          <button class="btn" @click="cancel">Cancel</button>
+          <button class="btn" @click="cancel">{{ tr('dialog.cancel') }}</button>
           <button class="btn btn-primary" @click="confirm">
-            {{ options.confirmLabel ?? 'OK' }}
+            {{ options.confirmLabel ?? tr('dialog.ok') }}
           </button>
         </div>
       </div>

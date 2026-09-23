@@ -13,6 +13,9 @@ import type { AppCommand } from "../../app/commands";
 import { fuzzyRank } from "../../app/fuzzy";
 import { allTasks, jumpToTask } from "../../stores/task-store";
 import { commandPaletteOpen, closeCommandPalette } from "../../stores/ui-store";
+import { tf, useT } from "../../app/i18n";
+
+const t = useT();
 
 type PaletteItem =
   | { kind: "command"; id: string; command: AppCommand; hint: string }
@@ -174,7 +177,7 @@ function onKeydown(e: KeyboardEvent): void {
             v-model="query"
             class="palette__input"
             type="text"
-            placeholder="Search commands and tasks… (↑↓ navigate, ↵ run, esc close)"
+            :placeholder="t('palette.placeholder')"
             spellcheck="false"
             role="combobox"
             aria-expanded="true"
@@ -186,7 +189,7 @@ function onKeydown(e: KeyboardEvent): void {
 
         <div id="palette-list" ref="listEl" class="palette__list" role="listbox">
           <div v-if="items.length === 0" class="palette__empty">
-            No commands or tasks match “{{ query }}”
+            {{ tf('palette.empty', { q: query }) }}
           </div>
           <button
             v-for="(item, index) in items"
@@ -218,9 +221,9 @@ function onKeydown(e: KeyboardEvent): void {
         </div>
 
         <div class="palette__footer">
-          <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
-          <span><kbd>↵</kbd> run</span>
-          <span><kbd>esc</kbd> close</span>
+          <span><kbd>↑</kbd><kbd>↓</kbd> {{ t('palette.footer.navigate') }}</span>
+          <span><kbd>↵</kbd> {{ t('palette.footer.run') }}</span>
+          <span><kbd>esc</kbd> {{ t('palette.footer.close') }}</span>
         </div>
       </div>
     </div>

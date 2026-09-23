@@ -336,6 +336,22 @@ export interface SavedViewDto {
   count: number | null;
 }
 
+/** Wire shape of the backend `PredicateNode` tree (serde externally-tagged enum). */
+export type PredicateNodeDto =
+  | { And: PredicateNodeDto[] }
+  | { Or: PredicateNodeDto[] }
+  | { Leaf: ViewPredicateDto };
+
+/** Saved-view row as returned by the Rust backend commands. */
+export interface SavedViewWireDto {
+  id: string;
+  workspace_id: string;
+  name: string;
+  predicates: PredicateNodeDto;
+  sort_order: number;
+  created_at: string;
+}
+
 // -- M9: Quick Add --
 
 export interface QuickAddRequest {

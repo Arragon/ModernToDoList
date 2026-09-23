@@ -192,11 +192,21 @@ pub fn resolve_document_path(db: &DatabaseManager, document_id: &str) -> Result<
     }
     db.with_connection(|conn| {
         conn.query_row(
-            "SELECT file_path FROM documents WHERE id = ?1",
+            "SELECT d.file_path, w.root_path FROM documents d \
+             JOIN workspaces w ON w.id = d.workspace_id WHERE d.id = ?1",
             [document_id],
-            |r| r.get::<_, String>(0),
+            |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)),
         )
-        .map(PathBuf::from)
+        .map(|(file_path, root_path)| {
+            // Documents are stored relative to the workspace root for
+            // portability; join the root back on so callers get a usable path.
+            let p = PathBuf::from(&file_path);
+            if p.is_absolute() {
+                p
+            } else {
+                PathBuf::from(&root_path).join(p)
+            }
+        })
         .map_err(|_| {
             crate::infrastructure::DatabaseError::Sqlite(rusqlite::Error::QueryReturnedNoRows)
         })

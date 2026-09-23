@@ -8,6 +8,7 @@ import {
 import { canRedo, canUndo, closeAllSessions, isDirty } from "../../stores/session-store";
 import { openCommandPalette, openGlobalSearch } from "../../stores/ui-store";
 import { executeCommand } from "../../app/commands";
+import { backendAvailable } from "../../app/backend";
 import { useT } from "../../app/i18n";
 import { locale, theme, toggleLocale, toggleTheme } from "../../stores/ui-prefs";
 
@@ -29,12 +30,12 @@ async function closeCurrentWorkspace() {
       <h2 class="sidebar__title">
         <i class="fas fa-folder-open"></i>
         <span v-if="hasWorkspace()">{{ workspaceName() }}</span>
-        <span v-else>No Workspace</span>
+        <span v-else>{{ t('sidebar.noWorkspace') }}</span>
       </h2>
       <div v-if="hasWorkspace()" class="sidebar__quick">
         <button
           class="sidebar__quick-btn"
-          title="Global Search (Ctrl+F)"
+          :title="t('sidebar.tooltip.search')"
           :disabled="documentCount === 0"
           @click="openGlobalSearch()"
         >
@@ -42,7 +43,7 @@ async function closeCurrentWorkspace() {
         </button>
         <button
           class="sidebar__quick-btn"
-          title="Command Palette (Ctrl+K)"
+          :title="t('sidebar.tooltip.palette')"
           @click="openCommandPalette()"
         >
           <i class="fas fa-terminal"></i>
@@ -55,7 +56,7 @@ async function closeCurrentWorkspace() {
           @click="toggleLocale()"
         >
           <i class="fas fa-language"></i>
-          <span class="sidebar__prefs-label">{{ locale === 'zh' ? '中' : 'EN' }}</span>
+          <span class="sidebar__prefs-label">{{ locale === 'zh' ? 'EN' : '中' }}</span>
         </button>
         <button
           class="sidebar__quick-btn"
@@ -69,6 +70,7 @@ async function closeCurrentWorkspace() {
 
     <div class="sidebar__content">
       <div v-if="!hasWorkspace()" class="sidebar__empty">
+        <p v-if="!backendAvailable" class="sidebar__web-notice">{{ t('web.notice') }}</p>
         <p class="sidebar__hint">{{ t('sidebar.emptyHint') }}</p>
         <button class="btn btn-primary" @click="executeCommand('workspace.open')">
           <i class="fas fa-folder-open"></i> {{ t('sidebar.openWorkspace') }}
@@ -94,8 +96,8 @@ async function closeCurrentWorkspace() {
             <button class="btn" @click="scanAndIndex()" :title="t('action.scanIndex')">
               <i class="fas fa-magnifying-glass"></i> {{ t('action.scanIndex') }}
             </button>
-            <button class="btn" @click="rebuildIndex()" title="Rebuild Index">
-              <i class="fas fa-arrows-rotate"></i> Rebuild
+            <button class="btn" @click="rebuildIndex()" :title="t('sidebar.tooltip.rebuild')">
+              <i class="fas fa-arrows-rotate"></i> {{ t('sidebar.rebuild') }}
             </button>
           </div>
         </div>
@@ -103,13 +105,13 @@ async function closeCurrentWorkspace() {
         <SavedViewsPanel />
 
         <div class="sidebar__section">
-          <div class="sidebar__section-title">Edit Session</div>
+          <div class="sidebar__section-title">{{ t('sidebar.editSession') }}</div>
           <div class="sidebar__item">
             <span :class="['status-dot', isDirty ? 'status-dot--warn' : 'status-dot--ok']"></span>
-            <span>{{ isDirty ? 'Unsaved changes' : 'Saved' }}</span>
+            <span>{{ isDirty ? t('sidebar.unsaved') : t('sidebar.saved') }}</span>
           </div>
           <div class="sidebar__actions">
-            <button class="btn" title="Save (Ctrl+S)" @click="executeCommand('file.save')">
+            <button class="btn" :title="t('sidebar.tooltip.save')" @click="executeCommand('file.save')">
               <i class="fas fa-floppy-disk"></i> {{ t('action.save') }}
             </button>
             <button
@@ -229,6 +231,15 @@ async function closeCurrentWorkspace() {
 .sidebar__hint {
   font-size: var(--text-xs);
   color: var(--color-text-muted);
+}
+.sidebar__web-notice {
+  font-size: var(--text-xs);
+  color: var(--color-warning, #b45309);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 .sidebar__section { margin-bottom: var(--space-4); }
 .sidebar__section-title {

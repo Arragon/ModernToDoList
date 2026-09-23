@@ -25,7 +25,9 @@ import ProgressLinksEditor from "./ProgressLinksEditor.vue";
 import AttachmentListEditor from "./AttachmentListEditor.vue";
 import DescriptionEditor from "./DescriptionEditor.vue";
 import EmptyState from "../common/EmptyState.vue";
+import { useT } from "../../app/i18n";
 
+const t = useT();
 const taskTags = ref<string[]>([]);
 
 const task = computed(() => selectedTask.value);
@@ -117,7 +119,7 @@ async function onTagsUpdate(tags: string[]): Promise<void> {
 <template>
   <div class="inspector">
     <div v-if="!task" class="inspector__empty">
-      <EmptyState icon="fa-pen-to-square" title="No Selection" description="Select a task to view and edit its properties" />
+      <EmptyState icon="fa-pen-to-square" :title="t('empty.noSelection')" :description="t('empty.selectTask')" />
     </div>
     <div v-else class="inspector__content">
       <TitleEditor :disabled="!canEditField" @update:title="onTitleUpdate" />

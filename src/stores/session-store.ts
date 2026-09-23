@@ -9,6 +9,7 @@
 import { computed, ref } from "vue";
 import type { SessionStatusResponse } from "../ipc/types";
 import * as ipc from "../ipc/client";
+import { describeBackendError } from "../app/backend";
 import { documents, showToast } from "./app-state";
 
 /** document file path -> session id */
@@ -196,7 +197,5 @@ export async function closeAllSessions(): Promise<void> {
 }
 
 function describe(err: unknown): string {
-  if (typeof err === "string") return err;
-  if (err instanceof Error) return err.message;
-  return String(err);
+  return describeBackendError(err);
 }

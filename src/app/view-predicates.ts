@@ -6,12 +6,29 @@
  * every condition the UI can express, and unknown predicates are ignored when a
  * view is restored so a view saved by a newer build still loads.
  */
-import type { ViewPredicateDto } from "../ipc/types";
+import type { PredicateNodeDto, ViewPredicateDto } from "../ipc/types";
 import type { FilterState, GroupMode } from "../stores/filter-state";
 
 export const PREDICATE_VERSION = 1;
 
 const DUE_RANGES = new Set(["all", "overdue", "today", "this-week", "no-date"]);
+
+/** Wraps a flat predicate list into the backend's canonical `And` node. */
+export function predicateNodeFrom(predicates: ViewPredicateDto[]): PredicateNodeDto {
+  return { And: predicates.map((predicate) => ({ Leaf: predicate })) };
+}
+
+/** Flattens a backend predicate tree back to a list (views written by this app are `And`-of-`Leaf`). */
+export function predicatesFromNode(node: PredicateNodeDto): ViewPredicateDto[] {
+  const leaves: ViewPredicateDto[] = [];
+  const walk = (current: PredicateNodeDto): void => {
+    if ("Leaf" in current) leaves.push(current.Leaf);
+    else if ("And" in current) current.And.forEach(walk);
+    else current.Or.forEach(walk);
+  };
+  walk(node);
+  return leaves;
+}
 
 export function predicatesFromFilter(state: FilterState): ViewPredicateDto[] {
   const predicates: ViewPredicateDto[] = [];

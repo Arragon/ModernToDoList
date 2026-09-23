@@ -6,15 +6,17 @@
  * feature usable (and testable) while the backend command is still landing.
  */
 import { computed, ref } from "vue";
-import type { SavedViewDto, ViewPredicateDto } from "../ipc/types";
+import type { SavedViewDto, SavedViewWireDto, ViewPredicateDto } from "../ipc/types";
 import * as ipc from "../ipc/client";
 import { ipcFailureMessage } from "../ipc/safe";
 import { applyFiltersWith, countMatches, filterState } from "./filter-state";
 import type { FilterContext } from "./filter-state";
 import { allTasks } from "./task-store";
 import { participantsByTaskMap } from "./relation-store";
-import { filterFromPredicates, predicatesFromFilter } from "../app/view-predicates";
-import { showToast } from "./app-state";
+import {
+  filterFromPredicates, predicatesFromFilter, predicateNodeFrom, predicatesFromNode,
+} from "../app/view-predicates";
+import { showToast, workspace } from "./app-state";
 
 const STORAGE_KEY = "mtodo.saved-views.v1";
 
@@ -65,12 +67,34 @@ function normalise(views: SavedViewDto[]): SavedViewDto[] {
     .sort((a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name));
 }
 
+/** Maps a backend saved-view row onto the flat in-memory representation. */
+function fromWire(view: SavedViewWireDto): SavedViewDto {
+  return {
+    id: view.id,
+    workspace_id: view.workspace_id,
+    name: view.name,
+    predicates: predicatesFromNode(view.predicates),
+    sort_order: view.sort_order,
+    count: null,
+  };
+}
+
 export async function loadSavedViews(force = false): Promise<void> {
   if (savedViewsLoaded.value && !force) return;
 
-  const result = await ipc.listSavedViews();
+  const workspaceId = workspace.value?.id;
+  if (!workspaceId) {
+    // No workspace open: the backend has no context to list views for, so use
+    // the local mirror silently instead of reporting a failure.
+    savedViews.value = normalise(readLocal());
+    usingBackendStore.value = false;
+    savedViewsLoaded.value = true;
+    return;
+  }
+
+  const result = await ipc.listSavedViews(workspaceId);
   if (result.ok) {
-    savedViews.value = normalise(result.value);
+    savedViews.value = normalise(result.value.map(fromWire));
     usingBackendStore.value = true;
     savedViewsLoaded.value = true;
     return;
@@ -106,14 +130,17 @@ export async function createViewFromFilter(name: string): Promise<SavedViewDto |
     return null;
   }
 
-  const result = await ipc.createSavedView(trimmed, predicates);
-  if (result.ok) {
-    const created = normalise([...savedViews.value, result.value]);
+  const workspaceId = workspace.value?.id;
+  const result = workspaceId
+    ? await ipc.createSavedView(workspaceId, trimmed, predicateNodeFrom(predicates))
+    : null;
+  if (result?.ok) {
+    const created = normalise([...savedViews.value, fromWire(result.value)]);
     savedViews.value = created;
     usingBackendStore.value = true;
     activeViewId.value = result.value.id;
     showToast(`Saved view "${trimmed}" created`, "success");
-    return result.value;
+    return fromWire(result.value);
   }
 
   // Local mirror fallback so the feature degrades instead of failing outright.
@@ -130,9 +157,11 @@ export async function createViewFromFilter(name: string): Promise<SavedViewDto |
   writeLocal(savedViews.value);
   activeViewId.value = view.id;
   showToast(
-    result.missing
-      ? `Saved view "${trimmed}" stored locally (backend command not available yet)`
-      : `Saved view "${trimmed}" stored locally: ${result.error}`,
+    result === null
+      ? `Saved view "${trimmed}" stored locally (no workspace open)`
+      : result.missing
+        ? `Saved view "${trimmed}" stored locally (backend command not available yet)`
+        : `Saved view "${trimmed}" stored locally: ${result.error}`,
     "warning",
   );
   return view;

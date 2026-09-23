@@ -1,6 +1,8 @@
 import { ref } from "vue";
 import type { WorkspaceInfo, DocumentInfo, DbStatus } from "../ipc/types";
 import * as ipc from "../ipc/client";
+import { describeBackendError } from "../app/backend";
+import { tf } from "../app/i18n";
 
 export type AppView = "empty" | "workspace" | "loading";
 export type ToastType = "info" | "success" | "warning" | "error";
@@ -151,9 +153,9 @@ export async function openWorkspace(path: string, name: string) {
     appView.value = "workspace";
     await refreshDocuments();
     await refreshDbStatus();
-    showToast(`Workspace "${info.name}" opened`, "success");
+    showToast(tf("toast.workspaceOpened", { name: info.name }), "success");
   } catch (e) {
-    showToast(`Failed to open workspace: ${e}`, "error");
+    showToast(describeBackendError(e), "error");
   } finally {
     appLoading.value = false;
   }
@@ -169,7 +171,7 @@ export async function loadWorkspace(path: string) {
     await refreshDocuments();
     await refreshDbStatus();
   } catch (e) {
-    showToast(`Failed to load workspace: ${e}`, "error");
+    showToast(describeBackendError(e), "error");
     appView.value = "empty";
   } finally {
     appLoading.value = false;
@@ -184,7 +186,7 @@ export async function closeWorkspace() {
     selectedTaskKey.value = null;
     appView.value = "empty";
   } catch (e) {
-    showToast(`Failed to close workspace: ${e}`, "error");
+    showToast(describeBackendError(e), "error");
   }
 }
 
@@ -210,9 +212,9 @@ export async function scanAndIndex() {
   try {
     const result = await ipc.scanAndIndex();
     await refreshDocuments();
-    showToast(`Indexed ${result.total_tasks} tasks from ${result.total_files} files`, "success");
+    showToast(tf("toast.indexed", { tasks: result.total_tasks, files: result.total_files }), "success");
   } catch (e) {
-    showToast(`Index failed: ${e}`, "error");
+    showToast(describeBackendError(e), "error");
   } finally {
     appLoading.value = false;
   }
@@ -224,9 +226,9 @@ export async function rebuildIndex() {
   try {
     const result = await ipc.rebuildIndex();
     await refreshDocuments();
-    showToast(`Rebuilt index: ${result.total_tasks} tasks`, "success");
+    showToast(tf("toast.rebuilt", { tasks: result.total_tasks }), "success");
   } catch (e) {
-    showToast(`Rebuild failed: ${e}`, "error");
+    showToast(describeBackendError(e), "error");
   } finally {
     appLoading.value = false;
   }

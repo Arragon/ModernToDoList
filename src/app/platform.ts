@@ -12,7 +12,8 @@
  */
 import { invoke } from "@tauri-apps/api/core";
 import { Commands } from "../ipc/commands";
-import { describeIpcError, safeInvoke } from "../ipc/safe";
+import { safeInvoke } from "../ipc/safe";
+import { describeBackendError } from "./backend";
 import { promptForPath, showToast } from "../stores/app-state";
 
 const HTTP_SCHEME = /^https?:\/\//i;
@@ -30,7 +31,7 @@ export async function openExternal(target: string): Promise<boolean> {
     await invoke(Commands.SHELL_OPEN, { path: value, with: null });
     return true;
   } catch (err) {
-    const reason = describeIpcError(err);
+    const reason = describeBackendError(err);
     if (HTTP_SCHEME.test(value)) {
       // WebView2 fallback: a new window/tab is acceptable for http(s).
       const opened = window.open(value, "_blank", "noopener,noreferrer");
@@ -55,7 +56,7 @@ export async function revealInExplorer(path: string): Promise<boolean> {
     await invoke(Commands.SHELL_OPEN, { path: directory, with: null });
     return true;
   } catch (err) {
-    showToast(`Could not reveal "${value}" (${describeIpcError(err)})`, "error");
+    showToast(`Could not reveal "${value}" (${describeBackendError(err)})`, "error");
     return false;
   }
 }

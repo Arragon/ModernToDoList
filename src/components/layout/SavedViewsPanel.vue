@@ -6,20 +6,25 @@
  * create (from the current filter state), rename and delete. Clicking a view
  * applies its predicates to the active filter.
  */
-import { computed, onMounted } from "vue";
+import { computed, onMounted, watch } from "vue";
 import {
   activeViewId, applyView, countFor, createViewFromFilter, loadSavedViews,
   removeView, renameView, savedViews, usingBackendStore,
 } from "../../stores/saved-view-store";
 import { describePredicates } from "../../app/view-predicates";
 import { clearFilters, isFilterActive } from "../../stores/filter-state";
-import { promptForText, showConfirm, showToast } from "../../stores/app-state";
+import { promptForText, showConfirm, showToast, workspace } from "../../stores/app-state";
 
 const views = computed(() => savedViews.value);
 const canSave = computed(() => isFilterActive.value);
 
 onMounted(() => {
   void loadSavedViews();
+});
+
+// Views are per-workspace: reload from the backend whenever the open workspace changes.
+watch(() => workspace.value?.id, () => {
+  void loadSavedViews(true);
 });
 
 async function create(): Promise<void> {

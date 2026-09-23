@@ -7,7 +7,8 @@ Write-Host "=== Building ModernToDoList 2.0 Portable ===" -ForegroundColor Cyan
 
 # Step 1: Build release
 Write-Host "`n[1/4] Building release..." -ForegroundColor Yellow
-cargo tauri build -- --bundles none
+npm run tauri -- build --no-bundle -- -j 2
+if ($LASTEXITCODE -ne 0) { throw "tauri build failed with exit code $LASTEXITCODE" }
 
 # Step 2: Collect artifacts
 $releaseDir = "release\ModernToDoList-2.0.0-Portable-win-x64"

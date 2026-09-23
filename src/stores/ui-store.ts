@@ -4,12 +4,19 @@
  * workspace/document parts of the tree.
  */
 import { ref } from "vue";
+import { confirmDialog, pathPrompt, textPrompt } from "./app-state";
 
 export const commandPaletteOpen = ref(false);
 export const globalSearchOpen = ref(false);
 export const quickAddFocusRequest = ref(0);
 
+/** True while a blocking modal dialog (confirm / path / text prompt) is open. */
+function blockingDialogOpen(): boolean {
+  return confirmDialog.value.visible || pathPrompt.value.visible || textPrompt.value.visible;
+}
+
 export function openCommandPalette(): void {
+  if (blockingDialogOpen()) return;
   globalSearchOpen.value = false;
   commandPaletteOpen.value = true;
 }
@@ -24,6 +31,7 @@ export function toggleCommandPalette(): void {
 }
 
 export function openGlobalSearch(): void {
+  if (blockingDialogOpen()) return;
   commandPaletteOpen.value = false;
   globalSearchOpen.value = true;
 }

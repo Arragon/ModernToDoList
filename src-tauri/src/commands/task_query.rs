@@ -54,6 +54,13 @@ pub fn query_tasks(
         if let Some(ref doc_id) = document_id {
             sql.push_str(" AND document_id = ?");
             params.push(Box::new(doc_id.clone()));
+        } else if let Ok(guard) = state.workspace.lock() {
+            // No explicit document: scope to the currently-open workspace so
+            // tasks from other workspaces never leak into this task tree.
+            if let Some(ws) = guard.as_ref() {
+                sql.push_str(" AND document_id IN (SELECT id FROM documents WHERE workspace_id = ?)");
+                params.push(Box::new(ws.metadata.id.clone()));
+            }
         }
         if let Some(ref parent) = parent_key {
             sql.push_str(" AND parent_key = ?");
@@ -79,7 +86,9 @@ pub fn query_tasks(
                 title: row.get(2)?,
                 priority: row.get(3)?,
                 status: row.get(4)?,
-                percent_done: row.get(5)?,
+                // The `percent_done` column is REAL; rusqlite will not coerce a
+                // REAL into i32, so read it as f64 and cast (mirrors saved_views).
+                percent_done: row.get::<_, f64>(5)? as i32,
                 risk: row.get(6)?,
                 start_date: row.get(7)?,
                 due_date: row.get(8)?,

@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import Inspector from "../inspector/Inspector.vue";
+import { useT } from "../../app/i18n";
+
+const t = useT();
 </script>
 
 <template>
   <div class="inspector-panel">
     <div class="inspector-panel__header">
-      <h3>Inspector</h3>
+      <h3>{{ t('inspector.heading') }}</h3>
     </div>
     <div class="inspector-panel__content">
       <Inspector />

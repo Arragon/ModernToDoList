@@ -168,7 +168,9 @@ pub fn list_documents(
         Some(ws) => {
             let docs = ws.documents().iter().map(|d| DocumentInfo {
                 id: d.id.clone(),
-                file_path: d.file_path.clone(),
+                // Return the resolved absolute path so callers (and the UI) can
+                // use it directly; the stored relative form is an internal detail.
+                file_path: ws.resolve_document_path(d).to_string_lossy().to_string(),
                 doc_type: d.doc_type.as_str().to_string(),
                 fingerprint: d.fingerprint.clone(),
                 last_indexed: d.last_indexed.clone(),

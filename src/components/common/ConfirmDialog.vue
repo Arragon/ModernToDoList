@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted } from "vue";
 import { confirmDialog } from "../../stores/app-state";
+import { t } from "../../app/i18n";
 
 function handleConfirm() {
   if (confirmDialog.value.onConfirm) {
@@ -13,16 +15,27 @@ function handleCancel() {
   confirmDialog.value.visible = false;
   confirmDialog.value.onConfirm = null;
 }
+
+function onKeydown(e: KeyboardEvent): void {
+  if (e.key === "Escape" && confirmDialog.value.visible) {
+    e.preventDefault();
+    e.stopPropagation();
+    handleCancel();
+  }
+}
+
+onMounted(() => window.addEventListener("keydown", onKeydown, true));
+onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown, true));
 </script>
 
 <template>
   <Teleport to="body">
     <div v-if="confirmDialog.visible" class="confirm-overlay" @click.self="handleCancel">
-      <div class="confirm-dialog">
+      <div class="confirm-dialog" role="dialog" aria-modal="true" :aria-label="confirmDialog.title">
         <h3 class="confirm-dialog__title">{{ confirmDialog.title }}</h3>
         <p class="confirm-dialog__message">{{ confirmDialog.message }}</p>
         <div class="confirm-dialog__actions">
-          <button class="btn" @click="handleCancel">Cancel</button>
+          <button class="btn" @click="handleCancel">{{ t('dialog.cancel') }}</button>
           <button class="btn btn-danger" @click="handleConfirm">{{ confirmDialog.confirmLabel }}</button>
         </div>
       </div>

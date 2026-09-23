@@ -8,6 +8,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
+use crate::commands::workspace::WorkspaceState;
 use crate::domain::command::UndoRedoManager;
 use crate::domain::fingerprint::FileFingerprint;
 use crate::domain::persistence::{atomic_save, SaveConfig};
@@ -122,12 +123,26 @@ pub struct UndoRedoResponse {
 pub fn open_document_session(
     path: String,
     state: tauri::State<'_, AppState>,
+    ws: tauri::State<'_, WorkspaceState>,
 ) -> Result<OpenSessionResponse, String> {
-    let file_path = PathBuf::from(&path);
+    // Callers (and the stored index) may hand us a path relative to the open
+    // workspace root; resolve it to an absolute path before reading.
+    let raw = PathBuf::from(&path);
+    let file_path = if raw.is_absolute() {
+        raw
+    } else {
+        match ws.workspace.lock() {
+            Ok(guard) => match guard.as_ref() {
+                Some(w) => w.root_path.join(raw),
+                None => raw,
+            },
+            Err(_) => raw,
+        }
+    };
 
     // Read and parse the file
     let bytes = std::fs::read(&file_path)
-        .map_err(|e| format!("Failed to read file '{}': {}", path, e))?;
+        .map_err(|e| format!("Failed to read file '{}': {}", file_path.display(), e))?;
 
     let doc = parse_xml(&bytes)
         .map_err(|e| format!("Failed to parse XML: {}", e))?;

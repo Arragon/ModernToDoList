@@ -2,6 +2,7 @@ import { computed, ref } from "vue";
 import type { TaskSummary } from "../ipc/types";
 import * as ipc from "../ipc/client";
 import { ipcFailureMessage } from "../ipc/safe";
+import { describeBackendError } from "../app/backend";
 import { selectedTaskKey, expandedTaskKeys, documents, showToast, workspace, scanAndIndex, refreshDocuments } from "./app-state";
 import { isFilterActive, applyFilters, filterState } from "./filter-state";
 import {
@@ -216,7 +217,7 @@ export async function loadTasks(documentId?: string) {
     const result = await ipc.queryTasks(documentId);
     allTasks.value = result.tasks;
   } catch (e) {
-    showToast(`Failed to load tasks: ${e}`, "error");
+    showToast(describeBackendError(e), "error");
   } finally {
     tasksLoading.value = false;
   }
@@ -520,14 +521,14 @@ const EMPTY_TDL = `<?xml version="1.0" encoding="utf-8"?>
  * serialize command, then re-scans so the index (and `documents`) picks it up.
  * Returns the new document id, or null when it could not be created.
  */
-async function bootstrapDefaultDocument(): Promise<string | null> {
+export async function bootstrapDefaultDocument(): Promise<string | null> {
   const root = workspace.value?.root_path;
   if (!root) return null;
   const path = `${root.replace(/[\\/]$/, "")}\\ToDoList.tdl`;
   try {
     await ipc.serializeAndWriteDocument(EMPTY_TDL, path, "utf-8");
   } catch (e) {
-    showToast(`Could not create a task document: ${e}`, "error");
+    showToast(describeBackendError(e), "error");
     return null;
   }
   await scanAndIndex();

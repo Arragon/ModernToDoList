@@ -12,7 +12,7 @@ import {
   rebuildIndex, loadWorkspace, openWorkspace, showConfirm, showToast, promptForText,
 } from "../stores/app-state";
 import {
-  allTasks, createTask, deleteTask, jumpToTask, loadTasks, toggleTaskStatus,
+  allTasks, bootstrapDefaultDocument, createTask, deleteTask, jumpToTask, loadTasks, toggleTaskStatus,
 } from "../stores/task-store";
 import { clearFilters, clearMultiSelect, filterState, multiSelectedKeys, setGroupMode } from "../stores/filter-state";
 import {
@@ -24,6 +24,8 @@ import { requestQuickAddFocus, toggleCommandPalette, toggleGlobalSearch } from "
 import { createViewFromFilter, loadSavedViews } from "../stores/saved-view-store";
 import { loadDependencies, loadParticipants, bulkAssignParticipants } from "../stores/relation-store";
 import { fileNameOf, pickPath } from "./platform";
+import { backendAvailable, describeBackendError } from "./backend";
+import { t, tf } from "./i18n";
 import * as ipc from "../ipc/client";
 import type { TaskSummary } from "../ipc/types";
 import { isCommandAvailable } from "../stores/capability-store";
@@ -104,9 +106,7 @@ export function enabledCommands(): AppCommand[] {
 }
 
 function describe(err: unknown): string {
-  if (typeof err === "string") return err;
-  if (err instanceof Error) return err.message;
-  return String(err);
+  return describeBackendError(err);
 }
 
 const hasWorkspace = () => workspace.value !== null;
@@ -117,27 +117,29 @@ const hasSelection = () => hasDocument() && selectedTaskKey.value !== null;
 
 registerCommand({
   id: "workspace.open",
-  label: "Open Workspace…",
+  get label() { return t("cmd.workspaceOpen"); },
   icon: "fa-folder-open",
   category: "workspace",
   description: "Pick a folder and load its task documents",
   enabled: () => true,
   execute: async () => {
     const path = await pickPath({
-      title: "Open Workspace",
+      title: t("ws.open.title"),
       mode: "directory",
-      message: "Choose the folder that holds your task documents.",
-      placeholder: "D:\\Projects\\MyWorkspace",
+      message: t("ws.open.message"),
+      placeholder: t("ws.placeholder"),
     });
     if (!path) return;
     await loadWorkspace(path);
-    if (workspace.value === null) {
+    // Only offer to create when the backend actually answered. If the backend is
+    // absent (web preview) a load failure must not be mistaken for "empty folder".
+    if (workspace.value === null && backendAvailable.value) {
       const name = fileNameOf(path) || "Workspace";
       showConfirm(
-        "Create workspace?",
-        `"${path}" is not a workspace yet. Create one there?`,
+        t("ws.confirmCreate.title"),
+        tf("ws.confirmCreate.message", { path }),
         () => { void openWorkspace(path, name); },
-        "Create",
+        t("ws.confirmCreate.confirm"),
       );
       return;
     }
@@ -147,17 +149,17 @@ registerCommand({
 
 registerCommand({
   id: "workspace.create",
-  label: "New Workspace…",
+  get label() { return t("cmd.workspaceCreate"); },
   icon: "fa-folder-plus",
   category: "workspace",
   description: "Create a workspace folder and index it",
   enabled: () => true,
   execute: async () => {
     const path = await pickPath({
-      title: "New Workspace",
+      title: t("ws.create.title"),
       mode: "directory",
-      message: "Choose where the new workspace folder lives.",
-      placeholder: "D:\\Projects\\MyWorkspace",
+      message: t("ws.create.message"),
+      placeholder: t("ws.placeholder"),
     });
     if (!path) return;
     const name = fileNameOf(path) || "Workspace";
@@ -168,7 +170,7 @@ registerCommand({
 
 registerCommand({
   id: "workspace.close",
-  label: "Close Workspace",
+  get label() { return t("cmd.workspaceClose"); },
   icon: "fa-folder-minus",
   category: "workspace",
   enabled: () => hasWorkspace(),
@@ -182,7 +184,7 @@ registerCommand({
 
 registerCommand({
   id: "workspace.scanAndIndex",
-  label: "Scan & Index",
+  get label() { return t("cmd.scanIndex"); },
   icon: "fa-magnifying-glass",
   category: "workspace",
   enabled: () => hasWorkspace(),
@@ -191,7 +193,7 @@ registerCommand({
 
 registerCommand({
   id: "workspace.rebuildIndex",
-  label: "Rebuild Index",
+  get label() { return t("cmd.rebuildIndex"); },
   icon: "fa-arrows-rotate",
   category: "workspace",
   enabled: () => hasWorkspace(),
@@ -206,7 +208,7 @@ registerCommand({
 
 registerCommand({
   id: "file.save",
-  label: "Save",
+  get label() { return t("cmd.save"); },
   icon: "fa-floppy-disk",
   shortcut: "Ctrl+S",
   category: "document",
@@ -241,7 +243,7 @@ registerCommand({
 
 registerCommand({
   id: "edit.undo",
-  label: "Undo",
+  get label() { return t("cmd.undo"); },
   icon: "fa-rotate-left",
   shortcut: "Ctrl+Z",
   category: "edit",
@@ -254,7 +256,7 @@ registerCommand({
 
 registerCommand({
   id: "edit.redo",
-  label: "Redo",
+  get label() { return t("cmd.redo"); },
   icon: "fa-rotate-right",
   shortcut: "Ctrl+Y",
   category: "edit",
@@ -269,12 +271,15 @@ registerCommand({
 
 registerCommand({
   id: "task.addRoot",
-  label: "Add Root Task",
+  get label() { return t("cmd.addRoot"); },
   icon: "fa-plus",
   shortcut: "Ctrl+N",
   category: "task",
   description: "Create a task at the document root",
-  enabled: () => hasDocument() && isCommandAvailable(Commands.ADD_TASK),
+  // Allow adding the first task in a workspace that has no documents yet;
+  // createTask bootstraps the default document in that case (breaks the
+  // "no documents → can't add task → no documents" dead-end).
+  enabled: () => hasWorkspace() && isCommandAvailable(Commands.ADD_TASK),
   execute: () => addTaskFlow(null),
 });
 
@@ -551,10 +556,15 @@ export function bulkTargetTasks() {
 
 /** Allocates a task id (M2 allocator) and creates the task through the session. */
 async function addTaskFlow(parentKey: string | null): Promise<void> {
-  const documentId = parentKey
+  let documentId: string | null = parentKey
     ? allTasks.value.find((t) => t.task_key === parentKey)?.document_id
       ?? documents.value[0]?.id ?? null
     : documents.value[0]?.id ?? null;
+  // No document yet (brand-new workspace): create the first one so the user
+  // can add their first task instead of hitting a dead end.
+  if (!documentId) {
+    documentId = await bootstrapDefaultDocument();
+  }
   if (!documentId) {
     showToast("No document is available to add a task to", "warning");
     return;
@@ -574,8 +584,12 @@ async function addTaskFlow(parentKey: string | null): Promise<void> {
   });
   if (created) {
     setActiveDocument(documentId);
+    // Persist and re-index so the freshly created task shows in the tree
+    // immediately (the tree is index-driven).
+    await saveActiveSession();
+    await loadTasks();
     jumpToTask(created);
-    showToast("Task created — rename it in the Inspector", "success");
+    showToast(t("toast.taskCreated"), "success");
   }
 }
 

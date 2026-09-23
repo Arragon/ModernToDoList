@@ -7,7 +7,9 @@ import CommandPalette from "../search/CommandPalette.vue";
 import PathInputDialog from "../common/PathInputDialog.vue";
 import TextPromptDialog from "../common/TextPromptDialog.vue";
 import { inspectorWidth, layoutLimits, sidebarWidth } from "../../stores/settings-store";
+import { useT } from "../../app/i18n";
 
+const t = useT();
 type HandleKind = "sidebar" | "inspector";
 
 const rootEl = ref<HTMLElement | null>(null);
@@ -150,7 +152,7 @@ onBeforeUnmount(() => {
       :class="{ active: activeHandle === 'sidebar' }"
       role="separator"
       aria-orientation="vertical"
-      aria-label="Resize sidebar"
+      :aria-label="t('layout.resize.sidebar')"
       tabindex="0"
       @pointerdown="onPointerDown('sidebar', $event)"
       @pointermove="onPointerMove"
@@ -167,7 +169,7 @@ onBeforeUnmount(() => {
       :class="{ active: activeHandle === 'inspector' }"
       role="separator"
       aria-orientation="vertical"
-      aria-label="Resize inspector"
+      :aria-label="t('layout.resize.inspector')"
       tabindex="0"
       @pointerdown="onPointerDown('inspector', $event)"
       @pointermove="onPointerMove"

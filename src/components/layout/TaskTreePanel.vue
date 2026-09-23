@@ -6,6 +6,7 @@ import { filterState, multiSelectedKeys, setGroupMode } from "../../stores/filte
 import { loadDependencies, loadParticipants } from "../../stores/relation-store";
 import { openGlobalSearch, globalSearchOpen } from "../../stores/ui-store";
 import { executeCommand } from "../../app/commands";
+import { tf, useT } from "../../app/i18n";
 import { settings } from "../../stores/settings-store";
 import TaskTree from "../task-tree/TaskTree.vue";
 import TaskFilter from "../task-tree/TaskFilter.vue";
@@ -17,6 +18,7 @@ const hasWorkspace = computed(() => workspace.value !== null);
 const hasDocuments = computed(() => documents.value.length > 0);
 const selectionCount = computed(() => multiSelectedKeys.value.size);
 const grouped = computed(() => filterState.value.groupBy === "participant");
+const t = useT();
 
 // Auto-load tasks when documents change
 watch(documents, async (docs) => {
@@ -48,9 +50,9 @@ function toggleVirtualization(): void {
   <div class="task-tree-panel">
     <div class="task-tree-panel__header">
       <h3>
-        Tasks
+        {{ t('tree.heading') }}
         <span v-if="selectionCount > 0" class="task-tree-panel__selection">
-          {{ selectionCount }} selected
+          {{ tf('tree.selection', { n: selectionCount }) }}
         </span>
       </h3>
       <div class="task-tree-panel__tools">
@@ -58,14 +60,14 @@ function toggleVirtualization(): void {
           class="task-tree-panel__tool"
           :class="{ 'task-tree-panel__tool--on': grouped }"
           :disabled="!hasDocuments"
-          title="Group by participant (RD-M6-008)"
+          :title="t('tree.tool.group')"
           @click="toggleGrouping"
         >
           <i class="fas fa-users"></i>
         </button>
         <button
           class="task-tree-panel__tool"
-          :title="`Tree virtualization: ${settings.virtualization.mode} (click to cycle)`"
+          :title="tf('tree.tool.virtualization', { mode: settings.virtualization.mode })"
           @click="toggleVirtualization"
         >
           <i :class="settings.virtualization.mode === 'off' ? 'fas fa-list' : 'fas fa-bolt'"></i>
@@ -74,15 +76,15 @@ function toggleVirtualization(): void {
           class="task-tree-panel__tool"
           :class="{ 'task-tree-panel__tool--on': globalSearchOpen }"
           :disabled="!hasDocuments"
-          title="Global Search (Ctrl+F)"
+          :title="t('tree.tool.search')"
           @click="openGlobalSearch()"
         >
           <i class="fas fa-magnifying-glass"></i>
         </button>
         <button
           class="task-tree-panel__tool"
-          :disabled="!hasDocuments"
-          title="Add task (Ctrl+N / Ctrl+Shift+N)"
+          :disabled="!hasWorkspace"
+          :title="t('tree.tool.add')"
           @click="addTask"
         >
           <i class="fas fa-plus"></i>
@@ -96,22 +98,22 @@ function toggleVirtualization(): void {
       <EmptyState
         v-if="!hasWorkspace"
         icon="fa-list-check"
-        title="No Workspace"
-        description="Open a workspace to view and manage tasks"
+        :title="t('tree.empty.noWorkspace.title')"
+        :description="t('tree.empty.noWorkspace.desc')"
       />
       <EmptyState
         v-else-if="!hasDocuments"
         icon="fa-file-circle-xmark"
-        title="No Documents"
-        description="Scan the workspace to discover task documents"
+        :title="t('tree.empty.noDocuments.title')"
+        :description="t('tree.empty.noDocuments.desc')"
       />
       <TaskTree v-else />
     </div>
 
-    <QuickAdd v-if="hasDocuments && settings.quickAddEnabled" />
+    <QuickAdd v-if="hasWorkspace && settings.quickAddEnabled" />
 
     <div v-if="hasDocuments" class="task-tree-panel__status">
-      <span>{{ allTasks.length }} task(s) indexed</span>
+      <span>{{ tf('tree.status', { n: allTasks.length }) }}</span>
     </div>
   </div>
 </template>

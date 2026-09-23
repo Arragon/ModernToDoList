@@ -11,7 +11,7 @@ import type {
   AddTaskRequest, AddTaskResponse, MutationAck,
   ParticipantDto, DependencyDto, DependencyGraphDto, ProgressLinkDto,
   AttachmentDto, AttachmentImportResult,
-  SearchResponseDto, SavedViewDto, QuickAddRequest,
+  SearchResponseDto, SavedViewDto, SavedViewWireDto, PredicateNodeDto, QuickAddRequest,
   TaskCommentsResponse,
 } from "./types";
 
@@ -331,26 +331,29 @@ export async function globalSearch(
   });
 }
 
-export async function listSavedViews(): Promise<IpcResult<SavedViewDto[]>> {
-  return safeInvoke<SavedViewDto[]>(Commands.LIST_SAVED_VIEWS, {});
+export async function listSavedViews(workspaceId: string): Promise<IpcResult<SavedViewWireDto[]>> {
+  return safeInvoke<SavedViewWireDto[]>(Commands.LIST_SAVED_VIEWS, { workspaceId });
 }
 
 export async function createSavedView(
+  workspaceId: string,
   name: string,
-  predicates: SavedViewDto["predicates"],
-): Promise<IpcResult<SavedViewDto>> {
-  return safeInvoke<SavedViewDto>(Commands.CREATE_SAVED_VIEW, { name, predicates });
+  predicates: PredicateNodeDto,
+): Promise<IpcResult<SavedViewWireDto>> {
+  return safeInvoke<SavedViewWireDto>(Commands.CREATE_SAVED_VIEW, { workspaceId, name, predicates });
 }
 
 export async function renameSavedView(
   viewId: string,
   name: string,
 ): Promise<IpcResult<SavedViewDto>> {
-  return safeInvoke<SavedViewDto>(Commands.RENAME_SAVED_VIEW, { viewId, name });
+  // Backend signature is `rename_saved_view(id, new_name)`.
+  return safeInvoke<SavedViewDto>(Commands.RENAME_SAVED_VIEW, { id: viewId, newName: name });
 }
 
 export async function deleteSavedView(viewId: string): Promise<IpcResult<MutationAck>> {
-  return safeInvoke<MutationAck>(Commands.DELETE_SAVED_VIEW, { viewId });
+  // Backend signature is `delete_saved_view(id)`.
+  return safeInvoke<MutationAck>(Commands.DELETE_SAVED_VIEW, { id: viewId });
 }
 
 export async function quickAddTask(

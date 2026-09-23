@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
 import { pathPrompt, resolvePathPrompt } from "../../stores/app-state";
+import { t } from "../../app/i18n";
 
 const inputEl = ref<HTMLInputElement | null>(null);
 const draft = ref("");
@@ -22,12 +23,12 @@ function confirm(): void {
   const value = draft.value.trim();
   if (!value) {
     error.value = options.value.mode === "directory"
-      ? "Enter a folder path, e.g. D:\\Projects\\MyWorkspace"
-      : "Enter a file path";
+      ? t("prompt.error.directory")
+      : t("prompt.error.file");
     return;
   }
   if (options.value.mode === "file" && !/[\\/][^\\/]+(\.[A-Za-z0-9]+)?$/.test(value)) {
-    error.value = "That does not look like a file path";
+    error.value = t("prompt.error.notfile");
     return;
   }
   resolvePathPrompt(value);
@@ -59,10 +60,12 @@ function onKeydown(e: KeyboardEvent): void {
         <p v-if="options.message" class="prompt-dialog__message">{{ options.message }}</p>
 
         <input
+          id="path-prompt-input"
           ref="inputEl"
           v-model="draft"
           class="prompt-dialog__input"
           type="text"
+          name="path"
           spellcheck="false"
           :placeholder="options.placeholder ?? ''"
           @keydown="onKeydown"
@@ -70,8 +73,8 @@ function onKeydown(e: KeyboardEvent): void {
         <p v-if="error" class="prompt-dialog__error">{{ error }}</p>
 
         <div class="prompt-dialog__actions">
-          <button class="btn" @click="cancel">Cancel</button>
-          <button class="btn btn-primary" @click="confirm">OK</button>
+          <button class="btn" @click="cancel">{{ t('dialog.cancel') }}</button>
+          <button class="btn btn-primary" @click="confirm">{{ t('dialog.ok') }}</button>
         </div>
       </div>
     </div>

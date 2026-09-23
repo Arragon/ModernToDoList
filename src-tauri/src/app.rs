@@ -156,8 +156,9 @@ pub fn restore_window_state(window: &tauri::WebviewWindow) {
             800 // fallback default from tauri.conf.json
         };
 
-        // Validate position: ensure at least 100px of the window is visible
-        // on a reasonable display area (conservative check without monitor enumeration)
+        // Validate position: ensure the restored window stays fully inside a
+        // connected display's work area (saved state may come from a monitor
+        // that is no longer attached or from a different resolution).
         let x = if state.x.is_finite() && state.x > -10000.0 && state.x < 10000.0 {
             state.x as i32
         } else {
@@ -172,9 +173,37 @@ pub fn restore_window_state(window: &tauri::WebviewWindow) {
             return;
         };
 
+        let (x, y) = clamp_to_work_area(window, x, y, width, height);
         let _ = window.set_position(PhysicalPosition::new(x, y));
         let _ = window.set_size(PhysicalSize::new(width, height));
     }
+}
+
+/// Clamp a window rectangle into the work area of the monitor containing its
+/// top-left corner, so a restored window can never end up (partly) off-screen.
+fn clamp_to_work_area(window: &tauri::WebviewWindow, x: i32, y: i32, width: u32, height: u32) -> (i32, i32) {
+    let Ok(monitors) = window.available_monitors() else {
+        return (x, y);
+    };
+    let Some(monitor) = monitors
+        .iter()
+        .find(|m| {
+            let area = m.work_area();
+            let (ax, ay) = (area.position.x, area.position.y);
+            let (aw, ah) = (area.size.width as i32, area.size.height as i32);
+            x >= ax && x < ax + aw && y >= ay && y < ay + ah
+        })
+        .or_else(|| monitors.first())
+    else {
+        return (x, y);
+    };
+
+    let area = monitor.work_area();
+    let (ax, ay) = (area.position.x, area.position.y);
+    let (aw, ah) = (area.size.width as i32, area.size.height as i32);
+    let cx = if width as i32 >= aw { ax } else { x.clamp(ax, ax + aw - width as i32) };
+    let cy = if height as i32 >= ah { ay } else { y.clamp(ay, ay + ah - height as i32) };
+    (cx, cy)
 }
 
 /// Configure WebView2 user data directory for portable mode (RD-M1-009).
@@ -230,7 +259,7 @@ pub fn detect_webview2_runtime() -> bool {
     }
 
     // 2. Check registry for Evergreen runtime via `reg query`
-    let wv2_guid = "{F3017226-FE2A-4295-8BEB-E15AB5810CD5}";
+    let wv2_guid = "{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}";
     let reg_paths = [
         format!(r"HKLM\SOFTWARE\Microsoft\EdgeUpdate\Clients\{wv2_guid}"),
         format!(r"HKLM\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{wv2_guid}"),

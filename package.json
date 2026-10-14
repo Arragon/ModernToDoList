@@ -1,0 +1,39 @@
+{
+  "name": "moderntodolist",
+  "private": true,
+  "version": "2.0.0-dev",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tiptap/core": "^3.31.3",
+    "@tiptap/extension-code-block-lowlight": "^3.31.3",
+    "@tiptap/extension-color": "^3.31.3",
+    "@tiptap/extension-highlight": "^3.31.3",
+    "@tiptap/extension-image": "^3.31.3",
+    "@tiptap/extension-link": "^3.31.3",
+    "@tiptap/extension-text-align": "^3.31.3",
+    "@tiptap/extension-text-style": "^3.31.3",
+    "@tiptap/extension-underline": "^3.31.3",
+    "@tiptap/pm": "^3.31.3",
+    "@tiptap/starter-kit": "^3.31.3",
+    "@tiptap/vue-3": "^3.31.3",
+    "lowlight": "^3.3.0",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@fortawesome/fontawesome-free": "^6",
+    "@tailwindcss/vite": "^4",
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/cli": "^2",
+    "@vitejs/plugin-vue": "^5",
+    "tailwindcss": "^4",
+    "typescript": "~5.6.2",
+    "vite": "^6",
+    "vue-tsc": "^2"
+  }
+}

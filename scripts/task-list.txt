@@ -1,0 +1,426 @@
+INH-1133|Done|GATE-M10 ModernToDoList 2.0 GA Exit Gate
+INH-1132|Backlog|RC-M10 Blocker review and 2.0 scope freeze
+INH-1131|Backlog|QA-M10-H01~H15 Windows Portable and clean-machine RC matrix
+INH-1130|Backlog|QA-M10-G01~G10 Productivity search, views and Quick Add RC matrix
+INH-1129|Backlog|QA-M10-F01~F10 Cross-document transaction and crash recovery RC matrix
+INH-1128|Backlog|QA-M10-E01~E12 Relations, attachments and Rich Content RC matrix
+INH-1127|Backlog|QA-M10-D01~D10 Core task UX and canonical identity RC matrix
+INH-1126|Backlog|QA-M10-C01~C10 Workspace, SQLite rebuild and watcher RC matrix
+INH-1125|Backlog|QA-M10-B01~B10 Atomic Save, Recovery and external-conflict RC matrix
+INH-1124|Backlog|QA-M10-A01~A13 XML compatibility full RC matrix
+INH-1123|Backlog|RD-M10-037~040 Finalize licenses, version metadata, manual Portable update path and release notes
+INH-1122|Backlog|RD-M10-035~036 Export crash logs and privacy-safe diagnostics
+INH-1121|Backlog|RD-M10-030~033 Harden removable, Chinese/long paths and read-only program directories
+INH-1120|Backlog|RD-M10-034 Establish antivirus false-positive investigation process
+INH-1119|Backlog|RD-M10-028~029 Finalize WebView2 diagnostics and offline package policy
+INH-1118|Backlog|RD-M10-025~027 Implement versioned Data/settings/index migration and rebuild fallback
+INH-1117|Backlog|RD-M10-024 Produce deterministic versioned Portable release ZIP
+INH-1116|Backlog|RD-M10-023 Implement Task Tree virtualization only when RD-M10-022 gate says IMPLEMENT
+INH-1115|Backlog|RD-M10-022 Decide Task Tree virtualization from measured evidence
+INH-1114|Backlog|RD-M10-016~021 Profile tree render, edit/save, transfer, memory and WebView2 growth
+INH-1113|Backlog|RD-M10-011~015 Profile startup, scan, XML parse, index rebuild and search
+INH-1112|Backlog|RD-M10-010 Define versioned benchmark result JSON and human report
+INH-1111|Backlog|RD-M10-002~009 Generate canonical performance datasets
+INH-1110|Backlog|RD-M10-001 Build deterministic benchmark fixture generator
+INH-1109|Backlog|GATE-M9 Productivity Feature Complete Exit Gate
+INH-1108|Backlog|QA-M9-016 Run M0–M8 cumulative regression with productivity features enabled
+INH-1107|Backlog|QA-M9-011~015 Quick Add, command conflict, jump and canonical-filter regression matrix
+INH-1106|Backlog|QA-M9-006~010 Smart/Saved View date boundaries and non-mutating persistence matrix
+INH-1105|Backlog|QA-M9-001~005 Global Search correctness, Chinese fallback and rebuild matrix
+INH-1104|Backlog|RD-M9-042~043 Add optional global Quick Add shortcut with conflict handling
+INH-1103|Backlog|RD-M9-035~041 Implement offline Quick Add grammar and safe fallback
+INH-1102|Backlog|RD-M9-031~034 Finalize Command Registry and Ctrl+K palette
+INH-1101|Backlog|RD-M9-028~030 Persist, rename/delete and render Saved Views
+INH-1100|Backlog|RD-M9-022~027 Define structured Saved View predicate model and evaluator
+INH-1099|Backlog|RD-M9-020~021 Add Participant and Tag Smart Views
+INH-1098|Backlog|RD-M9-014~019 Implement Today, Upcoming, Overdue, Unscheduled, Completed and conditional Flagged Smart Views
+INH-1097|Backlog|RD-M9-008~013 Implement Global Search DTO/UI, keyboard navigation, task jump, Chinese fallback and incremental updates
+INH-1096|Backlog|RD-M9-004~007 Index tags, participants, attachment names and Progress Link labels for search
+INH-1095|Backlog|RD-M9-001~003 Add FTS5 task search schema for title and description text
+INH-1094|Backlog|GATE-M8 Multi-Document Beta Exit Gate
+INH-1093|Backlog|QA-M8-020 Run M0–M7 full cumulative regression with transfer/file-library features enabled
+INH-1092|Backlog|QA-M8-017~019 File Library Trash/Linked/rename-reference regression matrix
+INH-1091|Backlog|QA-M8-013~016 Dependency and attachment remap matrix
+INH-1090|Backlog|QA-M8-007~012 Source-commit, journal-corruption and I/O failure matrix
+INH-1089|Backlog|QA-M8-001~006 Transfer first-half crash matrix: before target commit through source-delete entry
+INH-1088|Backlog|RD-M8-043~045 Implement Reveal Document, document-operation Undo policy and path-reference repair
+INH-1087|Backlog|RD-M8-039~042 Implement Managed Document Trash manifest, restore and explicit permanent deletion
+INH-1086|Backlog|RD-M8-036~038 Implement document Import as Managed, Link External and Remove Reference flows
+INH-1085|Backlog|RD-M8-033~035 Implement Managed Document rename, move and duplicate operations
+INH-1084|Backlog|RD-M8-032 Create new Managed Document directly inside Workspace without Save As
+INH-1083|Backlog|RD-M8-024~031 Implement cross-document transfer UX: Copy/Move pickers, drag-to-document, progress and recovery results
+INH-1082|Backlog|RD-M8-020~023 Implement transaction-level Undo, Copy/Move services and structured transfer errors
+INH-1081|Backlog|RD-M8-015~019 Commit Source deletion only after Target, journal phases and recover interrupted/duplicate states
+INH-1080|Backlog|RD-M8-011~014 Stage target assets/XML, validate and commit Target first
+INH-1079|Backlog|RD-M8-006~010 Rewrite transfer references and build asset transfer plan
+INH-1078|Canceled|M0-T03 Establish compatibility regression pipeline
+INH-1077|Backlog|RD-M8-001~005 Build TransferManifest, source subtree snapshot, target ID map and logical clone
+INH-1076|Canceled|M0-T02 Define field mapping and unknown data preservation rules
+INH-1075|Canceled|M0-T01 Freeze XML/TDL compatibility contract and golden fixtures
+INH-1074|Backlog|GATE-M7 Rich Content Beta Exit Gate
+INH-1073|Backlog|QA-M7-017 Run M0–M6 cumulative regression with Rich Content enabled
+INH-1072|Backlog|QA-M7-016 Large rich-text editing does not snapshot/serialize whole document per keystroke
+INH-1071|Backlog|QA-M7-010~015 Managed image asset lifecycle matrix
+INH-1070|Backlog|QA-M7-007~009 Rich-text XSS and dangerous URL sanitation matrix
+INH-1069|Backlog|QA-M7-001~006 Comments type-preservation and conversion matrix
+INH-1068|Backlog|RD-M7-028 Extract safe plain text from task descriptions for search/indexing
+INH-1067|Backlog|RD-M7-026~027 Integrate Rich Text Undo semantics and autosave debounce
+INH-1066|Backlog|RD-M7-024~025 Implement image orphan tracking and explicit safe asset GC
+INH-1065|Backlog|RD-M7-019~023 Implement clipboard/drag image import as Managed Assets with relative rich-text references
+INH-1064|Backlog|RD-M7-014~018 Implement Plain/HTML editable modes, explicit conversion and RTF/Unknown read-only protection
+INH-1063|Backlog|RD-M7-011~013 Implement HTML whitelist sanitizer, paste sanitation and dangerous-URL filtering
+INH-1062|Backlog|RD-M7-003~010 Implement approved rich-text formatting toolbar
+INH-1061|Backlog|RD-M7-001~002 Integrate minimal Tiptap OSS editor with explicit edit/preview modes
+INH-1060|Backlog|GATE-M6 Task Relations Beta Exit Gate
+INH-1059|Backlog|QA-M6-018 Run M0–M5 cumulative regression with relation/attachment features enabled
+INH-1058|Backlog|QA-M6-011~017 Attachment lifecycle, relocation and integrity matrix
+INH-1057|Backlog|QA-M6-009~010 Progress Link persistence and URL-security matrix
+INH-1056|Backlog|QA-M6-003~008 Dependency compatibility, graph-safety and index-rebuild matrix
+INH-1055|Backlog|QA-M6-001~002 Participant round-trip and unknown-data preservation matrix
+INH-1054|Backlog|RD-M6-046~048 Implement attachment removal semantics, hash metadata and orphan tracking
+INH-1053|Backlog|RD-M6-041~045 Implement Attachment list UI, drag-in, open/reveal and missing-file states
+INH-1052|Backlog|RD-M6-034~035,039~040 Implement Linked/URL Attachment persistence and rebuildable attachment index
+INH-1051|Backlog|RD-M6-033 Implement transactional Managed Attachment import
+INH-1050|Backlog|RD-M6-031~032,036~038 Define Attachment domain and Managed Asset path policy
+INH-1049|Backlog|RD-M6-027~030 Implement Progress Link Inspector UI, open action, multiple links and unknown-extension preservation
+INH-1048|Backlog|RD-M6-023~026 Implement Progress Link domain, XML storage, URL validation and provider detection
+INH-1047|Backlog|RD-M6-017~022 Implement dependency picker, Inspector relation UI and degraded-reference states
+INH-1046|Backlog|RD-M6-013~016 Implement dependency mutations, reverse index and cycle prevention
+INH-1045|Backlog|RD-M6-009~012 Implement `TaskRef` dependency domain and local/external/unresolved parsing
+INH-1044|Backlog|RD-M6-007~008 Add Participant filter and Participant grouping view
+INH-1043|Backlog|RD-M6-004~006 Implement Participant Inspector chips, add/remove and bulk edit
+INH-1042|Backlog|RD-M6-001~003 Implement Participant domain, native XML mapping and suggestion index
+INH-1041|Backlog|GATE-M5 Core Product Alpha Exit Gate
+INH-1040|Backlog|QA-M5-016 Core Product Alpha dogfood workflow regression
+INH-1039|Backlog|QA-M5-015 Run full M2/M3/M4 cumulative regression under Core Product Alpha
+INH-1038|Backlog|QA-M5-014 Old ModernToDoList XML fixtures remain editable in new UI
+INH-1037|Backlog|QA-M5-013 Close application/document with dirty pending edits
+INH-1036|Backlog|QA-M5-012 Inspector stale-revision conflict regression
+INH-1035|Backlog|QA-M5-011 Save-status UI matches Core autosave state
+INH-1034|Backlog|QA-M5-010 Complete keyboard-only core task workflow
+INH-1033|Backlog|QA-M5-009 Multi-select bulk edit and single-step Undo regression
+INH-1032|Backlog|QA-M5-008 Filtered tree structural operation never makes a task disappear
+INH-1031|Canceled|RD-M5-031~040 Build Inspector property editing panel
+INH-1030|Canceled|RD-M5-025~030 Implement task tree drag, reorder and hierarchy operations UI
+INH-1029|Backlog|QA-M5-007 Edit Due Date from filtered view updates canonical task
+INH-1028|Canceled|RD-M5-013~024 Implement Core Task Tree data flow and CRUD UI
+INH-1027|Backlog|QA-M5-006 Edit Title from filtered view updates canonical task
+INH-1026|Backlog|QA-M5-005 Reject drag/reparent into own descendant
+INH-1025|Backlog|QA-M5-004 Same-document drag reorder persistence regression
+INH-1024|Backlog|QA-M5-003 Delete parent subtree then Undo regression
+INH-1023|Backlog|QA-M5-002 Deep subtask creation and hierarchy persistence regression
+INH-1022|Backlog|QA-M5-001 Create → autosave/flush → reopen task regression
+INH-1021|Backlog|RD-M5-064 Implement Clear Filters and deterministic filter reset
+INH-1020|Backlog|RD-M5-063 Define safe drag behavior while filters are active
+INH-1019|Backlog|RD-M5-062 Enforce TaskKey-only filtered views; prohibit editable Task clones
+INH-1018|Backlog|RD-M5-059~061 Implement keyword, tag/category and due-date filters
+INH-1017|Backlog|RD-M5-058 Define filter-state model as a pure view projection
+INH-1016|Canceled|GATE-M4 Workspace Data Platform Exit Gate
+INH-1015|Backlog|RD-M5-054~057 Implement reversible bulk Complete/Priority/Date/Tag edits
+INH-1014|Canceled|RD-M4-037~045 Implement file watcher and external-change conflict handling
+INH-1013|Backlog|RD-M5-053 Implement Ctrl/Shift multi-select over visible TaskKeys
+INH-1012|Canceled|RD-M4-023~031 Implement Workspace scan, document identity and relocation services
+INH-1011|Canceled|RD-M4-008~018 Complete SQLite index schema and repository services
+INH-1010|Canceled|RD-M4-001~003 Initialize SQLite repository layer and migration runner
+INH-1009|Backlog|RD-M5-052 Integrate frontend text-edit debounce with Core command coalescing
+INH-1008|Backlog|RD-M5-051 Surface Undo/Redo availability and last-action feedback
+INH-1007|Backlog|RD-M5-050 Implement Ctrl+N / new-task keyboard command
+INH-1006|Backlog|RD-M5-047~049 Wire Ctrl+Z / Ctrl+Y / Ctrl+S to Core Undo/Redo/Flush
+INH-1005|Backlog|RD-M5-044~046 Implement Tab/Shift+Tab hierarchy shortcuts and Delete shortcut
+INH-1004|Backlog|RD-M5-041~043 Implement Arrow/Enter/Space task-list keyboard workflow
+INH-1003|Backlog|RD-M5-039~040 Implement progressive `More Properties` and read-only unsupported-field surfaces
+INH-1002|Backlog|RD-M5-037~038 Implement Inspector Tags and Categories multi-value editors
+INH-1001|Backlog|RD-M5-034~036 Implement Inspector priority, Start Date and Due Date editors
+INH-1000|Backlog|RD-M5-031~033 Implement Inspector title, status and progress editors
+INH-999|Backlog|RD-M5-030 Implement same-document before/after reorder action
+INH-998|Backlog|RD-M5-029 Implement task indent/outdent commands and UI actions
+INH-997|Backlog|RD-M5-028 Enforce invalid drag/reparent protection in UI and Core
+INH-996|Backlog|RD-M5-026~027 Implement drag insertion zones, indicators and auto-scroll
+INH-995|Canceled|GATE-M3 Data Safety Core Exit Gate
+INH-994|Backlog|RD-M5-025 Implement confirmed task-subtree deletion UI flow
+INH-993|Canceled|QA-M3-018 M2 XML compatibility regression after persistence changes
+INH-992|Canceled|QA-M3-017 Autosave debounce and explicit flush regression
+INH-991|Backlog|RD-M5-023~024 Implement New Root Task and New Subtask UI flows
+INH-990|Canceled|QA-M3-016 Delete recovery/cache/index does not affect source data
+INH-989|Canceled|QA-M3-015 Save/reopen semantic consistency regression
+INH-988|Backlog|RD-M5-018~022 Render core task-row status, priority, dates, tags and child indicators
+INH-987|Canceled|QA-M3-014 Recovery journal startup resolution regression
+INH-986|Backlog|RD-M5-015~017 Implement expand/collapse, selection and selection restore
+INH-985|Backlog|RD-M5-013~014 Define `TaskSummary` DTO and flatten visible task rows
+INH-984|Backlog|RD-M5-012 Build typed frontend IPC client and event bridge
+INH-983|Backlog|RD-M5-011 Implement centralized Command Registry
+INH-982|Backlog|RD-M5-010 Establish keyboard focus/roving-focus conventions
+INH-981|Backlog|RD-M5-005~009 Implement common empty/loading/save/error/confirm UI states
+INH-980|Backlog|RD-M5-002~004 Implement resizable three-column desktop layout
+INH-979|Backlog|RD-M5-001 Establish desktop UI design tokens and density baseline
+INH-978|Backlog|GATE-M4 Workspace Data Platform Exit Gate
+INH-977|Backlog|QA-M4-016 Run complete M2/M3 compatibility and save-safety regression suites
+INH-976|Backlog|QA-M4-015 XML wins when derived index disagrees with source file
+INH-975|Backlog|QA-M4-014 Database unavailable fallback: XML remains accessible
+INH-974|Backlog|QA-M4-013 UNC/NAS Workspace basic compatibility regression
+INH-973|Backlog|QA-M4-012 Watcher burst/debounce regression
+INH-972|Backlog|QA-M4-011 Own save watcher event does not create false conflict
+INH-971|Backlog|QA-M4-010 External modification of dirty document enters Conflict State
+INH-970|Backlog|QA-M4-009 External modification of clean document auto-reloads safely
+INH-969|Backlog|QA-M4-008 Missing absolute Workspace relocation regression
+INH-968|Backlog|QA-M4-007 Move Portable app + relative Workspace together
+INH-967|Backlog|QA-M4-006 Corrupted SQLite index recovery regression
+INH-966|Backlog|QA-M4-005 Delete `index.db` and fully rebuild derived state
+INH-965|Backlog|QA-M4-004 Managed Document registration and identity regression
+INH-964|Backlog|QA-M4-003 Linked Document lifecycle regression: original file stays in place
+INH-963|Backlog|QA-M4-002 Recursive nested-directory scan regression
+INH-962|Backlog|QA-M4-001 Create and reopen Workspace regression
+INH-961|Backlog|RD-M4-046 Enforce fingerprint recheck on focus/open/save as watcher-independent fallback
+INH-960|Backlog|RD-M4-045 Handle watcher overflow/error and resubscribe safely
+INH-959|Backlog|RD-M4-043~044 Enter Conflict State for dirty external changes and expose safe conflict DTO
+INH-958|Backlog|RD-M4-042 Auto-reload clean document after verified external modification
+INH-957|Backlog|RD-M4-041 Match watcher events to self-save generation/fingerprint
+INH-956|Backlog|RD-M4-040 Coalesce watcher bursts before fingerprint/reindex work
+INH-955|Backlog|RD-M4-037~039 Integrate `notify` watcher for Workspace and Linked Documents
+INH-954|Backlog|RD-M4-036 Detect SQLite corruption and enter safe rebuild workflow
+INH-953|Backlog|RD-M4-035 Add cancellable index-scan/rebuild progress reporting
+INH-952|Backlog|RD-M4-034 Implement full `workspace.rebuild_index` from XML/TDL + Workspace metadata
+INH-951|Backlog|RD-M4-032~033 Detect changed/removed documents and perform incremental reindex
+INH-950|Backlog|RD-M4-031 Define and implement stable `DocumentId` identity strategy
+INH-949|Backlog|RD-M4-027~030 Implement portable Workspace path storage, relocation and recent registry
+INH-948|Backlog|RD-M4-025~026 Implement Managed vs Linked Document registration
+INH-947|Backlog|RD-M4-023~024 Implement recursive document scan and supported extension policy
+INH-946|Backlog|RD-M4-021~022 Implement create/open Workspace services
+INH-945|Backlog|RD-M4-019~020 Define Workspace domain and `.moderntodo/workspace.json` metadata
+INH-944|Done|RD-M4-016~018 Define SQLite local-disk WAL policy and network/unavailable fallback
+INH-943|Done|RD-M4-011~015 Create attachment/progress/saved-view/UI/recovery index tables
+INH-942|Done|RD-M4-008~010 Create tag, participant and dependency index tables/repositories
+INH-941|Done|RD-M4-004~007 Create workspace/document/task core index schema and repositories
+INH-940|Done|RD-M4-001~003 Establish bundled SQLite connection and versioned migration runner
+INH-939|Canceled|GATE-M3 Data Safety Core Exit Gate
+INH-938|Canceled|QA-M3-018 Run complete M2 XML Golden suite through M3 save pipeline
+INH-937|Canceled|QA-M3-017 Save then close/reopen document consistency regression
+INH-936|Canceled|QA-M3-016 Recovery storage is not Source of Truth
+INH-935|Canceled|QA-M3-015 Startup Recovery Journal regression across save phases
+INH-934|Canceled|QA-M3-014 Text command coalescing regression
+INH-933|Canceled|QA-M3-013 New edit after Undo invalidates Redo stack
+INH-932|Canceled|QA-M3-012 Redo after Undo restores command result
+INH-931|Canceled|QA-M3-011 Undo nested task deletion restores full subtree
+INH-930|Canceled|QA-M3-010 Undo scalar field edit regression
+INH-929|Canceled|QA-M3-009 Stale revision request rejection regression
+INH-928|Canceled|QA-M3-008 Permission-denied save regression
+INH-927|Canceled|QA-M3-007 Disk-full / no-space save regression
+INH-926|Canceled|QA-M3-006 Atomic replace failure regression
+INH-925|Canceled|QA-M3-005 Kill after temp validation but before atomic replace
+INH-924|Canceled|QA-M3-004 Kill after temp write/flush but before validation
+INH-923|Canceled|QA-M3-003 Kill during partial temp-file write
+INH-922|Canceled|QA-M3-002 Kill before temp-file creation
+INH-921|Canceled|QA-M3-001 Normal Atomic Save end-to-end regression
+INH-920|Done|RD-M3-025 Add bounded data-safety event logging without user content
+INH-919|Done|RD-M3-024 Define Recovery Center DTOs for unresolved startup recovery cases
+INH-918|Done|RD-M3-023 Implement Redo stack and invalidation semantics
+INH-917|Done|RD-M3-022 Implement command coalescing for continuous text/field edits
+INH-916|Done|RD-M3-021 Implement reversible Add/Delete/Move task commands
+INH-915|Done|RD-M3-020 Implement generic single-field `UpdateTaskField` undo command
+INH-914|Done|RD-M3-019 Define `UndoableCommand` contract and command stack
+INH-913|Done|RD-M3-018 Reject stale mutation/save requests using expected revision
+INH-912|Done|RD-M3-017 Implement per-document autosave debounce coordinator
+INH-911|Done|RD-M3-016 Implement backend `document.flush` for Ctrl+S and shutdown checkpoints
+INH-910|Done|RD-M3-015 Define structured Save error codes and user-action guidance
+INH-909|Done|RD-M3-014 Recover or surface incomplete save transactions at startup
+INH-908|Done|RD-M3-013 Implement durable Recovery Journal format
+INH-907|Done|RD-M3-012 Create pre-commit recovery snapshot policy
+INH-906|Done|RD-M3-011 Track save generation and post-save fingerprint for self-write detection
+INH-905|Done|RD-M3-010 Implement Windows atomic/replace commit of validated temp file
+INH-904|Done|RD-M3-009 Reopen and validate staged temp XML before commit
+INH-903|Done|RD-M3-008 Flush and sync staged temp file before validation/replace
+INH-902|Done|RD-M3-007 Write save temp file in the same target directory
+INH-901|Done|RD-M3-006 Define explicit document Save State Machine
+INH-900|Done|RD-M3-005 Add per-document mutation lock / serialization
+INH-899|Done|RD-M3-004 Implement current/saved revision and dirty-state semantics
+INH-898|Done|RD-M3-003 Implement `DocumentSession` as the in-memory editing authority
+INH-897|Done|RD-M3-002 Implement streaming BLAKE3 file hash service
+INH-896|Done|RD-M3-001 Define `FileFingerprint` metadata
+INH-895|Canceled|GATE-M2 Lossless XML Core Exit Gate
+INH-894|Canceled|QA-M2-020 Current-version fixture compatibility regression
+INH-893|Canceled|QA-M2-019 Deep-tree and wide-tree structural regression
+INH-892|Canceled|QA-M2-018 Golden semantic-diff suite: only intended field changes
+INH-891|Canceled|QA-M2-017 Malformed XML and invalid-encoding error regression
+INH-890|Canceled|QA-M2-016 Custom Attribute preservation regression
+INH-889|Canceled|QA-M2-015 Unsupported Comments preservation regression
+INH-888|Canceled|QA-M2-014 HTML Comments round-trip regression
+INH-887|Canceled|QA-M2-013 Plain Text Comments edit round-trip regression
+INH-886|Canceled|QA-M2-012 FileLink round-trip regression
+INH-885|Canceled|QA-M2-011 Dependency unresolved-reference round-trip regression
+INH-884|Canceled|QA-M2-010 Participant round-trip regression
+INH-883|Canceled|QA-M2-009 Reparent regression: task exists exactly once at new location
+INH-882|Canceled|QA-M2-008 Nested child delete regression: deleted tasks never reappear
+INH-881|Done|GATE-M3 Data Safety Core Exit Gate
+INH-880|Done|QA-M3-018 Re-run the complete M2 XML Golden suite after persistence integration
+INH-879|Done|QA-M3-017 Save, close and reopen must produce identical canonical state
+INH-878|Done|QA-M3-016 Deleting Recovery data must not delete or invalidate business source files
+INH-877|Done|QA-M3-015 Startup recognizes incomplete Recovery Journal state
+INH-876|Done|QA-M3-014 Consecutive text typing coalesces into one Undo action
+INH-875|Done|QA-M3-013 New mutation after Undo must invalidate Redo stack
+INH-874|Done|QA-M3-012 Redo after Undo restores exact post-command state
+INH-873|Done|QA-M3-011 Undo nested subtree delete restores full subtree
+INH-872|Done|QA-M3-010 Undo title edit restores canonical + XML state
+INH-871|Done|QA-M3-009 Stale expected revision request returns conflict with zero overwrite
+INH-870|Done|QA-M3-008 Permission-denied save keeps session dirty and allows safe retry/Save As
+INH-869|Done|QA-M3-007 Disk-full during save must not truncate original
+INH-868|Done|QA-M3-006 Replacement failure must leave at least one valid file version
+INH-867|Done|QA-M3-005 Kill after temp validation but before original replacement
+INH-866|Done|QA-M3-004 Kill after temp write/sync but before validation
+INH-865|Done|QA-M3-003 Kill process during temp write; original file must remain intact
+INH-864|Done|QA-M3-002 Kill process before temp write; original file must remain intact
+INH-863|Done|QA-M3-001 Normal Atomic Save end-to-end regression
+INH-862|Canceled|RD-M3-025 Add bounded data-safety event logging without task content
+INH-861|Canceled|RD-M3-024 Define Recovery Center core DTOs and actions
+INH-860|Canceled|RD-M3-023 Implement Redo stack and invalidation rules
+INH-859|Canceled|RD-M3-022 Coalesce consecutive text-edit commands
+INH-858|Canceled|RD-M3-021 Implement undoable Add/Delete/Move tree commands
+INH-857|Canceled|RD-M3-020 Implement generic field-update command
+INH-856|Canceled|RD-M3-019 Define `UndoableCommand` abstraction for document mutations
+INH-855|Canceled|RD-M3-018 Reject stale UI mutations using expected document revision
+INH-854|Canceled|RD-M3-017 Implement per-document autosave debounce coordinator
+INH-853|Canceled|RD-M3-016 Implement backend immediate Flush command for Ctrl+S/close boundaries
+INH-852|Canceled|RD-M3-015 Define structured Save error codes and safe UI context
+INH-851|Canceled|RD-M3-014 Recover incomplete save journals at application startup
+INH-850|Canceled|RD-M3-013 Define persistent Recovery Journal format and phase updates
+INH-849|Canceled|RD-M3-012 Create pre-commit Recovery snapshot policy
+INH-848|Canceled|RD-M3-011 Track save generation and self-written fingerprint
+INH-847|Canceled|RD-M3-010 Implement Windows atomic/safe original-file replacement
+INH-846|Canceled|RD-M3-009 Reopen and validate staged temp XML before replacement
+INH-845|Canceled|RD-M3-008 Flush and sync staged temp file before validation/replace
+INH-844|Canceled|RD-M3-007 Write save temp file in the same target directory
+INH-843|Canceled|RD-M3-006 Implement explicit Save state machine
+INH-842|Canceled|RD-M3-005 Add per-document mutation/save serialization lock
+INH-841|Canceled|RD-M3-004 Implement dirty/current/saved revision model
+INH-840|Canceled|RD-M3-003 Implement `DocumentSession` for canonical + lossless XML state
+INH-839|Canceled|RD-M3-002 Implement streaming BLAKE3 file hash service
+INH-838|Canceled|RD-M3-001 Define `FileFingerprint` structure
+INH-837|Done|GATE-M2 Lossless XML Core Exit Gate
+INH-836|Done|QA-M2-020 Current-version XML fixtures remain readable in the new XML Core
+INH-835|Done|QA-M2-019 Deep-tree parse/mutate/serialize must not overflow or lose hierarchy
+INH-834|Done|QA-M2-018 Golden semantic diff: only explicitly edited fields may change
+INH-833|Done|QA-M2-017 Malformed XML must reject editable open without crash or rewrite
+INH-832|Done|QA-M2-016 Preserve unknown Custom Attributes through unrelated edits
+INH-831|Done|QA-M2-015 Unsupported Comments remain byte/semantic-preserved after unrelated edits
+INH-830|Done|QA-M2-014 HTML Comments writable only when M0 compatibility is proven
+INH-829|Done|QA-M2-013 Plain Text Comments editable round-trip regression
+INH-828|Done|QA-M2-012 FileLink multi-value round-trip regression
+INH-827|Done|QA-M2-011 Preserve unresolved dependency raw reference through round-trip
+INH-826|Done|QA-M2-010 Participant multi-value round-trip regression
+INH-825|Done|QA-M2-009 Reparented task must exist exactly once at the new hierarchy path
+INH-824|Done|QA-M2-008 Nested task delete must not reappear after serialize/reparse
+INH-823|Done|QA-M2-007 Preserve unknown XML nodes when editing Due Date
+INH-822|Done|QA-M2-006 Preserve unknown XML attributes when editing Title
+INH-821|Done|QA-M2-005 UTF-16BE round-trip regression
+INH-820|Done|QA-M2-004 UTF-16LE round-trip regression
+INH-819|Done|QA-M2-003 UTF-8 with BOM round-trip regression
+INH-818|Done|QA-M2-002 UTF-8 without BOM round-trip regression
+INH-817|Done|QA-M2-001 Parse the complete M0 valid compatibility corpus
+INH-816|Done|RD-M2-030 Document the XML Core public API and invariants
+INH-815|Done|RD-M2-029 Enforce write protection for unsupported comment types
+INH-814|Done|RD-M2-028 Define structured XML/encoding parse error model
+INH-813|Done|RD-M2-027 Implement semantic XML/document validator
+INH-812|Done|RD-M2-026 Implement document-aware Task ID allocator with collision detection
+INH-811|Done|RD-M2-025 Implement safe task Reparent operation
+INH-810|Done|RD-M2-024 Implement safe sibling task Reorder operation
+INH-809|Done|RD-M2-023 Implement safe task-tree Delete operation
+INH-808|Done|RD-M2-022 Implement safe task-tree Add operation
+INH-807|Done|RD-M2-021 Implement `XmlBinding` from canonical fields to exact source XML locations
+INH-806|Done|RD-M2-020 Preserve Custom Attribute definitions and unknown task values
+INH-805|Done|RD-M2-019 Implement Comments mapper with type + raw payload preservation
+INH-804|Done|RD-M2-018 Implement dependency mapper with unresolved raw-reference preservation
+INH-803|Done|RD-M2-017 Implement FileLink mapper for multiple native link values
+INH-802|Done|RD-M2-016 Implement participant mapper from confirmed Allocated To/By format
+INH-801|Done|RD-M2-015 Implement Category/Tag multi-value mapper
+INH-800|Done|RD-M2-014 Implement Start/Due/Completed date mapper
+INH-799|Done|RD-M2-013 Implement core Task mapper for title/progress/priority/risk/status
+INH-798|Done|RD-M2-012 Define strong domain IDs: WorkspaceId, DocumentId, TaskId, TaskKey
+INH-797|Done|RD-M2-011 Define `DocumentMetadata` for source, encoding and future fingerprint state
+INH-796|Done|RD-M2-010 Preserve task node order and mixed child ordering
+INH-795|Done|RD-M2-009 Preserve unknown XML elements and their nested content
+INH-794|Done|RD-M2-008 Preserve unknown XML attributes through unrelated task edits
+INH-793|Done|RD-M2-007 Implement lossless `XmlNode` / `XmlElement` tree model
+INH-792|Done|RD-M2-006 Integrate `quick-xml` tokenizer over decoded UTF-8 input
+INH-791|Done|RD-M2-005 Encode internal XML back to the document's original encoding
+INH-790|Done|RD-M2-004 Decode UTF-16LE/BE to internal UTF-8 without replacement corruption
+INH-789|Done|RD-M2-003 Implement XML declaration encoding detector before full parsing
+INH-788|Done|RD-M2-002 Implement BOM detector for UTF-8/UTF-16LE/UTF-16BE
+INH-787|Done|RD-M2-001 Define `XmlEncodingMeta` and line-ending metadata
+INH-786|Done|GATE-M1 Portable Desktop Shell Exit Gate
+INH-785|Done|QA-M1-012 Run Portable build from Unicode and space-containing paths
+INH-784|Done|QA-M1-011 Delete portable cache and verify automatic rebuild
+INH-783|Done|QA-M1-010 Capture startup network traffic and verify no required CDN
+INH-782|Done|QA-M1-009 Verify WebView2 User Data Folder is inside Portable `Data/`
+INH-781|Done|QA-M1-008 Release EXE launches with no terminal/console window
+INH-780|Done|QA-M1-007 Close-window exits application with no ModernToDoList background service
+INH-779|Done|QA-M1-006 Single-instance regression
+INH-778|Done|QA-M1-005 Read-only / non-writable `Data/` startup behavior
+INH-777|Done|QA-M1-004 Portable application-directory relocation regression
+INH-776|Done|QA-M1-003 Offline startup and asset-loading regression
+INH-775|Done|QA-M1-002 Windows 10 clean-machine Portable smoke test
+INH-774|Done|QA-M1-001 Windows 11 clean-machine Portable smoke test
+INH-773|Done|RD-M1-020 Create portable Crash/Panic logging root and top-level hooks
+INH-772|Done|RD-M1-019 Establish application version metadata as a single source
+INH-771|Done|RD-M1-018 Generate third-party license bundle for Portable release
+INH-770|Done|RD-M1-017 Build Portable relocation test harness
+INH-769|Done|RD-M1-016 Detect WebView2 runtime and report actionable startup diagnostics
+INH-768|Done|RD-M1-015 Build versioned Portable ZIP packaging pipeline
+INH-767|Done|RD-M1-014 Configure Windows release build with no console window
+INH-766|Done|RD-M1-013 Persist and restore main window state in portable settings
+INH-765|Done|RD-M1-012 Forward second-instance launch arguments to the primary instance
+INH-764|Done|RD-M1-011 Enforce single-instance application behavior
+INH-763|Done|RD-M1-010 Implement basic portable `settings.json` load/save
+INH-762|Done|RD-M1-009 Pin WebView2 User Data Folder to `Data/webview2`
+INH-761|Done|RD-M1-008 Create `Data/` bootstrap and writable-directory validation
+INH-760|Done|RD-M1-007 Resolve executable directory and Portable Root reliably
+INH-759|Done|RD-M1-006 Configure production Content Security Policy
+INH-758|Done|RD-M1-005 Remove all runtime CDN dependencies and bundle assets locally
+INH-757|Done|RD-M1-004 Establish minimal typed IPC request/response path
+INH-756|Done|RD-M1-003 Establish Rust Core module skeleton and dependency direction
+INH-755|Done|RD-M1-002 Initialize Tauri 2 Windows desktop shell
+INH-754|Done|RD-M1-001 Initialize Vue 3 + TypeScript + Vite frontend skeleton
+INH-753|Done|GATE-M0 Compatibility Baseline Exit Gate
+INH-752|Done|QA-M0-010 Verify immutable fixture hash manifest detects accidental changes
+INH-751|Done|QA-M0-009 Review compatibility policy for implementation-readiness
+INH-750|Done|QA-M0-008 Capture baseline known-good and known-bad behavior as regressions
+INH-749|Done|QA-M0-007 Verify FileLink mapping covers multiple links and path classes
+INH-748|Done|QA-M0-006 Verify dependency mapping covers local, external and unresolved references
+INH-747|Done|QA-M0-005 Verify participant mapping uses real multi-participant evidence
+INH-746|Done|QA-M0-004 Review Comments compatibility matrix for complete edit policy
+INH-745|Done|QA-M0-003 Verify unknown-data fixtures actually exercise unknown attrs/nodes
+INH-744|Done|QA-M0-002 Byte-validate encoding fixtures
+INH-743|Done|QA-M0-001 Validate all success fixtures are independently parseable
+INH-742|Done|RD-M0-024 Define compatibility fixture contribution and immutability workflow
+INH-741|Done|RD-M0-023 Define ModernToDoList XML extension namespace strategy
+INH-740|Done|RD-M0-022 Classify fields into Compatibility Tier A/B/C
+INH-739|Done|RD-M0-021 Define Semantic Lossless compatibility acceptance rules
+INH-738|Done|RD-M0-020 Build malformed, truncated and invalid-encoding fixtures
+INH-737|Done|RD-M0-019 Build deep-tree, wide-tree and task edge-case fixtures
+INH-736|Done|RD-M0-018 Build unknown XML attribute/element preservation fixtures
+INH-735|Done|RD-M0-017 Confirm task ID syntax, uniqueness and allocation rules
+INH-734|Done|RD-M0-016 Confirm Custom Attribute XML format and preservation rules
+INH-733|Done|RD-M0-015 Define Markdown, RTF and other Comments compatibility behavior
+INH-732|Done|RD-M0-014 Confirm HTML Comments round-trip behavior
+INH-731|Done|RD-M0-013 Confirm Plain Text Comments round-trip behavior
+INH-730|Done|RD-M0-012 Confirm COMMENTSTYPE and comment payload relationship
+INH-729|Done|RD-M0-011 Confirm local and cross-file dependency representation
+INH-728|Done|RD-M0-010 Confirm File Link representation for single and multiple links
+INH-727|Done|RD-M0-009 Confirm Allocated To/By and multi-participant representation
+INH-726|Done|RD-M0-008 Confirm Category and Tag XML representation
+INH-725|Done|RD-M0-007 Confirm Start/Due/Completed date fields and formats
+INH-724|Done|RD-M0-006 Confirm TITLE/PERCENTDONE/PRIORITY/RISK/STATUS XML mappings
+INH-723|Done|RD-M0-005 Inventory all task-level XML/TDL fields used by real files
+INH-722|Done|RD-M0-004 Build UTF-8 and UTF-16 encoding fixture matrix
+INH-721|Done|RD-M0-003 Collect real AbstractSpoon ToDoList XML/TDL fixtures
+INH-720|Done|RD-M0-002 Capture XML files produced and accepted by current app
+INH-719|Done|RD-M0-001 Freeze current ModernToDoList baseline commit
+INH-718|Backlog|M10 Epic: Release Candidate / GA
+INH-717|Backlog|M9 Epic: Productivity Feature Complete
+INH-716|Backlog|M8 Epic: Multi-Document Beta
+INH-715|Backlog|M7 Epic: Rich Content Beta
+INH-714|Backlog|M6 Epic: Task Relations Beta
+INH-713|Backlog|M5 Epic: Core Product Alpha
+INH-712|Backlog|M4 Epic: Workspace Data Platform
+INH-711|Done|M3 Epic: Data Safety Core
+INH-710|Done|M2 Epic: Lossless XML Core
+INH-709|Done|M1 Epic: Portable Desktop Shell
+INH-708|Done|M0 Epic: Compatibility Baseline Locked

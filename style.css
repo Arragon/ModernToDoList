@@ -1,0 +1,61 @@
+/* Custom styles complementing Tailwind */
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Modal animation */
+.modal-enter-active,
+.modal-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+}
+
+.modal-enter-active .bg-white,
+.modal-leave-active .bg-white {
+    transition: transform 0.3s ease;
+}
+
+.modal-enter-from .bg-white,
+.modal-leave-to .bg-white {
+    transform: scale(0.95);
+}
+
+/* Task Item */
+.task-item {
+    position: relative;
+}
+
+.task-item::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 24px;
+    bottom: -8px;
+    width: 1px;
+    background-color: #e5e7eb;
+    display: none;
+}
+
+.task-item:last-child::before {
+    display: none;
+}

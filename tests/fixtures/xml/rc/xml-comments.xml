@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?><TODOLIST PROJECTNAME="Comment preservation" EARLIESTDUEDATE="0.00000000" FILENAME="xml-comments.xml" NEXTUNIQUEID="3" FILEVERSION="43" APPVER="9.0.14.0" FILEFORMAT="12">
+<!-- 根级注释 root-level comment -->
+<TASK ID="1" TITLE="Comment carrier" REFID="0" COMMENTSTYPE="HTML" CREATEDBY="QA" PRIORITY="5" RISK="0" PERCENTDONE="0" POS="0" POSSTRING="1">
+<!-- task-level comment with 中文 -->
+<COMMENTS><![CDATA[<html><body><p>Rich <b>text</b> & symbols</p></body></html>]]></COMMENTS>
+<UNKNOWNPLUGIN NOTE="keep me"><SETTING Name="a" Value="b"/></UNKNOWNPLUGIN>
+</TASK>
+<!-- trailing comment before root close -->
+</TODOLIST>

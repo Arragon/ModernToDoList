@@ -1,0 +1,13 @@
+# Cargo configuration for ModernToDoList.
+#
+# RUST_MIN_STACK: the `tauri::generate_handler!` macro in src/lib.rs now expands
+# ~69 IPC commands. At the default rustc stack size this crashed the compiler on
+# the bin target with exit code 0xc0000409 (STATUS_STACK_BUFFER_OVERRUN) — a
+# rustc stack overflow during macro expansion, not a defect in our code. The lib
+# and every integration test target compiled fine, which makes it look like a
+# linker or target-directory problem rather than a stack limit.
+#
+# 64 MiB gives ample headroom for further command growth. Remove this only if the
+# handler list shrinks dramatically or rustc's expansion becomes non-recursive.
+[env]
+RUST_MIN_STACK = "67108864"

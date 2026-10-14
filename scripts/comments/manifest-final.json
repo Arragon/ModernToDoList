@@ -1,0 +1,187 @@
+{
+  "milestone": "M6–M10 集成收口 / Integration Closure",
+  "commit": "91f0696",
+  "evidence": {
+    "cargo": "**干净隔离构建（独立 CARGO_TARGET_DIR）全量复跑：1197 passed / 0 failed**，覆盖 17 个测试目标 —— lib 585、m8_qa 295、m7_qa 118、ipc_bridge 47、m6_qa 18、m9_qa 17、round_trip 17、m4_qa 16、m5_qa 16、QA-M10 矩阵 A 14 / B 10 / C 10 / D 10、m10_benchmark 13、m10_portable 10、doc-test 1（2 项 ignored：全量基准生成器与发布 ZIP 生成器，经各自 Node runner 单独执行并通过）",
+    "frontend": "npm run build（vue-tsc --noEmit && vite build）通过，**0 个 TypeScript 错误**，129 个模块，223.64 kB JS / 124.69 kB CSS",
+    "extra": [
+      "**关键集成缺陷已修复**：将 `src/ipc/commands.ts` 中前端调用的命令与后端已注册的 `#[tauri::command]` 集合做差集，发现 **27 个前端调用但后端不存在的命令**，导致任务编辑、M6 关系编辑器、附件、Quick Add 与全局搜索在运行时全部失效。前端做了优雅降级而非崩溃，因此「构建通过」掩盖了该缺陷。",
+      "新增 `commands/task_edit.rs`（7）、`commands/relations.rs`（19）、`commands/bridge.rs`（2）；`invoke_handler` 现注册 **69 个命令**；新增 `tests/ipc_bridge_tests.rs`（43 项测试）",
+      "字段变更统一经 `FieldUpdateCommand` + `UndoRedoManager`，因此可撤销且会将会话置脏以触发自动保存；`status` 映射到 `percent_done`，因为 `Task` 无 status 字段（`Task::status()` 由其派生：0=NotStarted，1-99=InProgress，100=Done）",
+      "关系类命令为 M6 域层 API 的**薄封装**，未复制也未削弱其 URL scheme 校验与附件路径穿越校验",
+      "同时修复 rustc 崩溃：约 69 个命令使 `generate_handler!` 宏展开溢出编译器栈，bin 目标以 `0xc0000409 (STATUS_STACK_BUFFER_OVERRUN)` 中止；因 lib 与全部集成测试目标均能编译，该故障表现为链接失败而难以定位。`src-tauri/.cargo/config.toml` 现设置 `RUST_MIN_STACK=64MiB`",
+      "RC-M10 阻塞项复查：**27 项未关闭**（Phase 0 时为 94 项）—— Data 5、Persistence 2、Portable 3、Security 0、Core-UX 17"
+    ]
+  },
+  "issues": {
+    "INH-1043": {
+      "state": "In Progress",
+      "rd": [
+        "RD-M6-004~006"
+      ],
+      "impl": [
+        "`ParticipantsEditor.vue` 已交付：chips、逐个移除、新增选择器（建议项来自 workspace 索引）、多选批量指派",
+        "**后端阻塞已解除**：`get_participants` / `list_task_participants` / `add_participant` / `remove_participant` 现已在 `commands/relations.rs` 实现并注册到 `invoke_handler`，前端调用不再走降级路径"
+      ],
+      "tests": [
+        "`ipc_bridge_tests` 43 项通过，含参与者增删；全量 1189 passed / 0 failed",
+        "`npm run build` 0 个 TypeScript 错误"
+      ],
+      "gap": "仅剩**运行时 UI 验证**未完成：本环境无法启动打包后的 Tauri/WebView2 应用做真实交互测试。类型检查通过只证明类型正确，不证明功能正确，故保持 In Progress。"
+    },
+    "INH-1044": {
+      "state": "In Progress",
+      "rd": [
+        "RD-M6-007~008"
+      ],
+      "impl": [
+        "`filter-state.ts` 已扩展参与者过滤条件；TaskTree 已增加按参与者分组视图模式"
+      ],
+      "tests": [
+        "`npm run build` 0 错误；全量 1189 passed / 0 failed"
+      ],
+      "gap": "仅剩运行时 UI 验证：过滤与分组视图的实际渲染需在应用内人工确认。"
+    },
+    "INH-1047": {
+      "state": "In Progress",
+      "rd": [
+        "RD-M6-017~022"
+      ],
+      "impl": [
+        "`DependencyEditor.vue` 已交付：任务选择器与搜索，出向「依赖」与入向「阻塞了」分区展示，TaskRow 阻塞指示，未解析与循环引用降级状态",
+        "**后端阻塞已解除**：`add_dependency` / `remove_dependency` / `get_dependencies` / `list_dependencies` 已实现并注册；环检测与自引用拒绝由域层保证"
+      ],
+      "tests": [
+        "`ipc_bridge_tests` 覆盖环拒绝与自引用拒绝；`m6_qa_tests` 18/18；全量 1189 passed / 0 failed"
+      ],
+      "gap": "仅剩运行时 UI 验证。"
+    },
+    "INH-1049": {
+      "state": "In Progress",
+      "rd": [
+        "RD-M6-027~030"
+      ],
+      "impl": [
+        "`ProgressLinksEditor.vue` 已交付：provider 图标 + 标签 + URL，增改删，经系统默认浏览器打开",
+        "**后端阻塞已解除**：`list_progress_links` / `add_progress_link` / `update_progress_link` / `remove_progress_link` 已实现并注册；http/https-only 校验由域层 `validate_url` 保证，桥接层未削弱"
+      ],
+      "tests": [
+        "`ipc_bridge_tests` 覆盖 `javascript:` 拒绝；全量 1189 passed / 0 failed"
+      ],
+      "gap": "仅剩运行时 UI 验证。"
+    },
+    "INH-1053": {
+      "state": "In Progress",
+      "rd": [
+        "RD-M6-041~045"
+      ],
+      "impl": [
+        "`AttachmentListEditor.vue` 已交付：类型图标、显示名、状态指示，Add Managed / Link Local / Add URL / Open / Reveal in Explorer，拖放导入，文件缺失状态",
+        "**后端阻塞已解除**：`list_attachments` / `add_managed_attachment` / `link_local_attachment` / `add_url_attachment` / `update_attachment` / `remove_attachment` / `open_attachment` / `reveal_attachment` 已实现并注册；路径穿越拒绝与 BLAKE3 校验由域层保证"
+      ],
+      "tests": [
+        "`ipc_bridge_tests` 覆盖附件增删与路径安全；`m6_qa_tests` 18/18；全量 1189 passed / 0 failed"
+      ],
+      "gap": "仅剩运行时 UI 验证：拖放导入与 Reveal in Explorer 依赖真实 Tauri 运行时与 Windows Shell。"
+    },
+    "INH-1083": {
+      "state": "In Progress",
+      "rd": [
+        "RD-M8-024~031"
+      ],
+      "impl": [
+        "后端支撑完整：`list_transfer_targets` 枚举可写文档、进度上报、中断转移后的恢复结果呈现",
+        "转移服务 `copy_task` / `move_task` / `undo_transfer` / `recover_interrupted_transfers` / `complete_interrupted_move` 均已实现并通过 QA-M8 崩溃矩阵"
+      ],
+      "tests": [
+        "`m8_qa_tests` 295 passed / 0 failed；每个崩溃点断言源与目标并集无任务丢失"
+      ],
+      "gap": "**前端 UX 仍未实现**：右键菜单「复制到…／移动到…」、目标文档选择器、进度指示与恢复结果展示尚未交付（本轮前端实现流在达到轮次上限时终止）。"
+    },
+    "INH-1097": {
+      "state": "In Progress",
+      "rd": [
+        "RD-M9-008~013"
+      ],
+      "impl": [
+        "后端完整：`SearchResult` DTO、有界结果、确定性排序、分页、增量索引更新、CJK 的 LIKE 子串兜底",
+        "前端 `GlobalSearch.vue` + `search-store.ts` 已交付，含完整键盘导航与跳转",
+        "**后端阻塞已解除**：`global_search` 已由 `commands/bridge.rs` 委派至 `search_tasks` 并注册"
+      ],
+      "tests": [
+        "`m9_qa_tests` 17/17（QA-M9-002 证明纯 FTS5 对中文返回 0 命中而兜底成功）；全量 1189 passed / 0 failed"
+      ],
+      "gap": "仅剩运行时 UI 验证：键盘导航与跳转到树中任务的实际交互需人工确认。"
+    },
+    "INH-1101": {
+      "state": "In Progress",
+      "rd": [
+        "RD-M9-028~030"
+      ],
+      "impl": [
+        "后端 CRUD 与版本化持久化完整；前端 `SavedViewsPanel.vue` + `saved-view-store.ts` 已交付（侧栏渲染含图标与计数）"
+      ],
+      "tests": [
+        "`m9_qa_tests` 17/17，含非破坏性持久化；全量 1189 passed / 0 failed"
+      ],
+      "gap": "仅剩运行时 UI 验证。"
+    },
+    "INH-1102": {
+      "state": "In Progress",
+      "rd": [
+        "RD-M9-031~034"
+      ],
+      "impl": [
+        "命令注册表定稿；`CommandPalette.vue` + `fuzzy.ts` 已交付，Ctrl+K 接入既有 shortcuts 注册表；`palette_query` / `list_app_commands` / `resolve_task_jump` / `get_shortcut_conflicts` 已注册"
+      ],
+      "tests": [
+        "模糊打分与跳转解析有单元测试；全量 1189 passed / 0 failed；`npm run build` 0 错误"
+      ],
+      "gap": "仅剩运行时 UI 验证：Ctrl+K 唤起与键盘优先导航需人工确认。"
+    },
+    "INH-1103": {
+      "state": "In Progress",
+      "rd": [
+        "RD-M9-035~041"
+      ],
+      "impl": [
+        "`domain/quick_add.rs` 实现完整语法解析与**安全兜底**（无法识别的 token 保留在标题中，绝不丢失用户文本）",
+        "前端 `QuickAdd.vue` + `quick-add-parser.ts` 已交付",
+        "**此前的会话侧落库缺口已解除**：`commands/task_edit.rs` 现可在 `commands/` 内访问会话状态，`quick_add_task` 已实现并注册，产出的 `Task` 经 `AddTaskCommand` 真正插入树中"
+      ],
+      "tests": [
+        "`ipc_bridge_tests` 覆盖 add_task 与 quick_add 落库；`m9_qa_tests` 17/17；全量 1189 passed / 0 failed"
+      ],
+      "gap": "仅剩运行时 UI 验证。"
+    },
+    "INH-1132": {
+      "state": "In Progress",
+      "rd": [
+        "RC-M10"
+      ],
+      "impl": [
+        "阻塞项分类工具 `scripts/rc-blocker-review.cjs` 已交付并从 Linear 实时状态重新生成 `docs/release/RC_M10_BLOCKER_REVIEW.md`",
+        "阻塞项由 Phase 0 的 **94 项降至 27 项**：Data 5、Persistence 2、Portable 3、Security 0、Core-UX 17",
+        "剩余 27 项构成：5 个里程碑 Epic、5 个退出门禁、RC-M10 自身、QA-M10 矩阵 E/F/G/H、Tiptap 编辑器 2 项（INH-1061/1062），以及 10 个因缺少运行时验证而保持 In Progress 的前端 Issue"
+      ],
+      "tests": [
+        "工具已实跑并产出报告；全量测试 1189 passed / 0 failed 作为分类证据的输入"
+      ],
+      "gap": "**冻结条件未满足**：RC-M10 要求冻结 commit、版本号与 ZIP SHA-256，而这只能在阻塞项归零后进行。当前 27 项未关闭，且矩阵 H 需人工净机执行，故不可冻结。"
+    },
+    "INH-1133": {
+      "rd": [
+        "GATE-M10"
+      ],
+      "impl": [
+        "可审计门禁清单 `docs/release/GATE_M10_CHECKLIST.md` 已按证据逐行填写：每项标准均指明**证明它所需的具体产物**，而非以构建通过或单测通过冒充验收",
+        "本轮新增三项关键修复：(1) 补齐 27 个前端调用但后端缺失的 IPC 命令，`invoke_handler` 现注册 69 个命令；(2) 修复 `generate_handler!` 宏展开导致的 rustc 栈溢出崩溃（`RUST_MIN_STACK=64MiB`）；(3) 修复日期编辑的数据正确性缺陷 —— `set_field` 对 StartDate/DueDate 只写 OLE 浮点值而不写配套的 `*_date_string`，但 `mappers::write_task` 两者都会序列化，导致经 `FieldUpdateCommand` 的日期编辑使已保存 XML 中的 STARTDATESTRING/DUEDATESTRING 保持陈旧、传统 TDL 仍显示旧日期；撤销路径同样受影响。已改为在 `set_field` 内由 OLE 值派生 `YYYY-MM-DD` 字符串，一次性修正正反两个方向，并新增 4 项回归测试"
+      ],
+      "tests": [
+        "**已满足**：干净隔离构建全量 **1189 passed / 0 failed**（17 个目标）；前端 `npm run build` 0 个 TypeScript 错误；XML 往返兼容性 round_trip 17/17 + 矩阵 A 14/14；索引可丢弃性由 `qa_m10_c09`、`qa_m10_c10`、`qa_m9_016` 验证；RC 矩阵 A/B/C/D 共 44/44 通过；迁移框架、许可证收集、发布说明、WebView2 策略、路径加固、隐私安全崩溃转储均已交付并有测试",
+        "**未满足**：RC 矩阵 E（INH-1128）、F（INH-1129）、G（INH-1130）尚未作为独立 RC 套件落地（底层 m6_qa/m7_qa/m8_qa/m9_qa 已覆盖其内容，但未按 E/F/G 编号组织与执行）；矩阵 H（INH-1131）15 个用例 **0 个已执行**；Win10+Win11 净机与无网络便携运行未验证；发布 ZIP 哈希未冻结；`tauri.conf.json` 版本元数据未套用"
+      ],
+      "gap": "**不得标记为 Done。** 门禁要求「所有 Blocker = 0」「M0–M9 自动化测试全部通过」「RC 全矩阵通过」。当前阻塞项为 **27**，且矩阵 H 明确要求在**无网络、无管理员权限、未安装 Node/Rust/Python/Git 的干净 Win10 与 Win11 虚拟机**中人工执行 —— 这是硬性的人工活动，任何自动化套件都无法替代。因此本门禁保持开放，未满足项已逐条列明以便差距可见。"
+    }
+  }
+}

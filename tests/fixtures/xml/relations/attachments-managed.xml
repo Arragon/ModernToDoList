@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TODOLIST PROJECTNAME="Relations" EARLIESTDUEDATE="0.00000000" LASTMOD="45259.84489583" LASTMODSTRING="2023-11-29 20:16" FILENAME="attachments-managed.xml" NEXTUNIQUEID="2" FILEVERSION="43" APPVER="9.0.14.0" FILEFORMAT="12">
+<TASK ID="1" TITLE="Task with attachments" REFID="0" COMMENTSTYPE="PLAIN_TEXT" CREATEDBY="TestUser" PRIORITY="5" RISK="0" PERCENTDONE="0" POS="0" POSSTRING="1" MTDL_ATTACHMENTS="[{&quot;id&quot;:&quot;att-1&quot;,&quot;kind&quot;:&quot;managed_file&quot;,&quot;display_name&quot;:&quot;report.pdf&quot;,&quot;path_or_url&quot;:&quot;.assets/doc-rel/attachments/9f8b0c1d-report.pdf&quot;,&quot;size&quot;:2048,&quot;hash&quot;:&quot;aaaa&quot;},{&quot;id&quot;:&quot;att-2&quot;,&quot;kind&quot;:&quot;url&quot;,&quot;display_name&quot;:&quot;Spec&quot;,&quot;path_or_url&quot;:&quot;https://example.com/spec&quot;,&quot;size&quot;:null,&quot;hash&quot;:null}]" TOOLATTR="legacy-value">
+    <FILEREFPATH>.assets/doc-rel/attachments/9f8b0c1d-report.pdf</FILEREFPATH>
+    <FILEREFPATH>https://example.com/spec</FILEREFPATH>
+    <FILEREFPATH>.\legacy\pre-m6-file.docx</FILEREFPATH>
+</TASK>
+</TODOLIST>

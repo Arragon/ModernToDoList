@@ -84,6 +84,15 @@ export const Commands = {
   SET_GLOBAL_QUICK_ADD_SHORTCUT: "set_global_quick_add_shortcut",
   GET_SHORTCUT_CONFLICTS: "get_shortcut_conflicts",
 
+  // -- M8: Cross-document transfer --
+  LIST_TRANSFER_TARGETS: "list_transfer_targets",
+  PREVIEW_TRANSFER: "preview_transfer",
+  COPY_TASK_BETWEEN_DOCUMENTS: "copy_task_between_documents",
+  MOVE_TASK_BETWEEN_DOCUMENTS: "move_task_between_documents",
+  UNDO_TRANSFER: "undo_transfer",
+  RECOVER_TRANSFERS: "recover_transfers",
+  COMPLETE_INTERRUPTED_MOVE: "complete_interrupted_move",
+
   // -- Platform plugins (already registered in src-tauri) --
   SHELL_OPEN: "plugin:shell|open",
 } as const;

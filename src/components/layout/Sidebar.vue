@@ -1,17 +1,20 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import SmartViewsPanel from "./SmartViewsPanel.vue";
 import SavedViewsPanel from "./SavedViewsPanel.vue";
 import ShortcutSettingsSection from "./ShortcutSettingsSection.vue";
 import {
   workspace, documents, dbStatus,
-  closeWorkspace, scanAndIndex, rebuildIndex,
+  closeWorkspace, scanAndIndex, rebuildIndex, showConfirm,
 } from "../../stores/app-state";
 import { canRedo, canUndo, closeAllSessions, isDirty } from "../../stores/session-store";
 import { openCommandPalette, openGlobalSearch } from "../../stores/ui-store";
 import { executeCommand } from "../../app/commands";
 import { useT } from "../../app/i18n";
 import { locale, theme, toggleLocale, toggleTheme } from "../../stores/ui-prefs";
+import {
+  startDirectTransfer, transferAvailable, TASK_DRAG_MIME,
+} from "../../stores/transfer-store";
 
 const t = useT();
 
@@ -22,6 +25,54 @@ const documentCount = computed(() => documents.value.length);
 async function closeCurrentWorkspace() {
   await closeAllSessions();
   await closeWorkspace();
+}
+
+// ── Task drag-and-drop transfer target (RD-M8 / INH-1083) ───────────────────
+
+const dropTargetDocId = ref<string | null>(null);
+
+function onDocDragOver(docId: string, e: DragEvent): void {
+  if (!transferAvailable.value) return;
+  if (!e.dataTransfer?.types.includes(TASK_DRAG_MIME)) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "move";
+  dropTargetDocId.value = docId;
+}
+
+function onDocDragLeave(docId: string): void {
+  if (dropTargetDocId.value === docId) dropTargetDocId.value = null;
+}
+
+function onDocDrop(docId: string, docPath: string, e: DragEvent): void {
+  dropTargetDocId.value = null;
+  if (!transferAvailable.value) return;
+  const raw = e.dataTransfer?.getData(TASK_DRAG_MIME);
+  if (!raw) return;
+  e.preventDefault();
+  let payload: { taskKey: string; documentId: string; title: string };
+  try {
+    payload = JSON.parse(raw);
+  } catch {
+    return;
+  }
+  if (payload.documentId === docId) return;
+  // Dropping onto a document moves the task — always with explicit confirm.
+  showConfirm(
+    t.value("transfer.dropConfirmTitle"),
+    `"${payload.title || payload.taskKey}" → ${docPath}`,
+    () => {
+      void startDirectTransfer(
+        {
+          taskKey: payload.taskKey,
+          taskTitle: payload.title,
+          sourceDocumentId: payload.documentId,
+          operation: "move",
+        },
+        docId,
+      );
+    },
+    t.value("transfer.moveTitle"),
+  );
 }
 </script>
 
@@ -86,7 +137,16 @@ async function closeCurrentWorkspace() {
           <div v-if="documentCount === 0" class="sidebar__hint">
             {{ t('sidebar.noDocuments') }}
           </div>
-          <div v-for="doc in documents" :key="doc.id" class="sidebar__item" :title="doc.file_path">
+          <div
+            v-for="doc in documents"
+            :key="doc.id"
+            class="sidebar__item"
+            :class="{ 'sidebar__item--drop': dropTargetDocId === doc.id }"
+            :title="doc.file_path"
+            @dragover="onDocDragOver(doc.id, $event)"
+            @dragleave="onDocDragLeave(doc.id)"
+            @drop="onDocDrop(doc.id, doc.file_path, $event)"
+          >
             <i class="fas fa-file-lines"></i>
             <span class="truncate-text">{{ doc.file_path }}</span>
             <span class="chip">{{ doc.doc_type }}</span>
@@ -256,6 +316,11 @@ async function closeCurrentWorkspace() {
   min-width: 0;
 }
 .sidebar__item:hover { background: var(--color-bg-hover); }
+.sidebar__item--drop {
+  outline: 2px dashed var(--color-accent);
+  outline-offset: -2px;
+  background: var(--color-bg-hover);
+}
 .sidebar__label { font-size: var(--text-xs); color: var(--color-text-muted); }
 .sidebar__actions {
   display: flex;

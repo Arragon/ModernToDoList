@@ -29,6 +29,22 @@ export function sessionIdForPath(path: string): number | null {
   return sessionsByPath.value.get(path) ?? null;
 }
 
+/**
+ * Drops the local mirror of a session without calling the backend. Used when
+ * the backend already closed the session on its own — e.g. cross-document
+ * transfers drop both documents' sessions after rewriting the files.
+ */
+export function forgetSessionForPath(path: string): void {
+  const sessionId = sessionsByPath.value.get(path);
+  if (sessionId === undefined) return;
+  const sessions = new Map(sessionsByPath.value);
+  sessions.delete(path);
+  sessionsByPath.value = sessions;
+  const statuses = new Map(statusBySession.value);
+  statuses.delete(sessionId);
+  statusBySession.value = statuses;
+}
+
 export function setActiveDocument(documentId: string | null): void {
   activeDocumentId.value = documentId;
 }

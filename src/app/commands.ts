@@ -25,6 +25,7 @@ import { createViewFromFilter, loadSavedViews } from "../stores/saved-view-store
 import { selectSmartView } from "../stores/smart-view-store";
 import { SMART_VIEWS } from "./smart-views";
 import { loadDependencies, loadParticipants, bulkAssignParticipants } from "../stores/relation-store";
+import { openTransferPicker, transferAvailable } from "../stores/transfer-store";
 import { fileNameOf, pickPath } from "./platform";
 import * as ipc from "../ipc/client";
 import type { TaskSummary } from "../ipc/types";
@@ -361,6 +362,26 @@ registerCommand({
   },
 });
 
+registerCommand({
+  id: "task.copyTo",
+  label: "Copy Task to Document…",
+  icon: "fa-copy",
+  category: "task",
+  description: "Copy the selected task subtree into another document (RD-M8)",
+  enabled: () => hasSelection() && transferAvailable.value,
+  execute: () => openTransferForSelection("copy"),
+});
+
+registerCommand({
+  id: "task.moveTo",
+  label: "Move Task to Document…",
+  icon: "fa-truck-fast",
+  category: "task",
+  description: "Move the selected task subtree into another document (RD-M8)",
+  enabled: () => hasSelection() && transferAvailable.value,
+  execute: () => openTransferForSelection("move"),
+});
+
 // ── Search / views ───────────────────────────────────────────────────────────
 
 registerCommand({
@@ -624,6 +645,19 @@ async function ensureActiveDocument(): Promise<void> {
     return;
   }
   if (documents.value.length > 0) setActiveDocument(documents.value[0].id);
+}
+
+/** Opens the transfer picker for the currently selected task. */
+function openTransferForSelection(operation: "copy" | "move"): void {
+  const key = selectedTaskKey.value;
+  const task = key ? allTasks.value.find((t) => t.task_key === key) : undefined;
+  if (!task) return;
+  void openTransferPicker({
+    taskKey: task.task_key,
+    taskTitle: task.title,
+    sourceDocumentId: task.document_id,
+    operation,
+  });
 }
 
 async function afterWorkspaceOpened(): Promise<void> {

@@ -12,3 +12,6 @@ pub mod views;
 pub mod bridge;
 pub mod relations;
 pub mod task_edit;
+
+// M8 IPC bridge (cross-document transfer UX).
+pub mod transfer;

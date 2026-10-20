@@ -431,3 +431,70 @@ export interface ShortcutConflict {
   shortcut: string;
   command_ids: string[];
 }
+
+// -- M8: Cross-document transfer (RD-M8-024~031) --
+
+export type TransferOperationKind = "copy" | "move";
+
+/** A workspace document eligible as a transfer target. */
+export interface TransferTargetInfo {
+  document_id: string;
+  display_name: string;
+  path: string;
+  doc_type: string;
+  writable: boolean;
+}
+
+/** Non-fatal planning/execution finding. Internally tagged on `kind`. */
+export type TransferWarning =
+  | { kind: "external_dependency_preserved"; task_id: string; dep_task_id: string; source_doc: string }
+  | { kind: "asset_missing"; task_id: string; path: string }
+  | { kind: "asset_absolute_reference_kept"; task_id: string; path: string }
+  | { kind: "asset_url_kept"; task_id: string; url: string }
+  | { kind: "asset_collision_renamed"; from: string; to: string }
+  | { kind: "non_numeric_task_id"; id: string }
+  | { kind: "orphaned_source_dependency"; task_id: string; dep_task_id: string };
+
+/** Side-effect-free plan preview for the picker confirmation step. */
+export interface TransferPreviewDto {
+  operation: TransferOperationKind;
+  task_count: number;
+  external_dependency_count: number;
+  asset_copy_count: number;
+  warnings: TransferWarning[];
+}
+
+/** Progress events emitted on `transfer://progress`. Tagged on `phase`. */
+export type TransferProgressEvent =
+  | { phase: "planning" }
+  | { phase: "staging_assets"; done: number; total: number }
+  | { phase: "committing_target" }
+  | { phase: "backing_up_source" }
+  | { phase: "committing_source" }
+  | { phase: "finishing" };
+
+/** Result of a successfully executed transfer. */
+export interface TransferOutcomeDto {
+  transaction_id: string;
+  operation: TransferOperationKind;
+  target_root_task_id: string;
+  target_task_ids: string[];
+  warnings: TransferWarning[];
+  undo_available: boolean;
+}
+
+export type TransferRecoveryAction =
+  | "rolled_back"
+  | "completed"
+  | "completed_with_duplicate"
+  | "quarantined";
+
+/** User-facing report for one interrupted transfer transaction. */
+export interface TransferRecoveryReportDto {
+  transaction_id: string | null;
+  journal_path: string;
+  operation: TransferOperationKind | null;
+  action: TransferRecoveryAction;
+  detail: string;
+  duplicate_task_ids: string[];
+}

@@ -9,6 +9,11 @@ import { toggleMultiSelect, clearMultiSelect, isMultiSelected } from "../../stor
 import { classifyDependency, outgoingDependencies } from "../../stores/relation-store";
 import { isCommandAvailable } from "../../stores/capability-store";
 import { Commands } from "../../ipc/commands";
+import ContextMenu, { type ContextMenuItem } from "../common/ContextMenu.vue";
+import {
+  openTransferPicker, transferAvailable, TASK_DRAG_MIME,
+} from "../../stores/transfer-store";
+import { useT } from "../../app/i18n";
 
 const props = defineProps<{
   row: TaskRowData;
@@ -115,6 +120,53 @@ function formatDate(d: string | null): string {
   // Simple YYYY-MM-DD display
   return d;
 }
+
+// ── Cross-document transfer (RD-M8 / INH-1083) ───────────────────────────────
+
+const t = useT();
+const contextMenu = ref({ visible: false, x: 0, y: 0 });
+
+const contextMenuItems = computed<ContextMenuItem[]>(() => [
+  {
+    id: "copy-to",
+    label: t.value("transfer.copyTo"),
+    icon: "fa-copy",
+    disabled: !transferAvailable.value,
+  },
+  {
+    id: "move-to",
+    label: t.value("transfer.moveTo"),
+    icon: "fa-truck-fast",
+    disabled: !transferAvailable.value,
+  },
+]);
+
+function handleContextMenu(e: MouseEvent) {
+  if (isGroup.value) return;
+  e.preventDefault();
+  selectTask(taskKey.value);
+  contextMenu.value = { visible: true, x: e.clientX, y: e.clientY };
+}
+
+function handleMenuSelect(id: string) {
+  if (id !== "copy-to" && id !== "move-to") return;
+  void openTransferPicker({
+    taskKey: taskKey.value,
+    taskTitle: props.row.task.title,
+    sourceDocumentId: props.row.task.document_id,
+    operation: id === "move-to" ? "move" : "copy",
+  });
+}
+
+function handleDragStart(e: DragEvent) {
+  if (isGroup.value || !e.dataTransfer) return;
+  e.dataTransfer.setData(TASK_DRAG_MIME, JSON.stringify({
+    taskKey: taskKey.value,
+    documentId: props.row.task.document_id,
+    title: props.row.task.title,
+  }));
+  e.dataTransfer.effectAllowed = "copyMove";
+}
 </script>
 
 <template>
@@ -147,7 +199,10 @@ function formatDate(d: string | null): string {
     role="treeitem"
     :aria-selected="isSelected()"
     :aria-expanded="row.hasChildren ? row.isExpanded : undefined"
+    :draggable="transferAvailable"
     @click="handleClick($event)"
+    @contextmenu="handleContextMenu"
+    @dragstart="handleDragStart"
   >
     <!-- Expand/collapse toggle -->
     <button
@@ -212,6 +267,16 @@ function formatDate(d: string | null): string {
       {{ children }}
     </span>
   </div>
+
+  <!-- Right-click menu: cross-document transfer entry points -->
+  <ContextMenu
+    :visible="contextMenu.visible"
+    :x="contextMenu.x"
+    :y="contextMenu.y"
+    :items="contextMenuItems"
+    @select="handleMenuSelect"
+    @close="contextMenu.visible = false"
+  />
 </template>
 
 <style scoped>

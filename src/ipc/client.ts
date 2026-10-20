@@ -15,6 +15,8 @@ import type {
   SmartViewKind, SmartViewResponse,
   GlobalShortcutSettings, ShortcutConflict,
   TaskCommentsResponse,
+  TransferOperationKind, TransferTargetInfo, TransferPreviewDto,
+  TransferOutcomeDto, TransferRecoveryReportDto,
 } from "./types";
 
 // -- M1: System --
@@ -408,4 +410,77 @@ export async function quickAddTask(
   request: QuickAddRequest,
 ): Promise<IpcResult<AddTaskResponse>> {
   return safeInvoke<AddTaskResponse>(Commands.QUICK_ADD_TASK, { request });
+}
+
+// -- M8: Cross-document transfer (RD-M8-024~031) --
+
+/** Workspace documents eligible as transfer targets (picker data). */
+export async function listTransferTargets(
+  excludeDocumentId?: string,
+): Promise<IpcResult<TransferTargetInfo[]>> {
+  return safeInvoke<TransferTargetInfo[]>(Commands.LIST_TRANSFER_TARGETS, {
+    excludeDocumentId: excludeDocumentId ?? null,
+  });
+}
+
+/** Side-effect-free plan preview for the picker confirmation step. */
+export async function previewTransfer(
+  sourceDocumentId: string,
+  targetDocumentId: string,
+  rootTaskKey: string,
+  operation: TransferOperationKind,
+): Promise<IpcResult<TransferPreviewDto>> {
+  return safeInvoke<TransferPreviewDto>(Commands.PREVIEW_TRANSFER, {
+    sourceDocumentId, targetDocumentId, rootTaskKey, operation,
+  });
+}
+
+/** Copies a task subtree into another document; the source is never modified. */
+export async function copyTaskBetweenDocuments(
+  sourceDocumentId: string,
+  targetDocumentId: string,
+  rootTaskKey: string,
+): Promise<IpcResult<TransferOutcomeDto>> {
+  return safeInvoke<TransferOutcomeDto>(Commands.COPY_TASK_BETWEEN_DOCUMENTS, {
+    sourceDocumentId, targetDocumentId, rootTaskKey,
+  });
+}
+
+/**
+ * Moves a task subtree into another document. The caller MUST NOT remove the
+ * source row locally until this resolves ok — a move whose source commit did
+ * not finish rejects with a `recovery_required:` error instead.
+ */
+export async function moveTaskBetweenDocuments(
+  sourceDocumentId: string,
+  targetDocumentId: string,
+  rootTaskKey: string,
+): Promise<IpcResult<TransferOutcomeDto>> {
+  return safeInvoke<TransferOutcomeDto>(Commands.MOVE_TASK_BETWEEN_DOCUMENTS, {
+    sourceDocumentId, targetDocumentId, rootTaskKey,
+  });
+}
+
+/** Undoes a completed transfer using its durable undo artifacts. */
+export async function undoTransfer(
+  transactionId: string,
+): Promise<IpcResult<MutationAck>> {
+  return safeInvoke<MutationAck>(Commands.UNDO_TRANSFER, { transactionId });
+}
+
+/** Scans the transfer journal for interrupted transactions. */
+export async function recoverTransfers(): Promise<IpcResult<TransferRecoveryReportDto[]>> {
+  return safeInvoke<TransferRecoveryReportDto[]>(Commands.RECOVER_TRANSFERS, {});
+}
+
+/**
+ * Completes an interrupted move whose target committed but whose source copy
+ * was retained: removes the source subtree after explicit user confirmation.
+ */
+export async function completeInterruptedMove(
+  transactionId: string,
+): Promise<IpcResult<TransferRecoveryReportDto>> {
+  return safeInvoke<TransferRecoveryReportDto>(Commands.COMPLETE_INTERRUPTED_MOVE, {
+    transactionId,
+  });
 }

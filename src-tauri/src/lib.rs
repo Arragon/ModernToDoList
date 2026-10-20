@@ -15,11 +15,11 @@ use commands::document::{
 };
 use commands::session::{
     close_document_session, get_session_status, open_document_session,
-    redo_last_command, save_document_atomic, undo_last_command, AppState,
+    redo_last_command, save_document_atomic, undo_last_command,
 };
 use commands::system::{get_runtime_info, ping};
 use commands::workspace::{
-    WorkspaceState, create_workspace, open_workspace, close_workspace,
+    create_workspace, open_workspace, close_workspace,
     get_workspace_status, list_documents, scan_and_index, rebuild_index, get_db_status,
 };
 use commands::task_query::{query_tasks, get_task_tags};
@@ -48,10 +48,18 @@ use commands::relations::{
     remove_progress_link, update_attachment, update_progress_link,
 };
 use commands::bridge::{open_attachment, reveal_attachment};
+use commands::transfer::{
+    complete_interrupted_move, copy_task_between_documents, list_transfer_targets,
+    move_task_between_documents, preview_transfer, recover_transfers, undo_transfer,
+};
 // Re-exported so `tests/ipc_bridge_tests.rs` (an external integration test) can
 // drive the pure `*_core` bridge logic against the public domain types; the
 // `commands` module itself stays crate-private.
-pub use commands::{bridge, relations, task_edit};
+pub use commands::{bridge, relations, task_edit, transfer};
+// State containers re-exported so integration tests can construct the exact
+// `*_core` command inputs (e.g. `tests/m8_ipc_transfer_tests.rs`).
+pub use commands::session::AppState;
+pub use commands::workspace::WorkspaceState;
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -176,6 +184,14 @@ pub fn run() {
             // M9 bridge: global search + quick add insertion
             global_search,
             quick_add_task,
+            // M8: cross-document transfer UX
+            list_transfer_targets,
+            preview_transfer,
+            copy_task_between_documents,
+            move_task_between_documents,
+            undo_transfer,
+            recover_transfers,
+            complete_interrupted_move,
         ])
         .setup(|app| {
             // Restore window state on startup (RD-M1-013)

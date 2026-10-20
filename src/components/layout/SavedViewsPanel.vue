@@ -8,8 +8,9 @@
  */
 import { computed, onMounted } from "vue";
 import {
-  activeViewId, applyView, countFor, createViewFromFilter, loadSavedViews,
-  removeView, renameView, savedViews, usingBackendStore,
+  activeViewId, applyView, canUpdateView, countFor, createViewFromFilter,
+  loadSavedViews, moveView, removeView, renameView, savedViews,
+  updateViewFromFilter, usingBackendStore,
 } from "../../stores/saved-view-store";
 import { describePredicates } from "../../app/view-predicates";
 import { clearFilters, isFilterActive } from "../../stores/filter-state";
@@ -41,6 +42,16 @@ async function rename(id: string, current: string): Promise<void> {
   if (!name || name === current) return;
   const ok = await renameView(id, name);
   if (ok) showToast("View renamed", "success");
+}
+
+/** Re-saves the current filter conditions into the view (RD-M9-028~030). */
+async function resave(id: string, name: string): Promise<void> {
+  const ok = await updateViewFromFilter(id);
+  if (ok) showToast(`View "${name}" updated with the current filter`, "success");
+}
+
+async function reorder(id: string, direction: -1 | 1): Promise<void> {
+  await moveView(id, direction);
 }
 
 function confirmDelete(id: string, name: string): void {
@@ -81,7 +92,7 @@ function select(id: string): void {
     </div>
 
     <div
-      v-for="view in views"
+      v-for="(view, index) in views"
       :key="view.id"
       class="saved-views__item"
       :class="{ 'saved-views__item--active': activeViewId === view.id }"
@@ -96,6 +107,32 @@ function select(id: string): void {
       <span class="saved-views__name truncate-text">{{ view.name }}</span>
       <span class="saved-views__count">{{ countFor(view.id) }}</span>
       <span class="saved-views__actions">
+        <button
+          v-if="activeViewId === view.id && canUpdateView(view.id)"
+          class="saved-views__action"
+          title="Re-save the current filter into this view"
+          @click.stop="resave(view.id, view.name)"
+        >
+          <i class="fas fa-floppy-disk"></i>
+        </button>
+        <button
+          class="saved-views__action"
+          :class="{ 'saved-views__action--disabled': index === 0 }"
+          :disabled="index === 0"
+          title="Move up"
+          @click.stop="reorder(view.id, -1)"
+        >
+          <i class="fas fa-chevron-up"></i>
+        </button>
+        <button
+          class="saved-views__action"
+          :class="{ 'saved-views__action--disabled': index === views.length - 1 }"
+          :disabled="index === views.length - 1"
+          title="Move down"
+          @click.stop="reorder(view.id, 1)"
+        >
+          <i class="fas fa-chevron-down"></i>
+        </button>
         <button
           class="saved-views__action"
           title="Rename"
@@ -182,6 +219,13 @@ function select(id: string): void {
 }
 .saved-views__action:hover { color: var(--color-text-primary); }
 .saved-views__action--danger:hover { color: var(--color-error); }
+.saved-views__action--disabled,
+.saved-views__action:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.saved-views__action--disabled:hover,
+.saved-views__action:disabled:hover { color: var(--color-text-muted); }
 .saved-views__note {
   margin-top: var(--space-2);
   font-size: var(--text-xs);

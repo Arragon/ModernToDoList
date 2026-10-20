@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import SmartViewsPanel from "./SmartViewsPanel.vue";
 import SavedViewsPanel from "./SavedViewsPanel.vue";
+import ShortcutSettingsSection from "./ShortcutSettingsSection.vue";
 import {
   workspace, documents, dbStatus,
   closeWorkspace, scanAndIndex, rebuildIndex,
@@ -100,6 +102,8 @@ async function closeCurrentWorkspace() {
           </div>
         </div>
 
+        <SmartViewsPanel />
+
         <SavedViewsPanel />
 
         <div class="sidebar__section">
@@ -141,6 +145,8 @@ async function closeCurrentWorkspace() {
             <span class="sidebar__label">Schema v{{ dbStatus.schema_version }}</span>
           </div>
         </div>
+
+        <ShortcutSettingsSection />
       </template>
     </div>
 

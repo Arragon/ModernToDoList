@@ -4,6 +4,7 @@ import * as ipc from "../ipc/client";
 import { ipcFailureMessage } from "../ipc/safe";
 import { selectedTaskKey, expandedTaskKeys, documents, showToast, workspace, scanAndIndex, refreshDocuments } from "./app-state";
 import { isFilterActive, applyFilters, filterState } from "./filter-state";
+import { smartViewGroupKeys, smartViewKeys } from "./smart-view-state";
 import {
   participantsByTaskMap, isBlockedBy, dependencyMap,
 } from "./relation-store";
@@ -117,8 +118,14 @@ export const visibleRows = computed<TaskRow[]>(() => {
   const expanded = expandedTaskKeys.value;
   const context = { participantsByTask: participantsByTaskMap.value, tagsByTask: tagsByTask.value };
   const filterVisible = isFilterActive.value ? applyFilters(allTasks.value, context) : null;
+  // Smart views (RD-M9-014~021) are read-only projections ANDed with the
+  // manual filter; a group drill-down further narrows to one group.
+  const smartKeys = smartViewKeys.value;
+  const groupKeys = smartViewGroupKeys.value;
 
   function matches(key: string): boolean {
+    if (smartKeys && !smartKeys.has(key)) return false;
+    if (groupKeys && !groupKeys.has(key)) return false;
     return !filterVisible || filterVisible.has(key);
   }
 

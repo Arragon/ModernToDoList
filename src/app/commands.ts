@@ -22,6 +22,8 @@ import {
 import { settings } from "../stores/settings-store";
 import { requestQuickAddFocus, toggleCommandPalette, toggleGlobalSearch } from "../stores/ui-store";
 import { createViewFromFilter, loadSavedViews } from "../stores/saved-view-store";
+import { selectSmartView } from "../stores/smart-view-store";
+import { SMART_VIEWS } from "./smart-views";
 import { loadDependencies, loadParticipants, bulkAssignParticipants } from "../stores/relation-store";
 import { fileNameOf, pickPath } from "./platform";
 import * as ipc from "../ipc/client";
@@ -472,6 +474,20 @@ registerCommand({
   enabled: () => hasWorkspace(),
   execute: () => loadSavedViews(true),
 });
+
+// ── Smart Views (RD-M9-014~021) ──────────────────────────────────────────────
+
+for (const view of SMART_VIEWS) {
+  registerCommand({
+    id: `view.smartView.${view.kind}`,
+    label: `Smart View: ${view.label}`,
+    icon: view.icon,
+    category: "view",
+    description: view.hint,
+    enabled: () => hasDocument(),
+    execute: () => selectSmartView(view.kind),
+  });
+}
 
 // ── Performance (RD-M10-022 gate controls) ───────────────────────────────────
 

@@ -182,6 +182,77 @@ export async function removeView(viewId: string): Promise<boolean> {
   return true;
 }
 
+/**
+ * Re-saves the current filter conditions into an existing view
+ * (RD-M9-028~030 "persist" half). Falls back to the local mirror.
+ */
+export async function updateViewFromFilter(viewId: string): Promise<boolean> {
+  const existing = findView(viewId);
+  if (!existing) return false;
+  const predicates = predicatesFromFilter(filterState.value);
+  if (predicates.length === 0) {
+    showToast("Nothing to save: no filter conditions are active", "warning");
+    return false;
+  }
+
+  if (usingBackendStore.value) {
+    const result = await ipc.updateSavedView(viewId, predicates);
+    if (!result.ok) {
+      showToast(ipcFailureMessage(result, "Update saved view"), "warning");
+      usingBackendStore.value = false;
+    } else {
+      savedViews.value = normalise(savedViews.value.map((v) =>
+        v.id === viewId ? { ...v, predicates } : v,
+      ));
+      showToast(`View "${existing.name}" updated`, "success");
+      return true;
+    }
+  }
+
+  savedViews.value = normalise(savedViews.value.map((v) =>
+    v.id === viewId ? { ...v, predicates } : v,
+  ));
+  writeLocal(savedViews.value);
+  showToast(`View "${existing.name}" updated`, "success");
+  return true;
+}
+
+/** Moves a view one slot up (-1) or down (+1) in the sidebar order. */
+export async function moveView(viewId: string, direction: -1 | 1): Promise<boolean> {
+  const ordered = savedViews.value.slice().sort((a, b) =>
+    a.sort_order - b.sort_order || a.name.localeCompare(b.name),
+  );
+  const index = ordered.findIndex((v) => v.id === viewId);
+  const target = index + direction;
+  if (index < 0 || target < 0 || target >= ordered.length) return false;
+
+  const swapped = ordered.slice();
+  const tmp = swapped[index].sort_order;
+  swapped[index] = { ...swapped[index], sort_order: swapped[target].sort_order };
+  swapped[target] = { ...swapped[target], sort_order: tmp };
+  savedViews.value = normalise(swapped);
+
+  if (usingBackendStore.value) {
+    const result = await ipc.reorderSavedViews(savedViews.value.map((v) => v.id));
+    if (!result.ok) {
+      showToast(ipcFailureMessage(result, "Reorder saved views"), "warning");
+      usingBackendStore.value = false;
+      writeLocal(savedViews.value);
+    }
+  } else {
+    writeLocal(savedViews.value);
+  }
+  return true;
+}
+
+/** True when the active filter differs from the view's stored predicates. */
+export function canUpdateView(viewId: string): boolean {
+  const view = findView(viewId);
+  if (!view) return false;
+  if (predicatesFromFilter(filterState.value).length === 0) return false;
+  return !matchesActiveFilter(view);
+}
+
 /** Applies a saved view to the active filter state. */
 export function applyView(viewId: string): boolean {
   const view = findView(viewId);

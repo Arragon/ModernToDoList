@@ -1,6 +1,10 @@
 /.vscode
 /lists
 
+# Local agent/tooling scratch
+/.qoder-credits/
+/.workbuddy/
+
 # Secrets — never commit
 .env
 .env.*

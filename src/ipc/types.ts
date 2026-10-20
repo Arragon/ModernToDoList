@@ -348,3 +348,86 @@ export interface QuickAddRequest {
   start_date: string | null;
   due_date: string | null;
 }
+
+// -- M9: Smart Views (RD-M9-014~021) --
+
+/** Built-in smart view kinds. Mirrors the backend `SmartViewKind` registry. */
+export type SmartViewKind =
+  | "today"
+  | "upcoming"
+  | "overdue"
+  | "unscheduled"
+  | "completed"
+  | "flagged"
+  | "by_participant"
+  | "by_tag";
+
+/**
+ * A task projection used by smart-view evaluation. Mirrors the backend
+ * `ViewTask`; the backend builds these from the task index (never from XML
+ * directly) so a deleted index.db rebuilds identical results.
+ */
+export interface ViewTaskDto {
+  /** "document_id:task_id" */
+  task_key: string;
+  document_id: string;
+  task_id: string;
+  title: string;
+  /** Raw status string as stored in the index (e.g. "NotStarted"). */
+  status: string;
+  percent_done: number;
+  /** 0-10 TDL scale. */
+  priority: number;
+  start_date: string | null;
+  due_date: string | null;
+  completed_date: string | null;
+  tags: string[];
+  participants: string[];
+}
+
+export interface TaskGroupDto {
+  name: string;
+  tasks: ViewTaskDto[];
+}
+
+export interface UpcomingGroups {
+  today: ViewTaskDto[];
+  tomorrow: ViewTaskDto[];
+  this_week: ViewTaskDto[];
+  later: ViewTaskDto[];
+}
+
+/** Response of the `get_smart_view` command. */
+export interface SmartViewResponse {
+  view: string;
+  /** The date the view was evaluated against (ISO). */
+  evaluated_for: string;
+  tasks: ViewTaskDto[];
+  groups: TaskGroupDto[];
+  groups_upcoming: UpcomingGroups | null;
+  total: number;
+}
+
+// -- M9: Global Quick Add shortcut (RD-M9-042~043) --
+
+/**
+ * Result of the last registration attempt. Internally tagged on `status`
+ * (`{"status":"registered"}`, `{"status":"conflict","holder":"..."}`, ...).
+ */
+export type ShortcutStatus =
+  | { status: "registered" }
+  | { status: "conflict"; holder: string }
+  | { status: "unavailable"; reason: string }
+  | { status: "disabled" };
+
+export interface GlobalShortcutSettings {
+  quick_add_enabled: boolean;
+  quick_add_accelerator: string;
+  last_status: ShortcutStatus | null;
+}
+
+/** A shortcut bound to more than one command in the registry (QA-M9-012). */
+export interface ShortcutConflict {
+  shortcut: string;
+  command_ids: string[];
+}

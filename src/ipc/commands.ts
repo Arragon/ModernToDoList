@@ -72,11 +72,17 @@ export const Commands = {
 
   // -- M9: Productivity --
   GLOBAL_SEARCH: "global_search",
+  GET_SMART_VIEW: "get_smart_view",
   LIST_SAVED_VIEWS: "list_saved_views",
   CREATE_SAVED_VIEW: "create_saved_view",
   RENAME_SAVED_VIEW: "rename_saved_view",
+  UPDATE_SAVED_VIEW: "update_saved_view",
   DELETE_SAVED_VIEW: "delete_saved_view",
+  REORDER_SAVED_VIEWS: "reorder_saved_views",
   QUICK_ADD_TASK: "quick_add_task",
+  GET_GLOBAL_SHORTCUT_SETTINGS: "get_global_shortcut_settings",
+  SET_GLOBAL_QUICK_ADD_SHORTCUT: "set_global_quick_add_shortcut",
+  GET_SHORTCUT_CONFLICTS: "get_shortcut_conflicts",
 
   // -- Platform plugins (already registered in src-tauri) --
   SHELL_OPEN: "plugin:shell|open",

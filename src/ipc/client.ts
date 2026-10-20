@@ -12,6 +12,8 @@ import type {
   ParticipantDto, DependencyDto, DependencyGraphDto, ProgressLinkDto,
   AttachmentDto, AttachmentImportResult,
   SearchResponseDto, SavedViewDto, QuickAddRequest,
+  SmartViewKind, SmartViewResponse,
+  GlobalShortcutSettings, ShortcutConflict,
   TaskCommentsResponse,
 } from "./types";
 
@@ -349,8 +351,57 @@ export async function renameSavedView(
   return safeInvoke<SavedViewDto>(Commands.RENAME_SAVED_VIEW, { viewId, name });
 }
 
+/** Replace a saved view's predicates (re-save the current filter state). */
+export async function updateSavedView(
+  viewId: string,
+  predicates: SavedViewDto["predicates"],
+): Promise<IpcResult<MutationAck>> {
+  return safeInvoke<MutationAck>(Commands.UPDATE_SAVED_VIEW, { viewId, predicates });
+}
+
+/** Persist a new sidebar ordering of saved views. */
+export async function reorderSavedViews(
+  viewIds: string[],
+): Promise<IpcResult<MutationAck>> {
+  return safeInvoke<MutationAck>(Commands.REORDER_SAVED_VIEWS, { viewIds });
+}
+
 export async function deleteSavedView(viewId: string): Promise<IpcResult<MutationAck>> {
   return safeInvoke<MutationAck>(Commands.DELETE_SAVED_VIEW, { viewId });
+}
+
+/**
+ * Evaluate a built-in smart view against the workspace index.
+ * `now` is an optional ISO date ("2026-10-15") injected for tests.
+ */
+export async function getSmartView(
+  view: SmartViewKind,
+  documentId?: string,
+  now?: string,
+): Promise<IpcResult<SmartViewResponse>> {
+  return safeInvoke<SmartViewResponse>(Commands.GET_SMART_VIEW, {
+    view, documentId, now,
+  });
+}
+
+// -- M9: Global Quick Add shortcut (RD-M9-042~043) --
+
+export async function getGlobalShortcutSettings(): Promise<IpcResult<GlobalShortcutSettings>> {
+  return safeInvoke<GlobalShortcutSettings>(Commands.GET_GLOBAL_SHORTCUT_SETTINGS, {});
+}
+
+export async function setGlobalQuickAddShortcut(
+  enabled: boolean,
+  accelerator?: string,
+): Promise<IpcResult<GlobalShortcutSettings>> {
+  return safeInvoke<GlobalShortcutSettings>(Commands.SET_GLOBAL_QUICK_ADD_SHORTCUT, {
+    enabled, accelerator,
+  });
+}
+
+/** Duplicate shortcut bindings inside the command registry (QA-M9-012). */
+export async function getShortcutConflicts(): Promise<IpcResult<ShortcutConflict[]>> {
+  return safeInvoke<ShortcutConflict[]>(Commands.GET_SHORTCUT_CONFLICTS, {});
 }
 
 export async function quickAddTask(

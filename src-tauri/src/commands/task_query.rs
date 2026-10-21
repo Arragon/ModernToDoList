@@ -39,6 +39,17 @@ pub fn query_tasks(
     limit: Option<i32>,
 ) -> Result<TaskQueryResult, String> {
     let db = state.db.lock().map_err(|_| "Lock error")?;
+    query_tasks_core(&db, document_id, parent_key, status_filter, limit)
+}
+
+/// Testable core of [`query_tasks`]: reads the task index directly.
+pub fn query_tasks_core(
+    db: &crate::infrastructure::DatabaseManager,
+    document_id: Option<String>,
+    parent_key: Option<String>,
+    status_filter: Option<String>,
+    limit: Option<i32>,
+) -> Result<TaskQueryResult, String> {
     if !db.is_available() {
         return Ok(TaskQueryResult { tasks: Vec::new(), total: 0 });
     }
@@ -79,7 +90,9 @@ pub fn query_tasks(
                 title: row.get(2)?,
                 priority: row.get(3)?,
                 status: row.get(4)?,
-                percent_done: row.get(5)?,
+                // percent_done column is REAL affinity: stored values always come
+                // back as f64 even when the indexer binds integers.
+                percent_done: row.get::<_, f64>(5)? as i32,
                 risk: row.get(6)?,
                 start_date: row.get(7)?,
                 due_date: row.get(8)?,

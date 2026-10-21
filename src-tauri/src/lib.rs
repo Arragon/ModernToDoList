@@ -55,7 +55,7 @@ use commands::transfer::{
 // Re-exported so `tests/ipc_bridge_tests.rs` (an external integration test) can
 // drive the pure `*_core` bridge logic against the public domain types; the
 // `commands` module itself stays crate-private.
-pub use commands::{bridge, relations, task_edit, transfer};
+pub use commands::{bridge, relations, task_edit, task_query, transfer};
 // State containers re-exported so integration tests can construct the exact
 // `*_core` command inputs (e.g. `tests/m8_ipc_transfer_tests.rs`).
 pub use commands::session::AppState;

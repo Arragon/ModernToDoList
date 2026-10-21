@@ -483,8 +483,9 @@ fn qa_m8_010_target_write_failure_rolls_back() {
     // Source deletion phase never ran.
     assert_eq!(fs::read(&env.source).unwrap(), src_bytes);
     assert_eq!(fs::read(&env.target).unwrap(), tgt_bytes);
-    let reports = recover_interrupted_transfers(&env.ctx.journal_dir);
-    assert_eq!(reports[0].action, TransferRecoveryAction::RolledBack);
+    // The failure was returned to the caller, so the journal is rolled back
+    // inline: recovery must NOT resurface it as an interrupted transfer.
+    assert!(recover_interrupted_transfers(&env.ctx.journal_dir).is_empty());
     assert_no_task_loss(&env, &src_titles, &tgt_titles);
     fs::remove_dir_all(&env.dir).ok();
 }
@@ -514,8 +515,8 @@ fn qa_m8_011_target_permission_denied_rolls_back() {
     // Neither document was modified; the source-delete phase never ran.
     assert_eq!(fs::read(&env.source).unwrap(), src_bytes);
     assert_eq!(fs::read(&env.target).unwrap(), tgt_bytes);
-    let reports = recover_interrupted_transfers(&env.ctx.journal_dir);
-    assert_eq!(reports[0].action, TransferRecoveryAction::RolledBack);
+    // Inline rollback: recovery scan stays clean for a reported failure.
+    assert!(recover_interrupted_transfers(&env.ctx.journal_dir).is_empty());
     assert_no_task_loss(&env, &src_titles, &tgt_titles);
     fs::remove_dir_all(&env.dir).ok();
 }
@@ -550,8 +551,8 @@ fn qa_m8_012_asset_stage_io_failure_rolls_back() {
     assert_eq!(fs::read(&env.source).unwrap(), src_bytes);
     assert_eq!(fs::read(&env.target).unwrap(), tgt_bytes);
     assert_eq!(fs::read(&target2).unwrap(), tgt_bytes);
-    let reports = recover_interrupted_transfers(&env.ctx.journal_dir);
-    assert_eq!(reports[0].action, TransferRecoveryAction::RolledBack);
+    // Inline rollback removed staged copies and the journal: recovery is clean.
+    assert!(recover_interrupted_transfers(&env.ctx.journal_dir).is_empty());
     assert_no_task_loss(&env, &src_titles, &tgt_titles);
     fs::remove_dir_all(&env.dir).ok();
 }

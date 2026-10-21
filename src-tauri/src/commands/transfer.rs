@@ -248,7 +248,7 @@ pub fn execute_transfer_core(
     };
     let task_id = safe_task_id(&req.root_task_key)?;
 
-    let outcome = match operation {
+    let result = match operation {
         TransferOperation::Copy => {
             transfer::copy_task(&source_path, &target_path, &task_id, &options, &ctx, progress)
         }
@@ -256,12 +256,16 @@ pub fn execute_transfer_core(
             transfer::move_task(&source_path, &target_path, &task_id, &options, &ctx, progress)
         }
     }
-    .map_err(|e| classify_error(&e))?;
+    .map_err(|e| classify_error(&e));
 
+    // Whatever the outcome, the files on disk are the truth: refresh the index
+    // and drop stale sessions. This matters most for recovery_required errors,
+    // where the target WAS committed but the error return would otherwise skip
+    // reindexing and leave the UI showing pre-transfer content.
     reindex_document(ws_state, &req.source_document_id, &source_path);
     reindex_document(ws_state, &req.target_document_id, &target_path);
     drop_sessions_for(app, &[&source_path, &target_path]);
-    Ok(outcome)
+    result
 }
 
 pub fn undo_transfer_core(

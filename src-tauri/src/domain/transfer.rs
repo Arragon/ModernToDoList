@@ -1272,7 +1272,71 @@ fn same_file(a: &Path, b: &Path) -> bool {
 ///
 /// `progress` receives UX progress events; `hooks` allows QA to inject a
 /// simulated kill at an exact phase boundary.
+///
+/// When execution fails BEFORE the target commit is journaled, neither
+/// document was modified, so the journal and staged asset copies are removed
+/// inline: without this, a cleanly-reported failure would resurface as a
+/// false "interrupted transfer" on the next recovery scan. On a real crash no
+/// cleanup runs and the journal remains for recovery, so crash safety is
+/// unaffected.
 pub fn execute_transfer(
+    plan: TransferPlan,
+    ctx: &TransferContext,
+    hooks: &TransferHooks,
+    progress: impl FnMut(TransferProgress),
+) -> TransferResult<TransferOutcome> {
+    let manifest = plan.manifest.clone();
+    match execute_transfer_inner(plan, ctx, hooks, progress) {
+        Ok(outcome) => Ok(outcome),
+        Err(e) => {
+            // A SimulatedKill models a process crash: no cleanup runs, exactly
+            // like a real kill, so crash-recovery tests keep their journal.
+            if !matches!(e, TransferError::SimulatedKill { .. }) {
+                cleanup_failed_pre_commit(ctx, &manifest);
+            }
+            Err(e)
+        }
+    }
+}
+
+/// Best-effort removal of a failed transaction's journal and staged asset
+/// copies. No-op once the target commit is journaled — from that point the
+/// target may hold the subtree and the journal must survive for recovery.
+fn cleanup_failed_pre_commit(ctx: &TransferContext, manifest: &TransferManifest) {
+    let journal_path = TransferJournal::path_for(&ctx.journal_dir, &manifest.transaction_id);
+    let Ok(journal) = TransferJournal::load(&journal_path) else {
+        return;
+    };
+    if journal.record().has_phase(JournalPhase::TargetCommitted)
+        || document_contains_ids(
+            &manifest.target_doc.path,
+            &manifest.target_ids().into_iter().cloned().collect::<Vec<_>>(),
+        )
+    {
+        // The target holds (or may hold) the subtree: leave everything for
+        // recovery rather than deleting the only evidence of a duplicate.
+        return;
+    }
+    for asset in &manifest.asset_refs {
+        if asset.classification != AssetClassification::CopyRequired {
+            continue;
+        }
+        let (Some(dst), Some(expected)) = (&asset.target_abs, &asset.hash) else {
+            continue;
+        };
+        if dst.is_file() {
+            if let Ok(fp) = FileFingerprint::from_file(dst) {
+                if &fp.hash == expected {
+                    let _ = std::fs::remove_file(dst);
+                }
+            }
+        }
+    }
+    journal.remove();
+    let _ = std::fs::remove_dir_all(ctx.undo_dir.join(&manifest.transaction_id));
+}
+
+fn execute_transfer_inner(
     mut plan: TransferPlan,
     ctx: &TransferContext,
     hooks: &TransferHooks,

@@ -212,8 +212,35 @@ fn copy_subtree_keeps_source_and_reindexes() {
     assert_eq!(count, 6, "target document reindexed after copy");
 }
 
-// ── move ─────────────────────────────────────────────────────────────────────
+// ── query_tasks regression (REAL-affinity percent_done) ─────────────────────
 
+#[test]
+fn query_tasks_core_reads_percent_done_from_real_column() {
+    let env = setup_env("query_percent");
+    execute_transfer_core(&env.app, &env.ws_state, &env.req("5"), TransferOperation::Copy, |_| {})
+        .unwrap();
+
+    // Regression: percent_done has REAL affinity in task_index, so rusqlite
+    // hands back f64. query_tasks_core must not fail with InvalidColumnType.
+    let db = env.ws_state.db.lock().unwrap();
+    let res = moderntodolist_lib::task_query::query_tasks_core(
+        &db,
+        Some(env.target_id.clone()),
+        None,
+        None,
+        None,
+    )
+    .unwrap();
+    assert_eq!(res.total, 6);
+    let build = res
+        .tasks
+        .iter()
+        .find(|t| t.title == "Build Installer")
+        .expect("copied task present");
+    assert_eq!(build.percent_done, 50);
+}
+
+// ── move ─────────────────────────────────────────────────────────────────────
 #[test]
 fn move_subtree_removes_source_after_commit() {
     let env = setup_env("move");
@@ -323,6 +350,31 @@ fn complete_interrupted_move_removes_source_copy() {
 }
 
 // ── failure paths ────────────────────────────────────────────────────────────
+
+/// A transfer whose target commit fails must clean up its own journal: the
+/// failure was already reported to the caller, so the journal must not
+/// resurface as a false "interrupted transfer" on the next recovery scan.
+/// (Regression: E2E E3's failed copy reappeared in the E5 recovery panel.)
+#[cfg(windows)]
+#[test]
+fn failed_target_commit_leaves_no_journal_for_recovery() {
+    use std::os::windows::fs::OpenOptionsExt;
+    const FILE_SHARE_READ: u32 = 0x0000_0001;
+    let env = setup_env("fail_commit_clean");
+    // Deny writes to the target; reads stay allowed so planning succeeds and
+    // the failure lands exactly at the target commit.
+    let _guard = std::fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .share_mode(FILE_SHARE_READ)
+        .open(&env.target)
+        .unwrap();
+    let err =
+        execute_transfer_core(&env.app, &env.ws_state, &env.req("5"), TransferOperation::Copy, |_| {})
+            .unwrap_err();
+    assert!(err.starts_with("failed_before_target_commit:"), "unexpected: {err}");
+    assert!(recover_transfers_core(&env.ws_state).unwrap().is_empty());
+}
 
 #[test]
 fn unknown_document_id_is_rejected() {

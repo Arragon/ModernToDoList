@@ -122,8 +122,33 @@ pub struct UndoRedoResponse {
 pub fn open_document_session(
     path: String,
     state: tauri::State<'_, AppState>,
+    ws_state: tauri::State<'_, crate::commands::workspace::WorkspaceState>,
 ) -> Result<OpenSessionResponse, String> {
-    let file_path = PathBuf::from(&path);
+    // The index stores workspace-relative paths for managed documents; the
+    // frontend hands those over verbatim, so resolve them against the open
+    // workspace root (same rule as the transfer commands). The resolved
+    // absolute path is stored on the session and reused by save/flush.
+    let root = ws_state
+        .workspace
+        .lock()
+        .ok()
+        .and_then(|guard| guard.as_ref().map(|ws| ws.root_path.clone()));
+    open_document_session_core(&path, &state, root.as_deref())
+}
+
+/// Core logic for `open_document_session`, kept free of Tauri types so it can
+/// be driven directly by integration tests.
+pub fn open_document_session_core(
+    path: &str,
+    state: &AppState,
+    workspace_root: Option<&std::path::Path>,
+) -> Result<OpenSessionResponse, String> {
+    let mut file_path = PathBuf::from(path);
+    if file_path.is_relative() {
+        if let Some(root) = workspace_root {
+            file_path = root.join(&file_path);
+        }
+    }
 
     // Read and parse the file
     let bytes = std::fs::read(&file_path)
@@ -592,6 +617,54 @@ mod serialize_task_tree_tests {
         assert!(
             after.get(&crate::domain::TaskId::new("3")).is_some(),
             "the edited task's own child must still be present"
+        );
+    }
+
+    // Regression for the workspace-relative path bug: the index stores managed
+    // documents' paths relative to the workspace root, and the frontend passes
+    // them to `open_document_session` verbatim. The command must resolve them
+    // against the open workspace root; before the fix it read the relative path
+    // from the process CWD and failed with a file-not-found error, which in the
+    // UI surfaced as "Descriptions are unavailable for this task".
+
+    #[test]
+    fn open_session_resolves_workspace_relative_path_against_root() {
+        let dir = std::env::temp_dir().join(format!(
+            "mtl-session-rel-{}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(&dir).expect("temp root");
+        std::fs::write(dir.join("doc.tdl"), NESTED).expect("fixture file");
+
+        let state = AppState::new();
+        let resp = open_document_session_core("doc.tdl", &state, Some(dir.as_path()))
+            .expect("relative path must resolve against the workspace root");
+        assert_eq!(resp.task_count, 4);
+
+        let sessions = state.sessions.lock().expect("sessions lock");
+        let entry = sessions.get(&resp.session_id).expect("session stored");
+        assert!(
+            entry.file_path.is_absolute(),
+            "stored file_path must be absolute so save/flush never depends on CWD, got {:?}",
+            entry.file_path
+        );
+        drop(sessions);
+
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn open_session_without_workspace_root_keeps_relative_path_and_fails() {
+        let state = AppState::new();
+        let err = open_document_session_core(
+            "definitely-not-in-cwd-xyz.tdl",
+            &state,
+            None,
+        )
+        .expect_err("an unresolvable relative path must fail cleanly, not silently");
+        assert!(
+            err.contains("Failed to read file"),
+            "error must identify the read failure, got: {err}"
         );
     }
 }

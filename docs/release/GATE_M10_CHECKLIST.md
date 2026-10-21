@@ -1,16 +1,19 @@
 # GATE-M10 — ModernToDoList 2.0 GA Exit Gate — Audit Record
 
 **Linear:** INH-1133 · **Milestone:** M10 · **Priority:** P1
-**Audit date:** 2026-09-22 · **Repo:** `Arragon/ModernToDoList` · **Branch:** `feat/m2-m3-ipc-integration` → `main`
-**Predecessor:** RC-M10 (INH-1132) → `RC_M10_BLOCKER_REVIEW.md`
+**Audit date:** 2026-09-22, refreshed 2026-10-21 · **Repo:** `Arragon/ModernToDoList` · **Branch:** `main`
+**Predecessor:** RC-M10 (INH-1132, Done 2026-10-21) → `RC_M10_BLOCKER_REVIEW.md`
 
 ## VERDICT: **NOT PASSED — gate remains open**
 
-Blocker count is **24**, not 0. Matrix **H** cannot be executed in this environment at all, and the
-Tiptap editor (INH-1061/1062) plus runtime UI verification remain open. Per the delivery plan,
-GATE-M10 requires *all* Blockers = 0 **and** the full RC matrix to pass. Neither holds.
-
-This document records what **is** verified, so the remaining gap is precise rather than vague.
+All product-category Blockers are now **0** (Data / Persistence / Portable / Security / Core-UX),
+the 2.0.0 RC is frozen (commit `0dda444`, tag `v2.0.0-rc`, ZIP SHA-256
+`a6c89880da9c9c7188edaf84199de6892f83e1223c19c0a00e4ad00ad66aa58e`), and every automated criterion
+below is MET. The single remaining gap is **matrix H**: it requires clean Win10 + Win11 VMs with no
+network and no admin rights, which cannot be executed on this host (no Hyper-V feature enabled, no
+ISOs — see `docs/qa/LEFTOVER_TASKS.md` L-04). Per the delivery plan and §8 below, this gate must not
+be closed on the strength of passing unit tests alone, so it stays open until a human executes H01–H15
+against the frozen RC ZIP.
 
 Status values: `MET` · `NOT MET` · `PARTIAL` · `CANNOT VERIFY HERE`.
 
@@ -20,18 +23,18 @@ Status values: `MET` · `NOT MET` · `PARTIAL` · `CANNOT VERIFY HERE`.
 
 | # | Criterion | Status | Evidence |
 |---|-----------|--------|----------|
-| 1.1 | All Blockers = 0 | **NOT MET** | `RC_M10_BLOCKER_REVIEW.md` regenerated from live Linear state: **28 open** (Data 5, Persistence 2, Portable 3, Security 0, Core-UX 18). Reduced from 94 at Phase 0 |
-| 1.2 | All P0/P1 data-safety issues = 0 | **NOT MET** | 5 Blocker-Data issues remain open: INH-1083 (transfer UX), INH-1129 (QA-M10-F), plus the data-safety aspects of the open gates |
+| 1.1 | All Blockers = 0 | **MET (product) / PARTIAL (process)** | `RC_M10_BLOCKER_REVIEW.md` regenerated 2026-10-21 from live Linear state: **product categories all 0** (Data 0, Persistence 0, Portable 0, Security 0, Core-UX 0). 4 open items remain, all process gates: INH-718 (M10 epic), INH-1131 (H matrix, environment-blocked), INH-1132 (RC review — since closed Done), INH-1133 (this gate). Reduced from 94 at Phase 0 |
+| 1.2 | All P0/P1 data-safety issues = 0 | **MET** | All Data-classified blockers resolved. The last data-safety defect found (session open of workspace-relative paths, §7 fifth defect) was fixed at `a586175` with regression tests before the freeze |
 | 1.3 | No issue closed while its dependencies are open | **MET** | Verified by direct query. Phase 0 found INH-1133 marked `Done` with all 93 M6–M10 issues in Backlog; corrected to Backlog. Post-sync re-check: all 5 gates (INH-1060/1074/1094/1109/1133) are **not** Done while their dependencies remain open |
 
 ## 2. Automated test criteria
 
 | # | Criterion | Status | Evidence |
 |---|-----------|--------|----------|
-| 2.1 | M0–M9 automated tests all pass | **MET** | Clean run in an isolated `CARGO_TARGET_DIR`: **1234 passed, 0 failed** across 20 targets — lib 590, m8_qa 295, m7_qa 118, ipc_bridge 47, m6_qa 18, m9_qa 17, round_trip 17, m4_qa 16, m5_qa 16, matrices A 14 / B 10 / C 10 / D 10 / E 12 / F 10 / G 10, m10_benchmark 13, m10_portable 10, doc 1 (2 ignored: the full-scale benchmark generator and the release-ZIP generator, both run separately via their Node runners) |
-| 2.2 | Frontend type-checks and builds | **MET** | `npm run build` (`vue-tsc --noEmit && vite build`): **0 TypeScript errors**, 129 modules transformed, 223.64 kB JS / 124.66 kB CSS |
+| 2.1 | M0–M9 automated tests all pass | **MET** | Final run on the frozen commit `0dda444`: **1260 passed, 0 failed** (2 ignored: the full-scale benchmark generator and the release-ZIP generator), 20 targets. Full output archived at `docs/qa/evidence/m10-final-test-run.txt` |
+| 2.2 | Frontend type-checks and builds | **MET** | `vue-tsc --noEmit && vite build` on 2026-10-21: **0 TypeScript errors**, dist rebuilt for the 2.0.0 freeze |
 | 2.3 | XML round-trip compatibility intact | **MET** | `round_trip_test` 17/17 (encodings, unknown elements/attributes, comments, dependencies, FileLink, real-world fixture) plus matrix A 14/14 |
-| 2.4 | Index remains disposable | **MET** | `qa_m10_c09_gate_delete_index_db_rebuild_full_function` and `qa_m9_016` both delete `index.db`, rebuild from XML and assert full function |
+| 2.4 | Index remains disposable | **MET** | `qa_m10_c09_gate_delete_index_db_rebuild_full_function` and `qa_m9_016` both delete `index.db`, rebuild from XML and assert full function; re-verified live 2026-10-21 (delete → restart → rebuild → full function) |
 
 ## 3. RC full matrix (QA-M10 A–H)
 
@@ -51,7 +54,7 @@ Status values: `MET` · `NOT MET` · `PARTIAL` · `CANNOT VERIFY HERE`.
 | # | Criterion | Status | Evidence |
 |---|-----------|--------|----------|
 | 4.1 | Delete `index.db` → rebuild → full function | **MET** | Automated: `qa_m10_c09`, `qa_m10_c10`, `qa_m9_016` |
-| 4.2 | Cross-file Move kill recovery | **PARTIAL** | `m8_qa_tests` asserts no-task-loss at every crash point, but is not executed under the F-matrix numbering and has no clean full-suite confirmation |
+| 4.2 | Cross-file Move kill recovery | **MET** | `m8_qa_tests` asserts no-task-loss at every crash point and `m10_qa_f_crossdoc` asserts the union-no-loss invariant under the F-matrix numbering — both green in the frozen-commit run. CDP E2E E4/E5 additionally drove the Recovery Required and completed_with_duplicate paths through the real UI (evidence at `bcddfde`) |
 | 4.3 | Win10 + Win11 clean VM | **CANNOT VERIFY HERE** | Matrix H — no VMs available |
 | 4.4 | No-network Portable run | **CANNOT VERIFY HERE** | Matrix H case H03 |
 
@@ -59,14 +62,14 @@ Status values: `MET` · `NOT MET` · `PARTIAL` · `CANNOT VERIFY HERE`.
 
 | # | Criterion | Status | Evidence |
 |---|-----------|--------|----------|
-| 5.1 | Release ZIP hash fixed | **PARTIAL** | Deterministic ZIP implemented in `release/packaging.rs` with fixed timestamps and sorted entries; determinism proven by building twice and comparing SHA-256. The **release hash is not frozen** because RC-M10 has not frozen a commit |
+| 5.1 | Release ZIP hash fixed | **MET** | Deterministic ZIP (`scripts/release/make-portable-zip.cjs`, sorted entries + fixed DOS timestamps) built **twice** from `release/staging-2.0.0` on 2026-10-21, byte-identical. Frozen SHA-256: `a6c89880da9c9c7188edaf84199de6892f83e1223c19c0a00e4ad00ad66aa58e` for `ModernToDoList-2.0.0-Portable-win-x64.zip` (4,107,682 bytes, 6 entries) |
 | 5.2 | Migration test passes | **MET** | `infrastructure/migration.rs` v0→3 Data migration, settings `schemaVersion` 0→2, and the failure→`rebuild_index_fallback` path; 14 lib tests |
-| 5.3 | Release notes complete | **MET** | `docs/release/RELEASE_NOTES_2.0.0.md` |
-| 5.4 | Licenses collected | **MET** | `LICENSES/RUST_DEPENDENCIES.md` (566 crates from `Cargo.lock`), `NPM_DEPENDENCIES.md` (152 packages from `package-lock.json`), `THIRD_PARTY_NOTICES.md` |
-| 5.5 | Version metadata embedded | **PARTIAL** | `release/version_metadata.rs` produces the metadata and a `tauri.conf.json` snippet, but `tauri.conf.json` was **not** modified (out of the implementation stream's file ownership). Must be applied before a real release build |
+| 5.3 | Release notes complete | **MET** | `docs/release/RELEASE_NOTES_2.0.0.md` — date corrected to 2026-10-21, frozen ZIP SHA-256 recorded in the header, publishing checklist ticked |
+| 5.4 | Licenses collected | **MET** | `LICENSES/RUST_DEPENDENCIES.md` (566 crates from `Cargo.lock`), `NPM_DEPENDENCIES.md` (152 packages from `package-lock.json`), `THIRD_PARTY_NOTICES.md`; shipped inside the ZIP under `LICENSES/` |
+| 5.5 | Version metadata embedded | **MET** | `tauri.conf.json` / `package.json` / `package-lock.json` / `Cargo.toml` / `Cargo.lock` all set to **2.0.0** at the freeze commit `0dda444` (the 9-22 gap is closed) |
 | 5.6 | Manual update path documented | **MET (doc only)** | `docs/release/MANUAL_UPDATE.md`. Validation is matrix H case H15 → **CANNOT VERIFY HERE** |
 | 5.7 | WebView2 policy documented | **MET (doc only)** | `docs/release/WEBVIEW2_POLICY.md` + structured detection in `platform/windows/webview2.rs`. Validation is matrix H case H02 → **CANNOT VERIFY HERE** |
-| 5.8 | Commit and version frozen | **NOT MET** | Cannot freeze while blockers ≠ 0 |
+| 5.8 | Commit and version frozen | **MET** | Commit `0dda444` (`chore(release): freeze 2.0.0 RC`), local tag `v2.0.0-rc`, version 2.0.0 in all five manifests. The GA tag `v2.0.0` is deliberately withheld until matrix H passes (L-05) |
 
 ## 6. Security criteria
 
@@ -118,6 +121,17 @@ panicked. Through `task_description_text` → `SearchDocument::from_task` this c
 char space. `qa_m10_e06` had pinned the buggy behaviour as a tripwire and named the assertion to use
 once fixed; it is now a regression test.
 
+**Fixed during RC (2026-10-21) — fifth real defect, a GA-blocking session-open failure:**
+`open_document_session` (`commands/session.rs`) read the path it was handed verbatim. The index
+stores managed documents' paths **relative to the workspace root** and the frontend passes them over
+verbatim, so every managed document failed to open with a file-not-found from the process CWD — in
+the UI, "Descriptions are unavailable for this task" everywhere. Found by CDP runtime verification
+of the M7 editor (absolute-path documents worked; managed ones did not). Fixed at `a586175` by
+resolving relative paths against the open workspace root (same rule as the transfer commands) and
+storing the absolute path on the session so save/flush never depend on CWD. Covered by two in-module
+regression tests (`open_session_resolves_workspace_relative_path_against_root`,
+`open_session_without_workspace_root_keeps_relative_path_and_fails`).
+
 **Reported, not fixed:**
 - **F4** — `DeleteTaskCommand::undo` (`domain/command.rs`) re-appends tasks at the end of the
   sibling list, so delete+undo churns sibling order. IDs and content are intact. Asserted and
@@ -125,8 +139,17 @@ once fixed; it is now a regression test.
 - **F1/F2** — `xml_parser.rs:91` lets the XML declaration override BOM detection, so a UTF-8-BOM file
   declaring `utf-8` loses its BOM on re-save, and a UTF-16 file with a contradicting declaration is
   re-encoded to UTF-8. Pre-documented at the M2 gate; consistent files round-trip byte-identically.
-- **Spec §0.1 gap** — `commands/session.rs::serialize_task_tree` drops nested subtrees and root
-  attributes. Listed in the delivery plan's Phase 0 gap table and still open.
+
+**Resolved since the 9-22 audit:**
+- ~~**Spec §0.1 gap** — `commands/session.rs::serialize_task_tree` drops nested subtrees and root
+  attributes.~~ Fixed (third defect above); five in-module regression tests pin the behaviour.
+- ~~**Tiptap is not integrated.**~~ INH-1061/INH-1062 are Done: `@tiptap/*` is a dependency,
+  `src/components/editor/RichTextEditor.vue` ships edit/preview modes, and the M7 editor passed CDP
+  runtime verification on 2026-10-21.
+- ~~**Frontend has had no runtime verification.**~~ The packaged WebView2 app was driven over CDP
+  on 2026-10-21: M9 UI smoke (Smart Views, Saved Views, shortcut settings), M8 transfer E2E
+  (E1–E6), the RD-M10-022 render gate measurement (`docs/qa/evidence/m10-render-bench.json`), and
+  a live index.db delete-rebuild. Evidence committed at `c293554` / `bcddfde`.
 
 **Verification debt:**
 - **RESOLVED — the 27 missing IPC commands.** `update_task_field`, `add_task`, `delete_task`,
@@ -141,12 +164,10 @@ once fixed; it is now a regression test.
   `generate_handler!` expansion overflowed the compiler stack and aborted the bin target with
   `0xc0000409 (STATUS_STACK_BUFFER_OVERRUN)`. Because the lib and every integration target compiled,
   this presented as a link failure. `src-tauri/.cargo/config.toml` now sets `RUST_MIN_STACK=64MiB`.
-- **Tiptap is not integrated** — no `@tiptap/*` dependency, no `src/components/editor/`, no
-  `RichTextEditor.vue`. INH-1061 and INH-1062 are therefore genuinely unimplemented, so M7's
-  user-visible rich-text editing does not exist even though its backend is complete.
-- **Frontend has had no runtime verification.** `npm run build` proves type-correctness only. The
-  packaged Tauri/WebView2 app was never launched, so no UI behaviour is confirmed. Every
-  frontend-bearing issue is held at `In Progress` for this reason.
+- **Tiptap is integrated** (see "Resolved since the 9-22 audit" above) — the 9-22 claim that
+  INH-1061/1062 were unimplemented is superseded.
+- **Frontend runtime verification is done** (see above) — the 9-22 "no runtime verification" debt is
+  superseded by the 2026-10-21 CDP evidence.
 - **RESOLVED — a single clean full-suite `cargo test` run is now captured: 1146 passed, 0 failed.**
   The earlier failures were **not** target-directory corruption. Root cause: `[lib] crate-type =
   ["staticlib", "cdylib", "rlib"]` (the Tauri template default). `staticlib`/`cdylib` are consumed
@@ -159,15 +180,24 @@ once fixed; it is now a regression test.
 
 ## 8. What would close the gate
 
-1. Execute matrix H (15 cases) on clean Win10 and Win11 VMs and record results — **human-only**.
+1. Execute matrix H (15 cases) on clean Win10 and Win11 VMs against the frozen RC ZIP and record
+   results — **human-only**, environment-blocked per `docs/qa/LEFTOVER_TASKS.md` L-04. If any case
+   forces a code change, rebuild + re-freeze the ZIP (new SHA-256) and redo the render re-measure
+   (L-02).
 2. ~~Implement QA-M10 matrices E, F and G as standalone RC suites (32 cases).~~ **Done** — 32 cases,
    all passing.
-3. Integrate Tiptap and the rich-text editor UI (INH-1061, INH-1062).
-4. Perform real runtime UI verification of the 10 issues held at `In Progress`. The IPC bridge is now
-   complete, so these are blocked only on driving the packaged app — not on missing backend commands.
-5. Apply the version metadata to `tauri.conf.json` and produce a frozen release ZIP.
-6. Fix F4 and the `serialize_task_tree` subtree/attribute gap.
-7. Re-run `rc-blocker-review.cjs` until the count is 0, then freeze commit, version and ZIP hash.
+3. ~~Integrate Tiptap and the rich-text editor UI (INH-1061, INH-1062).~~ **Done.**
+4. ~~Perform real runtime UI verification of the 10 issues held at `In Progress`.~~ **Done** —
+   CDP-driven, evidence committed.
+5. ~~Apply the version metadata to `tauri.conf.json` and produce a frozen release ZIP.~~ **Done** —
+   commit `0dda444`, tag `v2.0.0-rc`, SHA-256 frozen.
+6. ~~Fix F4 and the `serialize_task_tree` subtree/attribute gap.~~ Partially done — the
+   serialization gap is fixed; **F4** (delete+undo sibling order) remains a documented non-blocker
+   (IDs/content intact).
+7. ~~Re-run `rc-blocker-review.cjs` until the count is 0, then freeze commit, version and ZIP hash.~~
+   **Done** — product blocker categories all 0; the 4 open items are process gates including this one.
+8. After H passes: close this gate and epic INH-718, tag the GA commit `v2.0.0`, and rotate the
+   Linear API key (§6.1 — it once existed in plaintext on disk).
 
 **Do not close this gate on the strength of passing unit tests alone.** Criteria 3.H, 4.3 and 4.4
 require physical clean-machine execution that no automated suite can substitute for.

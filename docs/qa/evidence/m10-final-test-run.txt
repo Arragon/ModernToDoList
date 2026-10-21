@@ -1,0 +1,1774 @@
+warning: unused import: `Sender`
+  --> src\infrastructure\watcher.rs:14:42
+   |
+14 | use std::sync::mpsc::{channel, Receiver, Sender};
+   |                                          ^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable `new_count` is assigned to, but never used
+   --> src\commands\workspace.rs:192:9
+    |
+192 |     let mut new_count = 0;
+    |         ^^^^^^^^^^^^^
+    |
+    = note: consider using `_new_count` instead
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: value assigned to `new_count` is never read
+   --> src\commands\workspace.rs:199:13
+    |
+199 |             new_count += 1;
+    |             ^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `lower`
+   --> src\domain\search.rs:309:9
+    |
+309 |     let lower = html.to_lowercase();
+    |         ^^^^^ help: if this is intentional, prefix it with an underscore: `_lower`
+
+warning: type `SessionEntry` is more private than the item `AppState::sessions`
+  --> src\commands\session.rs:46:5
+   |
+46 |     pub sessions: Mutex<HashMap<u64, SessionEntry>>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `AppState::sessions` is reachable at visibility `pub`
+   |
+note: but type `SessionEntry` is only usable at visibility `pub(crate)`
+  --> src\commands\session.rs:22:1
+   |
+22 | pub(crate) struct SessionEntry {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = note: `#[warn(private_interfaces)]` on by default
+
+warning: method `is_registered` is never used
+   --> src\commands\quick_add.rs:120:8
+    |
+117 | pub trait GlobalShortcutBackend {
+    |           --------------------- method in this trait
+...
+120 |     fn is_registered(&self, id: &str) -> bool;
+    |        ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `registered` is never read
+   --> src\commands\quick_add.rs:127:5
+    |
+126 | pub struct InertGlobalShortcutBackend {
+    |            -------------------------- field in this struct
+127 |     registered: HashMap<String, String>,
+    |     ^^^^^^^^^^
+    |
+    = note: `InertGlobalShortcutBackend` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: struct `SimulatedOsBackend` is never constructed
+   --> src\commands\quick_add.rs:147:12
+    |
+147 | pub struct SimulatedOsBackend {
+    |            ^^^^^^^^^^^^^^^^^^
+
+warning: method `with_os_held` is never used
+   --> src\commands\quick_add.rs:154:12
+    |
+153 | impl SimulatedOsBackend {
+    | ----------------------- method in this implementation
+154 |     pub fn with_os_held(mut self, accelerator: &str, holder: &str) -> Self {
+    |            ^^^^^^^^^^^^
+
+warning: function `set_global_shortcut_backend` is never used
+   --> src\commands\quick_add.rs:224:8
+    |
+224 | pub fn set_global_shortcut_backend(new_backend: Box<dyn GlobalShortcutBackend + Send>) {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `MAX_PATH` is never used
+  --> src\platform\windows\pathhard.rs:26:11
+   |
+26 | pub const MAX_PATH: usize = 260;
+   |           ^^^^^^^^
+
+warning: constant `MAX_PATH_SAFE` is never used
+  --> src\platform\windows\pathhard.rs:28:7
+   |
+28 | const MAX_PATH_SAFE: usize = MAX_PATH - 12;
+   |       ^^^^^^^^^^^^^
+
+warning: constant `PORTABLE_MARKER_FILE` is never used
+  --> src\platform\windows\pathhard.rs:30:11
+   |
+30 | pub const PORTABLE_MARKER_FILE: &str = ".portable-id.json";
+   |           ^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `FALLBACK_DIR_NAME` is never used
+  --> src\platform\windows\pathhard.rs:32:11
+   |
+32 | pub const FALLBACK_DIR_NAME: &str = "ModernToDoList";
+   |           ^^^^^^^^^^^^^^^^^
+
+warning: enum `PathHardeningError` is never used
+  --> src\platform\windows\pathhard.rs:35:10
+   |
+35 | pub enum PathHardeningError {
+   |          ^^^^^^^^^^^^^^^^^^
+
+warning: type alias `PathHardeningResult` is never used
+  --> src\platform\windows\pathhard.rs:52:10
+   |
+52 | pub type PathHardeningResult<T> = Result<T, PathHardeningError>;
+   |          ^^^^^^^^^^^^^^^^^^^
+
+warning: function `extended_path` is never used
+  --> src\platform\windows\pathhard.rs:67:8
+   |
+67 | pub fn extended_path(path: &Path) -> PathBuf {
+   |        ^^^^^^^^^^^^^
+
+warning: function `extended_path_always` is never used
+  --> src\platform\windows\pathhard.rs:77:8
+   |
+77 | pub fn extended_path_always(path: &Path) -> PathBuf {
+   |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `exceeds_max_path` is never used
+  --> src\platform\windows\pathhard.rs:96:8
+   |
+96 | pub fn exceeds_max_path(path: &Path) -> bool {
+   |        ^^^^^^^^^^^^^^^^
+
+warning: function `is_dir_writable` is never used
+   --> src\platform\windows\pathhard.rs:105:8
+    |
+105 | pub fn is_dir_writable(dir: &Path) -> bool {
+    |        ^^^^^^^^^^^^^^^
+
+warning: enum `DataDirLocation` is never used
+   --> src\platform\windows\pathhard.rs:125:10
+    |
+125 | pub enum DataDirLocation {
+    |          ^^^^^^^^^^^^^^^
+
+warning: methods `path` and `is_relocated` are never used
+   --> src\platform\windows\pathhard.rs:133:12
+    |
+132 | impl DataDirLocation {
+    | -------------------- methods in this implementation
+133 |     pub fn path(&self) -> &Path {
+    |            ^^^^
+...
+139 |     pub fn is_relocated(&self) -> bool {
+    |            ^^^^^^^^^^^^
+
+warning: function `ensure_writable_data_dir` is never used
+   --> src\platform\windows\pathhard.rs:154:8
+    |
+154 | pub fn ensure_writable_data_dir(exe_dir: &Path) -> PathHardeningResult<DataDirLocation> {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `profile_fallback_bases` is never used
+   --> src\platform\windows\pathhard.rs:179:4
+    |
+179 | fn profile_fallback_bases() -> Vec<PathBuf> {
+    |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `PortableMarker` is never constructed
+   --> src\platform\windows\pathhard.rs:205:12
+    |
+205 | pub struct PortableMarker {
+    |            ^^^^^^^^^^^^^^
+
+warning: associated function `new` is never used
+   --> src\platform\windows\pathhard.rs:217:12
+    |
+216 | impl PortableMarker {
+    | ------------------- associated function in this implementation
+217 |     pub fn new(version: &str) -> Self {
+    |            ^^^
+
+warning: function `write_marker` is never used
+   --> src\platform\windows\pathhard.rs:228:8
+    |
+228 | pub fn write_marker(root: &Path, marker: &PortableMarker) -> PathHardeningResult<()> {
+    |        ^^^^^^^^^^^^
+
+warning: function `read_marker` is never used
+   --> src\platform\windows\pathhard.rs:236:8
+    |
+236 | pub fn read_marker(root: &Path) -> Option<PortableMarker> {
+    |        ^^^^^^^^^^^
+
+warning: function `find_install_by_marker` is never used
+   --> src\platform\windows\pathhard.rs:251:8
+    |
+251 | pub fn find_install_by_marker(install_id: &str, candidate_roots: &[PathBuf]) -> Option<PathBuf> {
+    |        ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `mounted_drive_roots` is never used
+   --> src\platform\windows\pathhard.rs:264:8
+    |
+264 | pub fn mounted_drive_roots() -> Vec<PathBuf> {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `resolve_after_drive_change` is never used
+   --> src\platform\windows\pathhard.rs:282:8
+    |
+282 | pub fn resolve_after_drive_change(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `path_roundtrips_lossless` is never used
+   --> src\platform\windows\pathhard.rs:300:8
+    |
+300 | pub fn path_roundtrips_lossless(path: &Path) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `has_windows_unsafe_components` is never used
+   --> src\platform\windows\pathhard.rs:310:8
+    |
+310 | pub fn has_windows_unsafe_components(path: &Path) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `EVERGREEN_CLIENT_KEY_WOW` is never used
+  --> src\platform\windows\webview2.rs:23:11
+   |
+23 | pub const EVERGREEN_CLIENT_KEY_WOW: &str =
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `EVERGREEN_CLIENT_KEY_NATIVE` is never used
+  --> src\platform\windows\webview2.rs:26:11
+   |
+26 | pub const EVERGREEN_CLIENT_KEY_NATIVE: &str =
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `FIXED_VERSION_ENV_VAR` is never used
+  --> src\platform\windows\webview2.rs:29:11
+   |
+29 | pub const FIXED_VERSION_ENV_VAR: &str = "WEBVIEW2_BROWSER_EXECUTABLE_FOLDER";
+   |           ^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `MINIMUM_VERSION` is never used
+  --> src\platform\windows\webview2.rs:31:11
+   |
+31 | pub const MINIMUM_VERSION: &str = "1.0.1823.32";
+   |           ^^^^^^^^^^^^^^^
+
+warning: constant `OFFICIAL_DOWNLOAD_PAGE` is never used
+  --> src\platform\windows\webview2.rs:33:11
+   |
+33 | pub const OFFICIAL_DOWNLOAD_PAGE: &str =
+   |           ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: enum `WebView2Error` is never used
+  --> src\platform\windows\webview2.rs:37:10
+   |
+37 | pub enum WebView2Error {
+   |          ^^^^^^^^^^^^^
+
+warning: type alias `WebView2Result` is never used
+  --> src\platform\windows\webview2.rs:57:10
+   |
+57 | pub type WebView2Result<T> = Result<T, WebView2Error>;
+   |          ^^^^^^^^^^^^^^
+
+warning: enum `WebView2Channel` is never used
+  --> src\platform\windows\webview2.rs:61:10
+   |
+61 | pub enum WebView2Channel {
+   |          ^^^^^^^^^^^^^^^
+
+warning: struct `WebView2RuntimeInfo` is never constructed
+  --> src\platform\windows\webview2.rs:70:12
+   |
+70 | pub struct WebView2RuntimeInfo {
+   |            ^^^^^^^^^^^^^^^^^^^
+
+warning: function `parse_version` is never used
+  --> src\platform\windows\webview2.rs:80:8
+   |
+80 | pub fn parse_version(raw: &str) -> WebView2Result<[u32; 4]> {
+   |        ^^^^^^^^^^^^^
+
+warning: function `compare_versions` is never used
+  --> src\platform\windows\webview2.rs:96:8
+   |
+96 | pub fn compare_versions(a: &str, b: &str) -> WebView2Result<std::cmp::Ordering> {
+   |        ^^^^^^^^^^^^^^^^
+
+warning: function `version_is_supported` is never used
+   --> src\platform\windows\webview2.rs:101:8
+    |
+101 | pub fn version_is_supported(version: &str) -> WebView2Result<bool> {
+    |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `check_fixed_version_folder` is never used
+   --> src\platform\windows\webview2.rs:107:8
+    |
+107 | pub fn check_fixed_version_folder(dir: &Path) -> WebView2Result<WebView2RuntimeInfo> {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `query_evergreen_version` is never used
+   --> src\platform\windows\webview2.rs:138:8
+    |
+138 | pub fn query_evergreen_version() -> WebView2Result<Option<String>> {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `extract_pv_value` is never used
+   --> src\platform\windows\webview2.rs:164:4
+    |
+164 | fn extract_pv_value(reg_output: &str) -> Option<String> {
+    |    ^^^^^^^^^^^^^^^^
+
+warning: function `detect_runtime` is never used
+   --> src\platform\windows\webview2.rs:187:8
+    |
+187 | pub fn detect_runtime() -> WebView2Result<WebView2RuntimeInfo> {
+    |        ^^^^^^^^^^^^^^
+
+warning: function `user_instructions` is never used
+   --> src\platform\windows\webview2.rs:216:8
+    |
+216 | pub fn user_instructions(err: &WebView2Error) -> String {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: type `SessionEntry` is more private than the item `commands::session::AppState::sessions`
+  --> src\commands\session.rs:46:5
+   |
+46 |     pub sessions: Mutex<HashMap<u64, SessionEntry>>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field `commands::session::AppState::sessions` is reachable at visibility `pub`
+   |
+note: but type `SessionEntry` is only usable at visibility `pub(crate)`
+  --> src\commands\session.rs:22:1
+   |
+22 | pub(crate) struct SessionEntry {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = note: `#[warn(private_interfaces)]` on by default
+
+warning: field `registered` is never read
+   --> src\commands\quick_add.rs:127:5
+    |
+126 | pub struct InertGlobalShortcutBackend {
+    |            -------------------------- field in this struct
+127 |     registered: HashMap<String, String>,
+    |     ^^^^^^^^^^
+    |
+    = note: `InertGlobalShortcutBackend` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: variants `NoParent`, `MarkerNotFound`, and `MarkerCorrupt` are never constructed
+  --> src\platform\windows\pathhard.rs:40:5
+   |
+35 | pub enum PathHardeningError {
+   |          ------------------ variants in this enum
+...
+40 |     NoParent { path: PathBuf },
+   |     ^^^^^^^^
+...
+46 |     MarkerNotFound,
+   |     ^^^^^^^^^^^^^^
+...
+49 |     MarkerCorrupt { reason: String },
+   |     ^^^^^^^^^^^^^
+   |
+   = note: `PathHardeningError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: `moderntodolist` (lib) generated 50 warnings (run `cargo fix --lib -p moderntodolist` to apply 2 suggestions)
+warning: `moderntodolist` (lib test) generated 10 warnings (7 duplicates)
+warning: using `.clone()` on a double reference, which returns `&XmlElement` instead of cloning the inner type
+    --> tests\m7_qa_tests.rs:1441:52
+     |
+1441 |     let task = tasks(doc).get(index).expect("task").clone();
+     |                                                    ^^^^^^^^
+     |
+     = note: `#[warn(suspicious_double_ref_op)]` on by default
+
+warning: using `.clone()` on a double reference, which returns `&XmlElement` instead of cloning the inner type
+    --> tests\m7_qa_tests.rs:1475:57
+     |
+1475 |     let task2 = tasks(&reparsed).get(1).expect("task 2").clone();
+     |                                                         ^^^^^^^^
+
+warning: `moderntodolist` (test "m7_qa_tests") generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.63s
+     Running unittests src\lib.rs (target\debug\deps\moderntodolist_lib-a2da359fcf0b251d.exe)
+
+running 604 tests
+test benchmark::datasets::tests::seed_override_applies ... ok
+test benchmark::datasets::tests::any_scale_available_on_demand ... ok
+test benchmark::datasets::tests::filter_membership ... ok
+test benchmark::datasets::tests::scale_filter_parsing ... ok
+test benchmark::datasets::tests::catalogue_is_complete ... ok
+test benchmark::fixture_gen::tests::config_serializes_stably ... ok
+test benchmark::fixture_gen::tests::attachment_heavy_shape_produces_file_links ... ok
+test benchmark::fixture_gen::tests::different_config_differs ... ok
+test benchmark::fixture_gen::tests::different_seed_differs ... ok
+test benchmark::fixture_gen::tests::root_attributes_match_tdl_dialect ... ok
+test benchmark::fixture_gen::tests::ids_are_unique_and_sequential ... ok
+test benchmark::fixture_gen::tests::dependency_heavy_shape_produces_dependencies ... ok
+test benchmark::fixture_gen::tests::max_depth_is_respected ... ok
+test benchmark::fixture_gen::tests::generate_file_is_deterministic_across_calls ... ok
+test benchmark::fixture_gen::tests::sha256_hex_known_vector ... ok
+test benchmark::fixture_gen::tests::zero_tasks_yields_self_closing_root ... ok
+test benchmark::profile::tests::memory_sampling_windows ... ok
+test benchmark::profile::tests::percentile_nearest_rank ... ok
+test benchmark::fixture_gen::tests::rich_text_shape_produces_html_comments ... ok
+test benchmark::fixture_gen::tests::emits_exact_task_count ... ok
+test benchmark::fixture_gen::tests::same_seed_and_config_is_byte_identical ... ok
+test benchmark::fixture_gen::tests::manifest_records_hashes_and_verifies ... ok
+test benchmark::profile::tests::xml_parse_reports_errors ... ok
+test benchmark::results::tests::from_json_rejects_garbage ... ok
+test benchmark::results::tests::get_metric_by_name ... ok
+test benchmark::results::tests::from_json_rejects_other_versions ... ok
+test benchmark::results::tests::json_matches_documented_schema_exactly ... ok
+test benchmark::results::tests::markdown_report_renders ... ok
+test benchmark::results::tests::json_round_trip ... ok
+test benchmark::results::tests::schema_version_constant ... ok
+test benchmark::results::tests::value_formatting ... ok
+test benchmark::profile::tests::workspace_scan_finds_dataset_files ... ok
+test benchmark::tests::module_reexports_are_usable ... ok
+test commands::quick_add::tests::build_task_command_produces_domain_task ... ok
+test commands::quick_add::tests::in_app_conflict_detection ... ok
+test benchmark::profile::tests::startup_cold_is_slower_than_warm_typically ... ok
+test commands::quick_add::tests::build_task_rejects_empty ... ok
+test commands::quick_add::tests::inert_backend_degrades_gracefully ... ok
+test commands::quick_add::tests::os_conflict_detected_by_backend ... ok
+test commands::quick_add::tests::settings_default_is_disabled ... ok
+test commands::quick_add::tests::parse_command_preview_injects_now ... ok
+test commands::search::tests::ipc_registry_helpers_delegate_to_domain ... ok
+test commands::search::tests::palette_response_orders_commands_before_tasks ... ok
+test commands::session::serialize_task_tree_tests::edited_field_is_written_without_losing_siblings ... ok
+test commands::session::serialize_task_tree_tests::open_session_without_workspace_root_keeps_relative_path_and_fails ... ok
+test commands::quick_add::tests::settings_persist_roundtrip ... ok
+test commands::session::serialize_task_tree_tests::save_preserves_every_nested_task ... ok
+test commands::session::serialize_task_tree_tests::save_preserves_nesting_depth_and_order ... ok
+test commands::session::serialize_task_tree_tests::save_preserves_root_attributes_comments_and_unknown_elements ... ok
+test commands::session::serialize_task_tree_tests::open_session_resolves_workspace_relative_path_against_root ... ok
+test commands::task_edit::get_task_comments_tests::preserves_an_unrecognised_comments_type_verbatim ... ok
+test commands::session::serialize_task_tree_tests::save_preserves_the_original_encoding_metadata ... ok
+test benchmark::results::tests::write_reports_creates_both_files ... ok
+test commands::task_edit::get_task_comments_tests::reads_cdata_wrapped_html_content ... ok
+test commands::task_edit::get_task_comments_tests::reads_plain_text_content_verbatim ... ok
+test commands::transfer::tests::dirty_session_blocks_transfer_with_session_dirty_prefix ... ok
+test commands::transfer::tests::drop_sessions_removes_only_matching_paths ... ok
+test commands::task_edit::get_task_comments_tests::rejects_an_unknown_task_key_without_panicking ... ok
+test commands::views::tests::unscheduled_and_completed_dispatch ... ok
+test commands::views::tests::load_view_tasks_reads_index_and_tags ... ok
+test diagnostics::crashlog::tests::hash_path_is_stable_and_hides_input ... ok
+test commands::views::tests::smart_view_dispatch_with_injected_now ... ok
+test benchmark::fixture_gen::tests::deep_tree_shape_reaches_depth_20 ... ok
+test diagnostics::crashlog::tests::sanitize_message_replaces_paths_including_unicode ... ok
+test diagnostics::crashlog::tests::system_info_hashes_directories ... ok
+test diagnostics::crashlog::tests::trail_is_bounded_and_sequential ... ok
+test diagnostics::tests::checklist_is_complete_and_wellformed ... ok
+test diagnostics::tests::checklist_serializes_to_machine_readable_json ... ok
+test diagnostics::crashlog::tests::stack_frames_are_scrubbed ... ok
+test diagnostics::crashlog::tests::report_json_roundtrips ... ok
+test diagnostics::crashlog::tests::serialized_report_never_contains_verbatim_unicode_path ... ok
+test domain::attachment::tests::add_remove_keeps_file_links_in_sync ... ok
+test domain::attachment::tests::asset_root_layout ... ok
+test domain::attachment::tests::attr_codec_roundtrip ... ok
+test domain::attachment::tests::collision_safe_names_keep_extension ... ok
+test domain::attachment::tests::index_rows_and_populate ... ok
+test domain::attachment::tests::linked_file_stores_reference_only ... ok
+test diagnostics::crashlog::tests::export_produces_readable_bundle ... ok
+test domain::attachment::tests::managed_import_rolls_back_on_rename_failure ... ok
+test domain::attachment::tests::rebuild_index_from_xml_scan ... ok
+test domain::attachment::tests::managed_import_verifies_expected_hash ... ok
+test domain::attachment::tests::safe_join_rejects_traversal_and_absolute ... ok
+test domain::attachment::tests::managed_import_happy_path ... ok
+test domain::attachment::tests::scan_synthesizes_from_file_links ... ok
+test domain::command::tests::add_task_undo ... ok
+test domain::attachment::tests::url_attachment_validates_scheme ... ok
+test domain::command::tests::clearing_a_date_clears_its_display_string ... ok
+test domain::command::tests::clearing_an_existing_comment_keeps_the_element ... ok
+test domain::command::tests::delete_undo_restores_nested_sibling_position ... ok
+test benchmark::datasets::tests::generate_small_dataset_parses_with_real_parser ... ok
+test domain::command::tests::delete_undo_restores_root_position ... ok
+test domain::command::tests::field_update_undo_redo ... ok
+test domain::command::tests::new_mutation_clears_redo ... ok
+test domain::attachment::tests::staging_guard_cleans_up_on_hash_mismatch ... ok
+test domain::command::tests::set_due_date_refreshes_display_string ... ok
+test domain::command::tests::undo_of_first_comments_edit_restores_absence_e_f1 ... ok
+test domain::command::tests::set_start_date_refreshes_display_string ... ok
+test domain::command::tests::undo_restores_a_present_but_empty_comment_as_present ... ok
+test domain::command::tests::undo_redo_counts ... ok
+test domain::command::tests::writing_empty_comments_to_a_task_without_any_creates_nothing ... ok
+test domain::command::tests::undo_restores_both_the_float_and_the_display_string ... ok
+test domain::comments::tests::attr_value_roundtrip_is_exact ... ok
+test domain::comments::tests::conversion_requires_confirmation ... ok
+test domain::comments::tests::converting_a_task_without_comments_is_refused ... ok
+test domain::comments::tests::converting_html_is_refused ... ok
+test domain::comments::tests::conversion_is_reversible_via_undo ... ok
+test domain::comments::tests::editability_matrix ... ok
+test domain::comments::tests::editor_mode_matrix ... ok
+test domain::comments::tests::first_explicit_edit_creates_a_plain_text_comment ... ok
+test domain::comments::tests::only_canonical_spellings_are_recognized ... ok
+test domain::comments::tests::plain_text_preview_html_is_inert ... ok
+test domain::comments::tests::html_save_preserves_type_and_sanitizes ... ok
+test domain::comments::tests::plain_text_save_preserves_type_and_bytes ... ok
+test domain::comments::tests::rtf_and_unknown_are_read_only ... ok
+test domain::comments::tests::projection_payloads_are_safe_per_mode ... ok
+test domain::comments::tests::save_of_empty_content_does_not_materialize_a_comment ... ok
+test domain::comments::tests::plain_text_to_html_escapes_and_blocks ... ok
+test domain::comments::tests::task_comments_constructors_are_consistent ... ok
+test domain::comments::tests::the_default_new_type_cannot_override_an_existing_type ... ok
+test domain::comments::tests::type_indicators_are_localized_and_safe ... ok
+test domain::comments::tests::xml_attr_value_mirrors_the_legacy_default ... ok
+test domain::attachment::tests::orphan_lifecycle_and_gc ... ok
+test domain::comments::tests::viewing_html_does_not_downgrade_or_upgrade_the_type ... ok
+test domain::dependency::tests::add_command_validated_construction ... ok
+test domain::dependency::tests::graph_forward_and_reverse ... ok
+test domain::dependency::tests::commands_integrate_with_undo_manager ... ok
+test domain::comments::tests::viewing_never_creates_or_converts_comments ... ok
+test domain::dependency::tests::graph_rejects_self_unknown_and_cycles ... ok
+test domain::dependency::tests::graph_from_tree_classifies_edges ... ok
+test domain::dependency::tests::remove_command_requires_existing_edge ... ok
+test domain::dependency::tests::task_ref_classification ... ok
+test domain::encoding::tests::decode_utf16be_basic_ascii ... ok
+test domain::encoding::tests::decode_utf16_odd_byte_count ... ok
+test domain::encoding::tests::decode_utf16_unsupported_encoding ... ok
+test domain::dependency::tests::index_rows_classify_and_populate ... ok
+test domain::encoding::tests::decode_utf16le_basic_ascii ... ok
+test benchmark::profile::tests::xml_parse_throughput_on_real_files ... ok
+test domain::encoding::tests::decode_utf16le_empty ... ok
+test domain::encoding::tests::decode_utf16le_xml_declaration ... ok
+test domain::encoding::tests::detect_bom_empty_slice ... ok
+test domain::encoding::tests::detect_bom_exact_utf16_be_bom ... ok
+test domain::encoding::tests::detect_bom_exact_utf16_le_bom ... ok
+test domain::encoding::tests::detect_bom_none_utf8_no_bom ... ok
+test domain::encoding::tests::detect_bom_priority_utf8_before_utf16le ... ok
+test domain::encoding::tests::detect_bom_exact_utf8_bom ... ok
+test domain::encoding::tests::detect_bom_single_byte ... ok
+test domain::encoding::tests::detect_bom_two_bytes_partial_utf8_bom ... ok
+test domain::encoding::tests::detect_bom_utf16_be ... ok
+test domain::encoding::tests::detect_bom_utf16_le ... ok
+test domain::encoding::tests::detect_bom_utf8 ... ok
+test domain::encoding::tests::detect_line_ending_cr ... ok
+test domain::encoding::tests::detect_line_ending_no_newlines ... ok
+test domain::encoding::tests::detect_xml_decl_basic ... ok
+test domain::encoding::tests::detect_xml_decl_case_insensitive_encoding ... ok
+test domain::encoding::tests::detect_xml_decl_empty_input ... ok
+test domain::encoding::tests::detect_line_ending_crlf ... ok
+test domain::encoding::tests::detect_xml_decl_no_declaration ... ok
+test domain::encoding::tests::detect_line_ending_lf ... ok
+test domain::encoding::tests::detect_xml_decl_no_encoding_attr ... ok
+test domain::encoding::tests::detect_xml_decl_single_quotes ... ok
+test domain::encoding::tests::detect_xml_decl_utf16_encoding ... ok
+test domain::encoding::tests::detect_xml_decl_with_leading_whitespace ... ok
+test domain::encoding::tests::encoding_meta_builder_methods ... ok
+test domain::encoding::tests::encoding_meta_clone_and_eq ... ok
+test domain::encoding::tests::encoding_meta_default ... ok
+test domain::encoding::tests::encoding_meta_default_utf8 ... ok
+test domain::encoding::tests::encoding_meta_encoding_label ... ok
+test domain::encoding::tests::encoding_meta_serde_roundtrip ... ok
+test domain::encoding::tests::line_ending_as_bytes ... ok
+test domain::encoding::tests::line_ending_as_str ... ok
+test domain::encoding::tests::line_ending_default_is_crlf ... ok
+test domain::encoding::tests::line_ending_serde_roundtrip ... ok
+test domain::encoding::tests::resolve_encoding_unknown ... ok
+test domain::encoding::tests::resolve_encoding_utf16 ... ok
+test domain::encoding::tests::resolve_encoding_utf8 ... ok
+test domain::encoding::tests::xml_encoding_bom_bytes ... ok
+test domain::encoding::tests::xml_encoding_default_is_utf8 ... ok
+test domain::encoding::tests::xml_encoding_has_bom ... ok
+test domain::encoding::tests::xml_encoding_iana_labels ... ok
+test domain::encoding::tests::xml_encoding_is_utf16 ... ok
+test domain::encoding::tests::xml_encoding_serde_roundtrip ... ok
+test domain::file_library::tests::import_rejects_non_xml ... ok
+test domain::file_library::tests::reveal_command_shape ... ok
+test benchmark::fixture_gen::tests::round_trip_is_byte_stable ... ok
+test domain::attachment::tests::gc_keeps_modified_orphans ... ok
+test domain::fingerprint::tests::fingerprint_deterministic ... ok
+test domain::fingerprint::tests::fingerprint_empty ... ok
+test domain::fingerprint::tests::fingerprint_different_data ... ok
+test domain::fingerprint::tests::fingerprint_from_bytes ... ok
+test domain::fingerprint::tests::fingerprint_from_reader ... ok
+test domain::fingerprint::tests::fingerprint_matches_bytes ... ok
+test domain::fingerprint::tests::fingerprint_serde_roundtrip ... ok
+test domain::id_allocator::tests::allocate_sequential ... ok
+test domain::id_allocator::tests::allocate_skips_existing ... ok
+test domain::id_allocator::tests::exists_check ... ok
+test domain::id_allocator::tests::register_prevents_collision ... ok
+test domain::mappers::tests::corrupt_progress_links_attr_preserved_as_unknown ... ok
+test domain::mappers::tests::attachments_attr_roundtrip ... ok
+test domain::file_library::tests::create_managed_document_writes_and_registers ... ok
+test domain::file_library::tests::create_rejects_escape_and_existing ... ok
+test domain::mappers::tests::participants_mirror_allocated_to_in_order ... ok
+test domain::mappers::tests::participants_roundtrip ... ok
+test domain::mappers::tests::dependency_extra_data_preserved_via_raw_xml ... ok
+test domain::mappers::tests::plain_dependency_stays_minimal ... ok
+test domain::mappers::tests::read_basic ... ok
+test domain::mappers::tests::read_children ... ok
+test domain::mappers::tests::progress_links_attr_roundtrip ... ok
+test domain::participant::tests::add_remove_keeps_fields_in_sync ... ok
+test domain::mappers::tests::read_unknown_attrs ... ok
+test domain::participant::tests::index_rows_cover_both_roles ... ok
+test domain::mappers::tests::write_roundtrip ... ok
+test domain::participant::tests::parse_handles_empty_segments ... ok
+test domain::participant::tests::parse_preserves_source_order ... ok
+test domain::participant::tests::participant_ref_validates_and_trims ... ok
+test domain::participant::tests::refresh_from_allocated_resyncs ... ok
+test domain::persistence::tests::autosave_coordinator ... ok
+test domain::persistence::tests::temp_file_path_same_dir ... ok
+test domain::participant::tests::populate_task_participants_roundtrip ... ok
+test domain::progress_link::tests::accepts_plain_http_and_https ... ok
+test domain::progress_link::tests::add_remove_on_task ... ok
+test domain::progress_link::tests::attr_codec_roundtrip_and_revalidation ... ok
+test domain::progress_link::tests::progress_link_new_validates ... ok
+test domain::progress_link::tests::index_rows_and_populate ... ok
+test domain::progress_link::tests::provider_detection ... ok
+test domain::progress_link::tests::rejects_dangerous_schemes ... ok
+test domain::progress_link::tests::rejects_malformed_urls ... ok
+test domain::progress_link::tests::rejects_obfuscated_javascript_variants ... ok
+test domain::quick_add::tests::bare_specials_stay_in_title ... ok
+test domain::quick_add::tests::cjk_title_preserved ... ok
+test domain::quick_add::tests::build_task_maps_all_fields ... ok
+test domain::quick_add::tests::duplicate_tags_and_participants_dedup ... ok
+test domain::quick_add::tests::email_is_not_a_participant ... ok
+test domain::quick_add::tests::empty_and_whitespace_input ... ok
+test domain::quick_add::tests::full_grammar ... ok
+test domain::quick_add::tests::invalid_date_stays_in_title ... ok
+test domain::quick_add::tests::malformed_at_email_is_rejected_to_title ... ok
+test domain::quick_add::tests::mixed_cjk_english_title ... ok
+test domain::quick_add::tests::priority_numeric_and_named ... ok
+test domain::quick_add::tests::quoted_tag_and_participant ... ok
+test domain::quick_add::tests::relative_dates ... ok
+test domain::quick_add::tests::title_only ... ok
+test domain::quick_add::tests::target_defaults ... ok
+test domain::quick_add::tests::tokenize_empty_quotes_do_not_lose_neighbors ... ok
+test domain::quick_add::tests::unrecognized_priority_stays_in_title ... ok
+test domain::recovery::tests::journal_begin_and_update ... ok
+test domain::recovery::tests::journal_orphaned_detection ... ok
+test domain::recovery::tests::recovery_nothing_needed ... ok
+test domain::recovery::tests::journal_serde_roundtrip ... ok
+test domain::recovery::tests::safety_event_log_bounded ... ok
+test domain::persistence::tests::atomic_save_validation_failure ... ok
+test domain::persistence::tests::atomic_save_success ... ok
+test domain::rich_text::tests::autosave_interval_is_respected_and_never_per_keystroke ... ok
+test domain::rich_text::tests::base64_rejects_garbage ... ok
+test domain::rich_text::tests::base64_roundtrips ... ok
+test domain::rich_text::tests::coalescing_produces_exactly_one_command_per_burst ... ok
+test domain::file_library::tests::import_managed_copies_and_links_reference_in_place ... ok
+test domain::rich_text::tests::commit_path_never_stores_base64 ... ok
+test domain::rich_text::tests::commits_never_change_the_comments_type ... ok
+test domain::rich_text::tests::commits_are_sanitized_and_read_only_types_are_refused ... ok
+test domain::rich_text::tests::debounce_window_is_clamped_to_the_specified_range ... ok
+test domain::file_library::tests::duplicate_creates_independent_doc_with_new_id ... ok
+test domain::rich_text::tests::extract_plain_text_by_attr_matches_the_value_object ... ok
+test domain::rich_text::tests::extract_plain_text_handles_cjk_without_inserting_spaces ... ok
+test domain::rich_text::tests::document_id_must_be_a_safe_path_segment ... ok
+test domain::rich_text::tests::extract_plain_text_returns_empty_for_opaque_types ... ok
+test domain::rich_text::tests::extract_plain_text_returns_plain_text_verbatim ... ok
+test domain::rich_text::tests::extract_plain_text_sanitizes_then_strips_html ... ok
+test domain::rich_text::tests::extract_search_text_tolerates_absence ... ok
+test domain::rich_text::tests::flush_commits_immediately_and_cancel_discards ... ok
+test domain::file_library::tests::rename_keeps_document_id_stable_and_repairs_refs ... ok
+test domain::file_library::tests::undo_create_moves_file_to_trash_not_delete ... ok
+test domain::rich_text::tests::extension_follows_the_bytes_not_the_suggested_name ... ok
+test domain::rich_text::tests::base64_images_are_externalized_not_persisted ... ok
+test domain::rich_text::tests::image_formats_are_sniffed_from_magic_bytes ... ok
+test domain::rich_text::tests::keystrokes_never_commit_before_the_debounce_elapses ... ok
+test domain::rich_text::tests::metrics_invariant_commands_equal_commits ... ok
+test domain::rich_text::tests::non_image_data_uris_are_dropped ... ok
+test domain::rich_text::tests::one_description_update_is_exactly_one_undo_step ... ok
+test domain::rich_text::tests::a_referenced_image_is_never_collected ... ok
+test domain::rich_text::tests::oversize_drafts_are_refused ... ok
+test domain::rich_text::tests::non_image_payloads_are_refused ... ok
+test domain::rich_text::tests::per_task_drafts_are_independent ... ok
+test domain::rich_text::tests::reference_depth_follows_the_document_location ... ok
+test domain::rich_text::tests::reference_scan_over_approximates ... ok
+test domain::rich_text::tests::gc_respects_grace_period_and_orphan_mark ... ok
+test domain::rich_text::tests::suggested_file_names_are_neutralized ... ok
+test domain::rich_text::tests::unchanged_content_produces_no_command ... ok
+test domain::rich_text::tests::identical_payloads_are_deduplicated ... ok
+test domain::rich_text::tests::gc_requires_explicit_user_confirmation ... ok
+test domain::sanitizer::tests::attribute_order_is_deterministic ... ok
+test domain::sanitizer::tests::backslash_and_protocol_relative_urls_are_rejected ... ok
+test domain::sanitizer::tests::data_uri_images_are_dropped_by_default ... ok
+test domain::rich_text::tests::history_references_protect_images_from_gc ... ok
+test domain::sanitizer::tests::data_uri_parser_is_strict ... ok
+test domain::sanitizer::tests::benign_formatting_survives ... ok
+test domain::sanitizer::tests::entity_encoded_scheme_is_decoded_then_rejected ... ok
+test domain::sanitizer::tests::double_escaped_text_never_becomes_markup ... ok
+test domain::sanitizer::tests::four_entry_points_are_distinct_and_all_safe ... ok
+test domain::sanitizer::tests::html_comments_and_doctype_are_stripped ... ok
+test domain::sanitizer::tests::iframe_object_embed_are_dropped_with_children ... ok
+test domain::sanitizer::tests::img_without_valid_src_is_dropped ... ok
+test domain::sanitizer::tests::legacy_aliases_are_folded_not_flattened ... ok
+test domain::sanitizer::tests::legacy_html_body_wrapper_is_unpacked ... ok
+test domain::sanitizer::tests::managed_document_id_is_enforced_end_to_end ... ok
+test domain::sanitizer::tests::javascript_scheme_variants_are_rejected ... ok
+test domain::rich_text::tests::reference_resolution_refuses_traversal ... ok
+test domain::sanitizer::tests::oversize_input_is_refused ... ok
+test domain::sanitizer::tests::nested_script_probe_cannot_produce_an_element ... ok
+test domain::sanitizer::tests::mixed_case_and_whitespace_obfuscation_is_defeated ... ok
+test domain::sanitizer::tests::paste_import_captures_data_uri_for_externalization ... ok
+test domain::sanitizer::tests::plain_text_extraction_handles_entities_and_nbsp ... ok
+test domain::sanitizer::tests::plain_text_extraction_preserves_cjk ... ok
+test domain::sanitizer::tests::plain_text_extraction_uses_block_separators ... ok
+test domain::sanitizer::tests::preview_src_rewrite_is_applied ... ok
+test domain::sanitizer::tests::raw_text_hosts_are_dropped_not_unwrapped ... ok
+test domain::sanitizer::tests::script_and_event_handlers_are_removed ... ok
+test domain::sanitizer::tests::src_must_be_a_managed_relative_path ... ok
+test domain::sanitizer::tests::style_attribute_is_limited_and_canonicalized ... ok
+test domain::sanitizer::tests::style_survives_on_allowed_elements ... ok
+test domain::sanitizer::tests::svg_and_mathml_subtrees_are_dropped ... ok
+test domain::search::tests::cjk_detection_chinese ... ok
+test domain::search::tests::canonical_registry_has_no_shortcut_conflicts ... ok
+test domain::sanitizer::tests::unquoted_attribute_injection_is_neutralized ... ok
+test domain::sanitizer::tests::sanitization_is_idempotent ... ok
+test domain::search::tests::cjk_detection_japanese_korean ... ok
+test domain::search::tests::fuzzy_cjk ... ok
+test domain::search::tests::extract_plain_text_by_type ... ok
+test domain::search::tests::classify_match_prefers_title ... ok
+test domain::search::tests::fuzzy_exact_prefix_scores_highest ... ok
+test domain::search::tests::match_tokens_mixed_query ... ok
+test domain::search::tests::match_tokens_pure_cjk_no_space ... ok
+test domain::search::tests::fuzzy_subsequence_and_miss ... ok
+test domain::search::tests::jump_ancestors_from_xml ... ok
+test domain::search::tests::palette_empty_query_lists_all_bounded ... ok
+test domain::rich_text::tests::detect_orphans_marks_and_unmarks_from_references ... ok
+test domain::search::tests::registry_mirrors_frontend_commands ... ok
+test domain::search::tests::palette_deterministic ... ok
+test domain::search::tests::query_bounds_clamped ... ok
+test domain::search::tests::shortcut_conflict_detected ... ok
+test domain::search::tests::snippet_ascii ... ok
+test domain::search::tests::palette_fuzzy_search_orders_by_relevance ... ok
+test domain::search::tests::snippet_marks_match ... ok
+test domain::search::tests::strip_html_basic ... ok
+test domain::search::tests::strip_html_removes_script_and_entities ... ok
+test domain::session::tests::save_generation_increments ... ok
+test domain::session::tests::session_fingerprint ... ok
+test domain::session::tests::session_initial_state ... ok
+test domain::session::tests::session_mutation_increments_revision ... ok
+test domain::session::tests::session_save_clears_dirty ... ok
+test domain::session::tests::session_save_lock ... ok
+test domain::session::tests::session_stale_revision_check ... ok
+test domain::smart_view::tests::by_participant_groups_and_unassigned ... ok
+test domain::smart_view::tests::by_tag_groups ... ok
+test domain::smart_view::tests::completed_sorted_by_completed_date_desc ... ok
+test domain::smart_view::tests::flagged_by_priority_or_custom_flag ... ok
+test domain::smart_view::tests::ole_date_round_trip ... ok
+test domain::smart_view::tests::overdue_excludes_completed_and_cancelled ... ok
+test domain::smart_view::tests::smart_view_kind_parse_roundtrip ... ok
+test domain::smart_view::tests::parse_index_date_accepts_ole_and_iso ... ok
+test domain::smart_view::tests::today_view_boundary_midnight ... ok
+test domain::smart_view::tests::tomorrow_boundary_is_exact ... ok
+test domain::smart_view::tests::unscheduled_requires_both_dates_missing ... ok
+test domain::smart_view::tests::upcoming_buckets_and_week_rollover ... ok
+test domain::smart_view::tests::view_task_from_domain_task ... ok
+test domain::smart_view::tests::week_rollover_on_sunday ... ok
+test domain::task::tests::comment_type_roundtrip ... ok
+test domain::task::tests::task_default_values ... ok
+test domain::task::tests::task_status_derived_from_percent ... ok
+test domain::task::tests::task_tree_add_and_get ... ok
+test domain::task::tests::priority_clamped ... ok
+test domain::task::tests::task_tree_depth_first ... ok
+test domain::task::tests::task_tree_remove ... ok
+test domain::task::tests::task_tree_reorder ... ok
+test domain::task::tests::task_tree_reparent ... ok
+test domain::task::tests::task_tree_reparent_prevents_cycle ... ok
+test domain::rich_text::tests::store_layout_and_reference_shape ... ok
+test domain::rich_text::tests::orphan_marking_is_non_destructive ... ok
+test domain::transfer::tests::list_targets_reports_writability ... ok
+test domain::transfer::tests::html_comment_relative_ref_planned_for_copy ... ok
+test domain::transfer::tests::plan_allocates_in_target_id_space ... ok
+test domain::transfer::tests::plan_block_policy_aborts ... ok
+test domain::transfer::tests::copy_preserves_unknown_attrs_and_comments_verbatim ... ok
+test domain::transfer::tests::plan_classifies_assets ... ok
+test domain::transfer::tests::plan_corrects_low_next_unique_id ... ok
+test domain::transfer::tests::move_detects_concurrent_source_edit_duplicate_not_loss ... ok
+test domain::transfer::tests::copy_never_touches_source_and_commits_target ... ok
+test domain::transfer::tests::plan_missing_task ... ok
+test domain::transfer::tests::plan_rejects_same_document ... ok
+test benchmark::datasets::tests::generate_datasets_writes_verifiable_manifest ... ok
+test domain::transfer_journal::tests::default_journal_dir_layout ... ok
+test domain::transfer::tests::copy_undo_removes_target_subtree_without_recycling_ids ... ok
+test domain::transfer::tests::plan_rewrites_internal_dep_and_marks_external ... ok
+test domain::transfer_journal::tests::duplicate_create_rejected ... ok
+test domain::transfer_journal::tests::load_falls_back_to_bak_when_primary_garbled ... ok
+test domain::transfer::tests::move_commits_target_then_source ... ok
+test domain::transfer_journal::tests::create_writes_durable_started_entry ... ok
+test domain::transfer_journal::tests::append_phase_sequence_and_reload ... ok
+test domain::transfer_journal::tests::remove_deletes_journal_and_siblings ... ok
+test domain::transfer_journal::tests::load_reports_corrupt_when_primary_and_bak_unreadable ... ok
+test domain::transfer_journal::tests::scan_dir_finds_ok_and_corrupt ... ok
+test domain::transfer::tests::move_undo_restores_both_documents ... ok
+test domain::trash::tests::missing_file_rejected ... ok
+test domain::rich_text::tests::virtual_clock_never_blocks ... ok
+test domain::types::tests::document_id_creation ... ok
+test domain::types::tests::document_id_from_str ... ok
+test domain::transfer::tests::progress_events_emitted ... ok
+test domain::types::tests::task_id_creation ... ok
+test domain::types::tests::task_id_as_u64_non_numeric ... ok
+test domain::types::tests::task_id_from_u64 ... ok
+test domain::types::tests::task_id_rejects_empty - should panic ... ok
+test domain::types::tests::task_id_serde_roundtrip ... ok
+test domain::types::tests::task_key_creation ... ok
+test domain::transfer_journal::tests::truncated_journal_recovers_from_bak ... ok
+test domain::types::tests::task_key_serde_roundtrip ... ok
+test domain::types::tests::workspace_id_creation ... ok
+test domain::types::tests::task_key_equality ... ok
+test domain::types::tests::workspace_id_equality ... ok
+test domain::types::tests::workspace_id_from_str ... ok
+test domain::validator::tests::validate_good_document ... ok
+test domain::validator::tests::validate_missing_next_unique_id ... ok
+test domain::validator::tests::validate_orphaned_child_ref ... ok
+test domain::validator::tests::validate_orphaned_dependency ... ok
+test domain::validator::tests::validate_wrong_root ... ok
+test domain::trash::tests::manifest_corrupt_falls_back_to_bak ... ok
+test domain::workspace::tests::document_type_serialization ... ok
+test domain::trash::tests::empty_trash_purges_all ... ok
+test domain::workspace::tests::create_workspace_writes_metadata ... ok
+test domain::workspace::tests::open_nonexistent_directory_fails ... ok
+test domain::workspace::tests::detect_changes_finds_removed_files ... ok
+test domain::workspace::tests::open_without_metadata_fails ... ok
+test domain::workspace::tests::duplicate_registration_fails ... ok
+test domain::workspace::tests::detect_changes_finds_new_files ... ok
+test domain::workspace::tests::register_and_find_document ... ok
+test domain::workspace::tests::resolve_linked_path_absolute ... ok
+test domain::workspace::tests::supported_extensions ... ok
+test domain::workspace::tests::resolve_managed_path ... ok
+test domain::workspace::tests::open_workspace_reads_metadata ... ok
+test domain::trash::tests::purge_is_permanent_and_explicit ... ok
+test domain::xml_parser::tests::escape_roundtrip ... ok
+test domain::xml_parser::tests::parse_dependency_element ... ok
+test domain::xml_parser::tests::parse_detects_encoding_meta ... ok
+test domain::xml_parser::tests::parse_empty_input_returns_error ... ok
+test domain::xml_parser::tests::parse_malformed_xml_returns_error ... ok
+test domain::xml_parser::tests::parse_metadata_element ... ok
+test domain::xml_parser::tests::parse_multiple_child_elements ... ok
+test domain::xml_parser::tests::parse_nested_tasks ... ok
+test domain::xml_parser::tests::parse_preserves_comments ... ok
+test domain::xml_parser::tests::parse_preserves_unknown_attrs ... ok
+test domain::xml_parser::tests::parse_preserves_unknown_elements ... ok
+test domain::xml_parser::tests::parse_single_task ... ok
+test domain::xml_parser::tests::parse_xml_entities_in_attrs ... ok
+test domain::xml_parser::tests::parse_xml_entities_in_text ... ok
+test domain::xml_parser::tests::unescape_basic_entities ... ok
+test domain::xml_parser::tests::unescape_handles_bare_ampersand ... ok
+test domain::xml_parser::tests::unescape_numeric_references ... ok
+test domain::xml_parser::tests::unescape_preserves_unknown_entities ... ok
+test domain::xml_serializer::tests::roundtrip_multiple_categories ... ok
+test domain::xml_serializer::tests::roundtrip_nested_tasks ... ok
+test domain::xml_serializer::tests::roundtrip_preserves_comments ... ok
+test domain::xml_serializer::tests::roundtrip_preserves_unknown_attrs ... ok
+test domain::xml_serializer::tests::roundtrip_preserves_unknown_elements ... ok
+test domain::xml_serializer::tests::roundtrip_simple_xml ... ok
+test domain::workspace::tests::unregister_document ... ok
+test domain::workspace::tests::sync_to_db_and_ensure_in_db ... ok
+test domain::xml_serializer::tests::roundtrip_with_entities ... ok
+test domain::xml_serializer::tests::serialize_escapes_attribute_values ... ok
+test domain::xml_serializer::tests::serialize_escapes_text_content ... ok
+test domain::xml_serializer::tests::serialize_preserves_attr_order ... ok
+test domain::trash::tests::restore_collision_uses_suffix ... ok
+test domain::xml_serializer::tests::serialize_utf16le ... ok
+test domain::xml_serializer::tests::serialize_utf8_no_bom ... ok
+test domain::xml_serializer::tests::serialize_self_closing_empty_element ... ok
+test domain::xml_serializer::tests::serialize_utf16be ... ok
+test domain::xml_serializer::tests::serialize_utf8_with_bom ... ok
+test domain::xml_serializer::tests::serialize_with_xml_declaration ... ok
+test domain::xml_tree::tests::element_children_by_tag ... ok
+test domain::xml_tree::tests::element_get_set_attr ... ok
+test domain::xml_tree::tests::element_remove_attr ... ok
+test domain::xml_tree::tests::element_set_text_preserves_non_text_children ... ok
+test domain::xml_tree::tests::element_text_content ... ok
+test domain::xml_tree::tests::xml_document_creation ... ok
+test infrastructure::db::tests::missing_data_dir_enters_recovery_mode ... ok
+test domain::workspace::tests::scan_skips_hidden_directories ... ok
+test domain::workspace::tests::scan_finds_xml_files ... ok
+test infrastructure::db::tests::with_connection_fails_in_recovery_mode ... ok
+test infrastructure::indexer::tests::compute_fingerprint_works ... ok
+test domain::workspace::tests::workspace_metadata_roundtrip ... ok
+test domain::trash::tests::unregistered_file_can_be_trashed_and_restored ... ok
+test domain::trash::tests::trash_delete_restore_roundtrip_keeps_document_id ... ok
+test infrastructure::indexer::tests::index_document_clears_before_reindex ... ok
+test infrastructure::indexer::tests::index_document_counts_tasks ... ok
+test infrastructure::indexer::tests::rebuild_index_with_cancel ... ok
+test infrastructure::migration::tests::all_core_tables_exist_after_migration ... ok
+test infrastructure::migration::tests::all_indexes_exist_after_migration ... ok
+test infrastructure::indexer::tests::index_document_with_tags ... ok
+test infrastructure::indexer::tests::rebuild_index_reports_progress ... ok
+test infrastructure::indexer::tests::test_clear_workspace_index ... ok
+test infrastructure::migration::tests::corrupt_version_file_is_reported ... ok
+test infrastructure::migration::tests::fresh_database_runs_all_migrations ... ok
+test infrastructure::migration::tests::future_data_dir_version_is_rejected ... ok
+test infrastructure::db::tests::foreign_keys_are_enabled ... ok
+test infrastructure::db::tests::open_runs_migrations ... ok
+test infrastructure::db::tests::open_creates_database_in_data_dir ... ok
+test infrastructure::db::tests::clone_shares_connection ... ok
+test infrastructure::migration::tests::task_index_cascade_delete_on_document ... ok
+test infrastructure::migration::tests::running_migrations_twice_is_idempotent ... ok
+test infrastructure::migration::tests::future_schema_version_is_rejected ... ok
+test infrastructure::migration::tests::workspaces_table_accepts_insert ... ok
+test infrastructure::saved_views::tests::date_predicate_compiles_to_ole ... ok
+test infrastructure::saved_views::tests::default_payload_is_match_all ... ok
+test infrastructure::saved_views::tests::future_version_rejected ... ok
+test infrastructure::saved_views::tests::in_operator_and_text_ops ... ok
+test infrastructure::saved_views::tests::empty_name_rejected_and_reorder ... ok
+test infrastructure::saved_views::tests::invalid_values_reported ... ok
+test infrastructure::saved_views::tests::memory_date_boundaries ... ok
+test infrastructure::migration::tests::data_dir_migrates_forward_across_three_versions ... ok
+test infrastructure::saved_views::tests::sql_and_memory_agree ... ok
+test infrastructure::saved_views::tests::null_predicates ... ok
+test infrastructure::saved_views::tests::participant_predicate ... ok
+test infrastructure::schema::tests::first_migration_creates_schema_migrations_table ... ok
+test infrastructure::saved_views::tests::versioned_roundtrip ... ok
+test infrastructure::schema::tests::migrations_are_ordered ... ok
+test infrastructure::schema::tests::migrations_start_at_version_1 ... ok
+test infrastructure::schema::tests::schema_version_is_positive ... ok
+test infrastructure::saved_views::tests::sql_evaluation_matches_rows ... ok
+test infrastructure::search_fts::tests::cjk_search_terms ... ok
+test infrastructure::search_fts::tests::document_filter_scopes_results ... ok
+test infrastructure::search_fts::tests::empty_query_returns_empty_page ... ok
+test infrastructure::migration::tests::legacy_settings_are_upgraded_not_lost ... ok
+test infrastructure::migration::tests::data_dir_migration_is_idempotent_and_resumable ... ok
+test infrastructure::search_fts::tests::extras_provider_reads_index_tables ... ok
+test infrastructure::search_fts::tests::fts5_search_english ... ok
+test infrastructure::search_fts::tests::fts_match_expression_is_safe ... ok
+test infrastructure::search_fts::tests::fts5_is_available_in_bundled_sqlite ... ok
+test infrastructure::db::tests::delete_and_reopen_database ... ok
+test infrastructure::migration::tests::migrate_or_rebuild_reports_outcome ... ok
+test infrastructure::search_fts::tests::like_fallback_works_without_fts_table ... ok
+test infrastructure::search_fts::tests::incremental_update_and_delete ... ok
+test infrastructure::watcher::tests::debounce_config_default ... ok
+test infrastructure::search_fts::tests::migration_creates_fts_table ... ok
+test infrastructure::search_fts::tests::mixed_cjk_english_query ... ok
+test infrastructure::watcher::tests::fingerprint_checker_unknown_file_is_changed ... ok
+test infrastructure::search_fts::tests::plain_fts5_fails_on_cjk_but_fallback_finds_it ... ok
+test infrastructure::watcher::tests::poll_events_returns_empty_initially ... ok
+test infrastructure::search_fts::tests::pagination_is_bounded_and_deterministic ... ok
+test infrastructure::watcher::tests::watch_nonexistent_path_fails ... ok
+test infrastructure::search_fts::tests::search_by_tag_participant_attachment_link ... ok
+test infrastructure::watcher::tests::watcher_creation ... ok
+test infrastructure::watcher::tests::unwatch_removes_path ... ok
+test infrastructure::watcher::tests::fingerprint_checker_clear ... ok
+test infrastructure::watcher::tests::fingerprint_checker_records_and_detects ... ok
+test infrastructure::watcher::tests::watch_valid_directory ... ok
+test platform::windows::pathhard::tests::extended_path_leaves_short_and_prefixed_paths_alone ... ok
+test platform::windows::pathhard::tests::extended_path_prefixes_long_windows_paths ... ok
+test infrastructure::watcher::tests::self_save_detection ... ok
+test infrastructure::search_fts::tests::rebuild_from_xml_scan_restores_search ... ok
+test platform::windows::pathhard::tests::unsafe_components_are_detected ... ok
+test platform::windows::pathhard::tests::corrupt_marker_is_rejected ... ok
+test platform::windows::portable::tests::test_resolve_data_dir_ends_with_data ... ok
+test platform::windows::portable::tests::test_resolve_portable_root_returns_ok ... ok
+test platform::windows::webview2::tests::compare_versions_orders_correctly ... ok
+test platform::windows::pathhard::tests::unicode_paths_roundtrip_losslessly ... ok
+test platform::windows::pathhard::tests::is_dir_writable_false_for_file_path ... ok
+test platform::windows::webview2::tests::fixed_version_extracts_version_from_folder_name ... ok
+test platform::windows::webview2::tests::minimum_version_policy ... ok
+test platform::windows::webview2::tests::parse_version_accepts_valid_forms ... ok
+test platform::windows::webview2::tests::parse_version_rejects_garbage ... ok
+test platform::windows::webview2::tests::reg_output_parsing ... ok
+test platform::windows::webview2::tests::user_instructions_cover_every_error_variant ... ok
+test release::licenses::tests::cargo_lock_parsing_skips_first_party_and_sorts ... ok
+test release::licenses::tests::malformed_cargo_lock_is_rejected ... ok
+test release::licenses::tests::malformed_npm_lock_is_rejected ... ok
+test release::licenses::tests::markdown_tables_render_all_entries ... ok
+test release::licenses::tests::npm_lock_parsing_records_license_and_dev_flag ... ok
+test platform::windows::webview2::tests::fixed_version_folder_requires_executable ... ok
+test release::notes::tests::entries_render_with_issue_refs ... ok
+test release::notes::tests::notes_roundtrip_through_json ... ok
+test release::notes::tests::template_renders_all_sections ... ok
+test release::notes::tests::v2_notes_contain_version_and_zip_name ... ok
+test release::packaging::tests::archive_roundtrips_content_and_paths ... ok
+test platform::windows::pathhard::tests::marker_survives_drive_letter_change_simulation ... ok
+test release::packaging::tests::duplicate_entries_are_rejected ... ok
+test release::packaging::tests::portable_zip_name_matches_release_convention ... ok
+test release::packaging::tests::traversal_entry_names_are_rejected ... ok
+test release::packaging::tests::zip_is_byte_identical_across_rebuilds ... ok
+test release::packaging::tests::zip_is_independent_of_input_order ... ok
+test infrastructure::saved_views::tests::crud_lifecycle_and_restart_survival ... ok
+test release::licenses::tests::write_license_files_creates_three_documents ... ok
+test release::version_metadata::tests::empty_company_is_rejected ... ok
+test release::version_metadata::tests::from_semver_derives_four_part_version ... ok
+test release::version_metadata::tests::invalid_versions_are_rejected ... ok
+test release::version_metadata::tests::prerelease_suffix_is_accepted_and_normalized ... ok
+test release::version_metadata::tests::json_roundtrips ... ok
+test release::version_metadata::tests::tauri_snippet_contains_required_keys ... ok
+test release::version_metadata::tests::v2_metadata_is_valid ... ok
+test platform::windows::pathhard::tests::writable_dir_detection_and_relocation_fallback ... ok
+test platform::windows::webview2::tests::detect_runtime_returns_structured_result ... ok
+test platform::windows::pathhard::tests::create_and_read_file_beyond_260_chars ... ok
+test release::packaging::tests::build_from_staging_dir_writes_zip_and_sha256_sidecar ... ok
+test infrastructure::migration::tests::failed_migration_triggers_index_rebuild_fallback ... ok
+test infrastructure::watcher::tests::watcher_detects_file_creation ... ok
+test benchmark::profile::tests::index_rebuild_populates_sqlite ... ok
+test benchmark::profile::tests::run_core_profile_end_to_end ... ok
+test benchmark::profile::tests::search_latency_over_populated_index ... ok
+
+test result: ok. 604 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.59s
+
+     Running unittests src\main.rs (target\debug\deps\ModernToDoList-9febf4a632c11569.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\ipc_bridge_tests.rs (target\debug\deps\ipc_bridge_tests-6928d431ef92ebe7.exe)
+
+running 47 tests
+test add_dependency_rejects_unknown_target ... ok
+test add_dependency_rejects_self_reference ... ok
+test add_dependency_undo_reverts_edge ... ok
+test add_dependency_rejects_cycle ... ok
+test add_dependency_ok_then_graph_and_remove ... ok
+test add_participant_allocated_by_role ... ok
+test add_participant_undo_reverts ... ok
+test add_progress_link_explicit_provider_override ... ok
+test add_progress_link_accepts_https_update_and_remove ... ok
+test add_progress_link_rejects_javascript_scheme ... ok
+test add_participant_rejects_separator_and_empty ... ok
+test add_progress_link_rejects_obfuscated_javascript ... ok
+test add_progress_link_undo_reverts ... ok
+test add_task_rejects_duplicate_and_empty_title ... ok
+test add_task_undo_removes_task ... ok
+test add_task_assigns_id_and_inserts_under_parent ... ok
+test add_then_remove_participant ... ok
+test add_url_attachment_then_remove_and_undo ... ok
+test build_tree_from_bytes_handles_tdl_root ... ok
+test delete_task_missing_errors ... ok
+test build_tree_from_bytes_parses_hierarchy ... ok
+test delete_task_then_undo_restores_identity ... ok
+test delete_task_with_children_then_undo_restores_subtree ... ok
+test page_to_response_maps_hits_and_truncation ... ok
+test list_attachments_synthesizes_from_filerefpath ... ok
+test quick_add_core_builds_and_inserts_at_root ... ok
+test quick_add_core_rejects_empty ... ok
+test remove_attachment_missing_errors ... ok
+test set_task_tags_replaces_categories_and_undoes ... ok
+test undo_reverts_field_update_and_redo_reapplies ... ok
+test update_progress_link_rejects_bad_url_and_missing_id ... ok
+test update_task_field_comments_sets_text ... ok
+test update_task_field_completed_date_sets_float_and_string ... ok
+test update_task_field_due_date_parses_iso_and_clears ... ok
+test update_task_field_percent_done_sets_value ... ok
+test update_task_field_priority_sets_and_clamps ... ok
+test update_task_field_rejects_invalid_date ... ok
+test update_task_field_rejects_unknown_field_and_missing_task ... ok
+test update_task_field_start_date_sets_positive_ole ... ok
+test update_task_field_status_completed_maps_to_percent_100 ... ok
+test update_task_field_status_in_progress_preserves_partial_percent ... ok
+test update_task_field_tags_sets_categories ... ok
+test update_task_field_status_not_started_maps_to_percent_0 ... ok
+test update_task_field_title_sets_value_and_reports ... ok
+test url_attachment_rejects_non_http_scheme ... ok
+test add_managed_attachment_imports_file_then_remove_marks_orphan ... ok
+test read_path_resolves_document_then_lists_relations ... ok
+
+test result: ok. 47 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests\m10_benchmark_tests.rs (target\debug\deps\m10_benchmark_tests-fa306a7dedcd4292.exe)
+
+running 14 tests
+test m10_004_large_scales_gated_by_env_default_small ... ok
+test m10_002_scale_variants_exist_for_all_sizes ... ok
+test run_full_benchmark ... ignored, full benchmark run; use scripts/bench/run-benchmark.cjs
+test m10_016_memory_sampling_current_and_peak ... ok
+test m10_010_result_format_json_schema_and_markdown ... ok
+test m10_001_same_seed_and_config_is_byte_identical ... ok
+test m10_007_manifest_json_roundtrip ... ok
+test m10_001_configurable_depth_breadth_density ... ok
+test m10_013_parse_throughput_measurable ... ok
+test m10_006_manifest_reproducible_across_runs ... ok
+test m10_005_small_dataset_parses_with_real_parser_and_round_trips ... ok
+test m10_001_manifest_lists_files_with_sha256 ... ok
+test m10_003_shape_variants_have_required_properties ... ok
+test m10_013_core_profile_runs_real_code_paths ... ok
+
+test result: ok. 13 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 20.76s
+
+     Running tests\m10_portable_tests.rs (target\debug\deps\m10_portable_tests-c65e6afe3675baa5.exe)
+
+running 11 tests
+test m10_037_generate_license_files ... ignored, writes LICENSES/ artifacts into the repository
+test m10_040_release_notes_render_2_0_0_changelog ... ok
+test m10_038_version_metadata_for_exe ... ok
+test m10_027_failure_detection_is_typed ... ok
+test m10_024_release_zip_is_reproducible_byte_for_byte ... ok
+test m10_035_crash_report_hides_unicode_paths ... ok
+test m10_037_real_lockfiles_parse_into_inventory ... ok
+test m10_024_release_artifact_naming ... ok
+test m10_036_bug_report_bundle_export ... ok
+test m10_025_data_dir_migration_end_to_end ... ok
+test m10_027_migration_failure_rebuilds_index_from_xml ... ok
+
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests\m10_qa_a_xml_compat.rs (target\debug\deps\m10_qa_a_xml_compat-810494494254fb0d.exe)
+
+running 14 tests
+test qa_m10_a00_fixtures_root_resolves ... ok
+test qa_m10_a06_unknown_attribute_preservation ... ok
+test qa_m10_a11_filelink_multi ... ok
+test qa_m10_a04_utf16be_roundtrip ... ok
+test qa_m10_a01_utf8_bom_roundtrip ... ok
+test qa_m10_a03_utf16le_roundtrip ... ok
+test qa_m10_a02_utf8_no_bom_roundtrip ... ok
+test qa_m10_a07_unknown_metadata_element ... ok
+test qa_m10_a09_dependency_element ... ok
+test qa_m10_a08_comment_and_cdata_preservation ... ok
+test qa_m10_a05_unknown_element_preservation ... ok
+test qa_m10_a10_filelink_single ... ok
+test qa_m10_a12_malformed_and_truncated_rejected ... ok
+test qa_m10_a13_realworld_london_underground ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\m10_qa_b_atomic_save.rs (target\debug\deps\m10_qa_b_atomic_save-c742c82c2e860fc6.exe)
+
+running 10 tests
+test qa_m10_b07_permission_denied_original_intact ... ok
+test qa_m10_b03_kill_mid_write_restores_from_backup ... ok
+test qa_m10_b05_atomic_save_byte_exact_no_leftovers ... ok
+test qa_m10_b01_kill_before_write_leaves_original_intact ... ok
+test qa_m10_b02_kill_mid_write_leaves_original_intact ... ok
+test qa_m10_b04_kill_mid_replace_completes_without_loss ... ok
+test qa_m10_b08_external_conflict_detected_clean_document ... ok
+test qa_m10_b09_dirty_document_conflict_stale_revision_rejected ... ok
+test qa_m10_b10_self_save_recognized_external_change_flagged ... ok
+test qa_m10_b06_disk_full_simulated_original_intact ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests\m10_qa_c_workspace_sqlite.rs (target\debug\deps\m10_qa_c_workspace_sqlite-a638bd2e2e46e5c9.exe)
+
+running 10 tests
+test qa_m10_c01_managed_vs_linked_documents ... ok
+test qa_m10_c02_scan_and_change_detection ... ok
+test qa_m10_c07_watcher_detects_external_change ... ok
+test qa_m10_c05_corrupted_index_db_recovers ... ok
+test qa_m10_c09_gate_delete_index_db_rebuild_full_function ... ok
+test qa_m10_c04_rebuild_index_multi_document ... ok
+test qa_m10_c03_index_document_from_scratch ... ok
+test qa_m10_c08_watcher_suppresses_self_save ... ok
+test qa_m10_c10_clear_index_keeps_workspace_rebuild_restores ... ok
+test qa_m10_c06_unc_path_handling ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.29s
+
+     Running tests\m10_qa_d_core_ux.rs (target\debug\deps\m10_qa_d_core_ux-b3f317c7d63cc27e.exe)
+
+running 10 tests
+test qa_m10_d07_multi_select_bulk_update_undo ... ok
+test qa_m10_d04_nested_hierarchy_and_cycle_guard ... ok
+test qa_m10_d05_reorder_siblings_and_pos_update ... ok
+test qa_m10_d03_delete_subtree_undo_restores_identity ... ok
+test qa_m10_d02_update_task_fields ... ok
+test qa_m10_d08_keyboard_command_dispatch_undo_redo ... ok
+test qa_m10_d01_create_and_read_task_canonical_id ... ok
+test qa_m10_d09_undo_redo_full_tree_identity ... ok
+test qa_m10_d10_autosave_and_persisted_identity ... ok
+test qa_m10_d06_filter_tasks_via_index ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests\m10_qa_e_relations_richtext.rs (target\debug\deps\m10_qa_e_relations_richtext-97c6cdd16e1170be.exe)
+
+running 12 tests
+test qa_m10_e11_unified_undo_across_relation_types ... ok
+test qa_m10_e10_external_and_unresolved_refs_end_to_end ... ok
+test qa_m10_e07_comments_type_matrix_across_xml_roundtrip ... ok
+test qa_m10_e01_bridge_relation_mutations_survive_xml_save_path ... ok
+test qa_m10_e02_participant_mutation_reaches_search_index ... ok
+test qa_m10_e12_relations_richtext_corpus_cumulative_regression ... ok
+test qa_m10_e08_managed_image_no_base64_in_saved_xml ... ok
+test qa_m10_e04_progress_link_security_persistence_and_search ... ok
+test qa_m10_e09_all_relation_indexes_rebuildable_from_saved_xml ... ok
+test qa_m10_e06_hostile_html_sanitized_commit_roundtrip_and_search ... ok
+test qa_m10_e03_dependency_bridge_xml_and_index_agree ... ok
+test qa_m10_e05_managed_attachment_lifecycle_across_save ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests\m10_qa_f_crossdoc.rs (target\debug\deps\m10_qa_f_crossdoc-73d0da8ba8a91ee1.exe)
+
+running 10 tests
+test qa_m10_f07_corrupt_journal_quarantined_data_intact ... ok
+test qa_m10_f01_copy_subtree_remaps_ids_and_never_touches_source ... ok
+test qa_m10_f04_move_preserves_unknown_data_losslessly ... ok
+test qa_m10_f03_moved_subtree_remains_searchable_under_new_keys ... ok
+test qa_m10_f09_concurrent_source_edit_fails_safe_with_duplicate ... ok
+test qa_m10_f10_copy_into_new_document_then_trash_restore_no_loss ... ok
+test qa_m10_f02_move_subtree_target_first_protocol ... ok
+test qa_m10_f05_crash_before_target_commit_rolls_back_cleanly ... ok
+test qa_m10_f06_crash_after_target_commit_keeps_duplicate_then_resolves ... ok
+test qa_m10_f08_transfer_undo_move_and_copy_byte_exact ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+     Running tests\m10_qa_g_productivity.rs (target\debug\deps\m10_qa_g_productivity-7e1a1adaa7e3f0f4.exe)
+
+running 10 tests
+test qa_m10_g06_command_palette_registry_fuzzy_and_task_jump ... ok
+test qa_m10_g01_global_search_two_docs_through_real_m6_seams ... ok
+test qa_m10_g03_smart_views_boundaries_groupings_nonmutating ... ok
+test qa_m10_g09_cross_document_views_and_search_context ... ok
+test qa_m10_g02_chinese_search_fallback_where_fts5_is_blind ... ok
+test qa_m10_g07_pagination_bounded_deterministic_mixed_corpus ... ok
+test qa_m10_g05_quick_add_flows_through_save_index_search_and_views ... ok
+test qa_m10_g08_incremental_updates_agree_with_full_rebuild ... ok
+test qa_m10_g10_index_disposable_full_productivity_rebuild ... ok
+test qa_m10_g04_saved_views_persist_restart_sql_memory_agree ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+
+     Running tests\m4_qa_tests.rs (target\debug\deps\m4_qa_tests-37f89c0cd6bf048b.exe)
+
+running 16 tests
+test qa_m4_012_recovery_mode_missing_dir ... ok
+test qa_m4_002_schema_migration_complete ... ok
+test qa_m4_009_fingerprint_change_detection ... ok
+test qa_m4_014_migrations_idempotent ... ok
+test qa_m4_010_reindex_idempotent ... ok
+test qa_m4_005_index_document_populates_sqlite ... ok
+test qa_m4_003_workspace_create_open_roundtrip ... ok
+test qa_m4_004_document_scanning ... ok
+test qa_m4_011_workspace_change_detection ... ok
+test qa_m4_001_sqlite_creation_and_wal_mode ... ok
+test qa_m4_007_sqlite_corruption_recovery ... ok
+test qa_m4_016_concurrent_db_access ... ok
+test qa_m4_013_gate_sqlite_delete_not_data_loss ... ok
+test qa_m4_006_delete_index_db_full_rebuild ... ok
+test qa_m4_015_self_save_recognition ... ok
+test qa_m4_008_file_watcher_detects_changes ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+     Running tests\m5_qa_tests.rs (target\debug\deps\m5_qa_tests-db617a809e57d2ef.exe)
+
+running 16 tests
+test qa_m5_010_empty_query ... ok
+test qa_m5_002_query_children_of_parent ... ok
+test qa_m5_006_deep_nested_hierarchy ... ok
+test qa_m5_011_no_tags_returns_empty ... ok
+test qa_m5_007_task_ordering ... ok
+test qa_m5_003_query_filter_by_status ... ok
+test qa_m5_008_priority_values ... ok
+test qa_m5_009_date_fields ... ok
+test qa_m5_012_delete_parent_orphans_children ... ok
+test qa_m5_001_query_all_tasks ... ok
+test qa_m5_004_query_filter_by_document ... ok
+test qa_m5_005_get_task_tags ... ok
+test qa_m5_013_query_with_limit ... ok
+test qa_m5_015_rebuild_preserves_workspace ... ok
+test qa_m5_014_percent_done ... ok
+test qa_m5_016_gate_index_disposable ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests\m6_qa_tests.rs (target\debug\deps\m6_qa_tests-729585fabb86af51.exe)
+
+running 18 tests
+test qa_m6_006_dependency_self_and_missing_rejected ... ok
+test qa_m6_005_dependency_cycle_rejected ... ok
+test qa_m6_010_progress_link_url_security ... ok
+test qa_m6_007_dependency_undo_redo_and_xml_persistence ... ok
+test qa_m6_002_participant_unknown_data_preserved ... ok
+test qa_m6_003_dependency_roundtrip_preserves_unknown_attrs ... ok
+test qa_m6_004_dependency_external_and_unresolved_refs ... ok
+test qa_m6_013_attachment_path_safety ... ok
+test qa_m6_014_attachment_linked_and_url_references ... ok
+test qa_m6_008_dependency_index_rebuild_forward_reverse ... ok
+test qa_m6_009_progress_link_persistence_and_index ... ok
+test qa_m6_001_participant_roundtrip_preserves_order ... ok
+test qa_m6_011_attachment_managed_import_lifecycle ... ok
+test qa_m6_015_attachments_index_rebuildable_from_xml ... ok
+test qa_m6_016_attachment_survives_document_relocation ... ok
+test qa_m6_012_attachment_import_rollback_paths ... ok
+test qa_m6_018_cumulative_regression_m0_m5_with_m6_fields ... ok
+test qa_m6_017_attachment_removal_orphans_and_integrity ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests\m7_qa_tests.rs (target\debug\deps\m7_qa_tests-89709909b4d0776a.exe)
+
+running 118 tests
+test domain::comments::tests::attr_value_roundtrip_is_exact ... ok
+test domain::comments::tests::first_explicit_edit_creates_a_plain_text_comment ... ok
+test domain::comments::tests::plain_text_preview_html_is_inert ... ok
+test domain::comments::tests::plain_text_save_preserves_type_and_bytes ... ok
+test domain::comments::tests::editor_mode_matrix ... ok
+test domain::comments::tests::conversion_requires_confirmation ... ok
+test domain::comments::tests::only_canonical_spellings_are_recognized ... ok
+test domain::comments::tests::conversion_is_reversible_via_undo ... ok
+test domain::comments::tests::html_save_preserves_type_and_sanitizes ... ok
+test domain::comments::tests::converting_a_task_without_comments_is_refused ... ok
+test domain::comments::tests::converting_html_is_refused ... ok
+test domain::comments::tests::editability_matrix ... ok
+test domain::comments::tests::plain_text_to_html_escapes_and_blocks ... ok
+test domain::comments::tests::rtf_and_unknown_are_read_only ... ok
+test domain::comments::tests::save_of_empty_content_does_not_materialize_a_comment ... ok
+test domain::comments::tests::the_default_new_type_cannot_override_an_existing_type ... ok
+test domain::comments::tests::task_comments_constructors_are_consistent ... ok
+test domain::comments::tests::projection_payloads_are_safe_per_mode ... ok
+test domain::comments::tests::type_indicators_are_localized_and_safe ... ok
+test domain::comments::tests::viewing_html_does_not_downgrade_or_upgrade_the_type ... ok
+test domain::comments::tests::xml_attr_value_mirrors_the_legacy_default ... ok
+test domain::rich_text::tests::base64_rejects_garbage ... ok
+test domain::rich_text::tests::base64_roundtrips ... ok
+test domain::rich_text::tests::commits_never_change_the_comments_type ... ok
+test domain::rich_text::tests::commit_path_never_stores_base64 ... ok
+test domain::rich_text::tests::debounce_window_is_clamped_to_the_specified_range ... ok
+test domain::rich_text::tests::coalescing_produces_exactly_one_command_per_burst ... ok
+test domain::rich_text::tests::commits_are_sanitized_and_read_only_types_are_refused ... ok
+test domain::rich_text::tests::autosave_interval_is_respected_and_never_per_keystroke ... ok
+test domain::rich_text::tests::extract_plain_text_returns_plain_text_verbatim ... ok
+test domain::rich_text::tests::extract_plain_text_returns_empty_for_opaque_types ... ok
+test domain::rich_text::tests::extract_plain_text_handles_cjk_without_inserting_spaces ... ok
+test domain::rich_text::tests::extract_search_text_tolerates_absence ... ok
+test domain::rich_text::tests::flush_commits_immediately_and_cancel_discards ... ok
+test domain::comments::tests::viewing_never_creates_or_converts_comments ... ok
+test domain::rich_text::tests::extract_plain_text_by_attr_matches_the_value_object ... ok
+test domain::rich_text::tests::extract_plain_text_sanitizes_then_strips_html ... ok
+test domain::rich_text::tests::keystrokes_never_commit_before_the_debounce_elapses ... ok
+test domain::rich_text::tests::image_formats_are_sniffed_from_magic_bytes ... ok
+test domain::rich_text::tests::metrics_invariant_commands_equal_commits ... ok
+test domain::rich_text::tests::one_description_update_is_exactly_one_undo_step ... ok
+test domain::rich_text::tests::document_id_must_be_a_safe_path_segment ... ok
+test domain::rich_text::tests::oversize_drafts_are_refused ... ok
+test domain::rich_text::tests::per_task_drafts_are_independent ... ok
+test domain::rich_text::tests::non_image_payloads_are_refused ... ok
+test domain::rich_text::tests::extension_follows_the_bytes_not_the_suggested_name ... ok
+test domain::rich_text::tests::non_image_data_uris_are_dropped ... ok
+test domain::rich_text::tests::identical_payloads_are_deduplicated ... ok
+test domain::rich_text::tests::reference_depth_follows_the_document_location ... ok
+test domain::rich_text::tests::reference_scan_over_approximates ... ok
+test domain::rich_text::tests::suggested_file_names_are_neutralized ... ok
+test domain::rich_text::tests::unchanged_content_produces_no_command ... ok
+test domain::sanitizer::tests::backslash_and_protocol_relative_urls_are_rejected ... ok
+test domain::rich_text::tests::base64_images_are_externalized_not_persisted ... ok
+test domain::sanitizer::tests::attribute_order_is_deterministic ... ok
+test domain::sanitizer::tests::benign_formatting_survives ... ok
+test domain::rich_text::tests::gc_requires_explicit_user_confirmation ... ok
+test domain::sanitizer::tests::data_uri_images_are_dropped_by_default ... ok
+test domain::rich_text::tests::reference_resolution_refuses_traversal ... ok
+test domain::sanitizer::tests::data_uri_parser_is_strict ... ok
+test domain::sanitizer::tests::entity_encoded_scheme_is_decoded_then_rejected ... ok
+test domain::sanitizer::tests::double_escaped_text_never_becomes_markup ... ok
+test domain::sanitizer::tests::four_entry_points_are_distinct_and_all_safe ... ok
+test domain::sanitizer::tests::iframe_object_embed_are_dropped_with_children ... ok
+test domain::sanitizer::tests::html_comments_and_doctype_are_stripped ... ok
+test domain::sanitizer::tests::img_without_valid_src_is_dropped ... ok
+test domain::sanitizer::tests::legacy_html_body_wrapper_is_unpacked ... ok
+test domain::sanitizer::tests::legacy_aliases_are_folded_not_flattened ... ok
+test domain::sanitizer::tests::managed_document_id_is_enforced_end_to_end ... ok
+test domain::sanitizer::tests::mixed_case_and_whitespace_obfuscation_is_defeated ... ok
+test domain::rich_text::tests::a_referenced_image_is_never_collected ... ok
+test domain::sanitizer::tests::oversize_input_is_refused ... ok
+test domain::sanitizer::tests::javascript_scheme_variants_are_rejected ... ok
+test domain::sanitizer::tests::nested_script_probe_cannot_produce_an_element ... ok
+test domain::sanitizer::tests::plain_text_extraction_handles_entities_and_nbsp ... ok
+test domain::sanitizer::tests::plain_text_extraction_preserves_cjk ... ok
+test domain::sanitizer::tests::plain_text_extraction_uses_block_separators ... ok
+test domain::sanitizer::tests::paste_import_captures_data_uri_for_externalization ... ok
+test domain::sanitizer::tests::preview_src_rewrite_is_applied ... ok
+test domain::sanitizer::tests::script_and_event_handlers_are_removed ... ok
+test domain::sanitizer::tests::src_must_be_a_managed_relative_path ... ok
+test domain::sanitizer::tests::style_attribute_is_limited_and_canonicalized ... ok
+test domain::sanitizer::tests::raw_text_hosts_are_dropped_not_unwrapped ... ok
+test domain::sanitizer::tests::style_survives_on_allowed_elements ... ok
+test domain::sanitizer::tests::unquoted_attribute_injection_is_neutralized ... ok
+test domain::sanitizer::tests::sanitization_is_idempotent ... ok
+test domain::sanitizer::tests::svg_and_mathml_subtrees_are_dropped ... ok
+test qa_m7_001_plain_text_type_is_preserved_on_save ... ok
+test qa_m7_002_html_type_is_preserved_and_content_sanitized ... ok
+test qa_m7_001_xml_plain_text_comment_roundtrip ... ok
+test qa_m7_003_rtf_is_read_only_with_type_indicator ... ok
+test qa_m7_004_unknown_commentstype_is_preserved_and_read_only ... ok
+test qa_m7_004_xml_opaque_commentstypes_are_preserved ... ok
+test qa_m7_002_xml_html_cdata_payload_extraction ... ok
+test domain::rich_text::tests::store_layout_and_reference_shape ... ok
+test qa_m7_006_search_text_extraction_matrix ... ok
+test qa_m7_005_convert_to_rich_text_is_confirmed_and_undoable ... ok
+test domain::rich_text::tests::orphan_marking_is_non_destructive ... ok
+test qa_m7_007_benign_formatting_survives_sanitation ... ok
+test domain::rich_text::tests::history_references_protect_images_from_gc ... ok
+test qa_m7_008_image_src_matrix_is_restricted_to_managed_paths ... ok
+test qa_m7_009_all_four_choke_points_sanitize ... ok
+test qa_m7_008_dangerous_url_matrix_is_rejected ... ok
+test qa_m7_007_xml_hostile_comment_is_neutralized_before_render ... ok
+test domain::rich_text::tests::gc_respects_grace_period_and_orphan_mark ... ok
+test qa_m7_011_xml_managed_image_reference_survives_roundtrip ... ok
+test qa_m7_016_debounce_and_autosave_intervals_match_the_spec ... ok
+test qa_m7_007_xss_payload_matrix_is_neutralized ... ok
+test qa_m7_006_viewing_never_creates_or_converts_comments ... ok
+test domain::rich_text::tests::detect_orphans_marks_and_unmarks_from_references ... ok
+test qa_m7_011_relative_references_and_no_base64_in_xml ... ok
+test qa_m7_012_clipboard_and_dragdrop_ingestion_sanitize_filenames ... ok
+test qa_m7_015_gc_is_explicit_dry_run_and_grace_period_gated ... ok
+test qa_m7_010_managed_image_layout_and_blake3_verification ... ok
+test qa_m7_014_gc_requires_no_live_reference_in_any_source ... ok
+test qa_m7_013_removed_image_becomes_orphan_candidate_without_deletion ... ok
+test domain::rich_text::tests::virtual_clock_never_blocks ... ok
+test qa_m7_016_no_per_keystroke_snapshot_or_serialization ... ok
+
+test result: ok. 118 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+     Running tests\m8_ipc_transfer_tests.rs (target\debug\deps\m8_ipc_transfer_tests-8b6cb91b09cddddc.exe)
+
+running 13 tests
+test recover_without_journals_is_empty ... ok
+test same_source_and_target_is_rejected ... ok
+test list_targets_excludes_source_and_marks_writable ... ok
+test unknown_document_id_is_rejected ... ok
+test preview_reports_counts_and_is_side_effect_free ... ok
+test recover_interrupted_move_reports_duplicate ... ok
+test failed_target_commit_leaves_no_journal_for_recovery ... ok
+test unknown_task_key_is_rejected_before_any_write ... ok
+test query_tasks_core_reads_percent_done_from_real_column ... ok
+test copy_subtree_keeps_source_and_reindexes ... ok
+test complete_interrupted_move_removes_source_copy ... ok
+test move_subtree_removes_source_after_commit ... ok
+test undo_transfer_restores_target_document ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s
+
+     Running tests\m8_qa_tests.rs (target\debug\deps\m8_qa_tests-282f672426551e1e.exe)
+
+running 295 tests
+test domain::attachment::tests::collision_safe_names_keep_extension ... ok
+test domain::attachment::tests::add_remove_keeps_file_links_in_sync ... ok
+test domain::attachment::tests::asset_root_layout ... ok
+test domain::attachment::tests::attr_codec_roundtrip ... ok
+test domain::attachment::tests::safe_join_rejects_traversal_and_absolute ... ok
+test domain::attachment::tests::url_attachment_validates_scheme ... ok
+test domain::attachment::tests::scan_synthesizes_from_file_links ... ok
+test domain::encoding::tests::decode_utf16_odd_byte_count ... ok
+test domain::encoding::tests::decode_utf16_unsupported_encoding ... ok
+test domain::attachment::tests::index_rows_and_populate ... ok
+test domain::encoding::tests::decode_utf16be_basic_ascii ... ok
+test domain::attachment::tests::rebuild_index_from_xml_scan ... ok
+test domain::encoding::tests::decode_utf16le_basic_ascii ... ok
+test domain::encoding::tests::detect_bom_exact_utf16_be_bom ... ok
+test domain::encoding::tests::detect_bom_exact_utf16_le_bom ... ok
+test domain::encoding::tests::decode_utf16le_xml_declaration ... ok
+test domain::encoding::tests::detect_bom_empty_slice ... ok
+test domain::encoding::tests::decode_utf16le_empty ... ok
+test domain::attachment::tests::linked_file_stores_reference_only ... ok
+test domain::encoding::tests::detect_bom_exact_utf8_bom ... ok
+test domain::encoding::tests::detect_bom_none_utf8_no_bom ... ok
+test domain::encoding::tests::detect_bom_priority_utf8_before_utf16le ... ok
+test domain::encoding::tests::detect_bom_single_byte ... ok
+test domain::attachment::tests::managed_import_rolls_back_on_rename_failure ... ok
+test domain::encoding::tests::detect_bom_two_bytes_partial_utf8_bom ... ok
+test domain::encoding::tests::detect_bom_utf16_be ... ok
+test domain::encoding::tests::detect_bom_utf16_le ... ok
+test domain::encoding::tests::detect_bom_utf8 ... ok
+test domain::encoding::tests::detect_line_ending_cr ... ok
+test domain::encoding::tests::detect_line_ending_crlf ... ok
+test domain::encoding::tests::detect_line_ending_lf ... ok
+test domain::encoding::tests::detect_line_ending_no_newlines ... ok
+test domain::encoding::tests::detect_xml_decl_basic ... ok
+test domain::encoding::tests::detect_xml_decl_case_insensitive_encoding ... ok
+test domain::encoding::tests::detect_xml_decl_empty_input ... ok
+test domain::encoding::tests::detect_xml_decl_no_declaration ... ok
+test domain::encoding::tests::detect_xml_decl_no_encoding_attr ... ok
+test domain::encoding::tests::detect_xml_decl_single_quotes ... ok
+test domain::encoding::tests::detect_xml_decl_utf16_encoding ... ok
+test domain::encoding::tests::detect_xml_decl_with_leading_whitespace ... ok
+test domain::encoding::tests::encoding_meta_builder_methods ... ok
+test domain::encoding::tests::encoding_meta_clone_and_eq ... ok
+test domain::encoding::tests::encoding_meta_default ... ok
+test domain::encoding::tests::encoding_meta_default_utf8 ... ok
+test domain::encoding::tests::encoding_meta_encoding_label ... ok
+test domain::encoding::tests::encoding_meta_serde_roundtrip ... ok
+test domain::encoding::tests::line_ending_as_bytes ... ok
+test domain::encoding::tests::line_ending_as_str ... ok
+test domain::attachment::tests::staging_guard_cleans_up_on_hash_mismatch ... ok
+test domain::encoding::tests::line_ending_default_is_crlf ... ok
+test domain::encoding::tests::line_ending_serde_roundtrip ... ok
+test domain::encoding::tests::resolve_encoding_unknown ... ok
+test domain::encoding::tests::resolve_encoding_utf16 ... ok
+test domain::encoding::tests::resolve_encoding_utf8 ... ok
+test domain::encoding::tests::xml_encoding_bom_bytes ... ok
+test domain::encoding::tests::xml_encoding_default_is_utf8 ... ok
+test domain::encoding::tests::xml_encoding_has_bom ... ok
+test domain::encoding::tests::xml_encoding_iana_labels ... ok
+test domain::attachment::tests::managed_import_verifies_expected_hash ... ok
+test domain::encoding::tests::xml_encoding_serde_roundtrip ... ok
+test domain::encoding::tests::xml_encoding_is_utf16 ... ok
+test domain::file_library::tests::reveal_command_shape ... ok
+test domain::fingerprint::tests::fingerprint_deterministic ... ok
+test domain::fingerprint::tests::fingerprint_empty ... ok
+test domain::fingerprint::tests::fingerprint_different_data ... ok
+test domain::fingerprint::tests::fingerprint_from_bytes ... ok
+test domain::fingerprint::tests::fingerprint_from_reader ... ok
+test domain::fingerprint::tests::fingerprint_matches_bytes ... ok
+test domain::fingerprint::tests::fingerprint_serde_roundtrip ... ok
+test domain::id_allocator::tests::allocate_sequential ... ok
+test domain::id_allocator::tests::exists_check ... ok
+test domain::id_allocator::tests::allocate_skips_existing ... ok
+test domain::id_allocator::tests::register_prevents_collision ... ok
+test domain::mappers::tests::attachments_attr_roundtrip ... ok
+test domain::mappers::tests::corrupt_progress_links_attr_preserved_as_unknown ... ok
+test domain::mappers::tests::participants_mirror_allocated_to_in_order ... ok
+test domain::mappers::tests::dependency_extra_data_preserved_via_raw_xml ... ok
+test domain::attachment::tests::orphan_lifecycle_and_gc ... ok
+test domain::mappers::tests::progress_links_attr_roundtrip ... ok
+test domain::mappers::tests::participants_roundtrip ... ok
+test domain::attachment::tests::managed_import_happy_path ... ok
+test domain::mappers::tests::plain_dependency_stays_minimal ... ok
+test domain::file_library::tests::create_rejects_escape_and_existing ... ok
+test domain::mappers::tests::read_basic ... ok
+test domain::file_library::tests::import_rejects_non_xml ... ok
+test domain::file_library::tests::create_managed_document_writes_and_registers ... ok
+test domain::participant::tests::index_rows_cover_both_roles ... ok
+test domain::mappers::tests::write_roundtrip ... ok
+test domain::participant::tests::add_remove_keeps_fields_in_sync ... ok
+test domain::mappers::tests::read_unknown_attrs ... ok
+test domain::participant::tests::parse_handles_empty_segments ... ok
+test domain::mappers::tests::read_children ... ok
+test domain::participant::tests::parse_preserves_source_order ... ok
+test domain::participant::tests::participant_ref_validates_and_trims ... ok
+test domain::participant::tests::refresh_from_allocated_resyncs ... ok
+test domain::progress_link::tests::accepts_plain_http_and_https ... ok
+test domain::participant::tests::populate_task_participants_roundtrip ... ok
+test domain::progress_link::tests::add_remove_on_task ... ok
+test domain::persistence::tests::autosave_coordinator ... ok
+test domain::persistence::tests::temp_file_path_same_dir ... ok
+test domain::progress_link::tests::attr_codec_roundtrip_and_revalidation ... ok
+test domain::progress_link::tests::progress_link_new_validates ... ok
+test domain::progress_link::tests::provider_detection ... ok
+test domain::progress_link::tests::rejects_dangerous_schemes ... ok
+test domain::progress_link::tests::rejects_malformed_urls ... ok
+test domain::recovery::tests::journal_orphaned_detection ... ok
+test domain::progress_link::tests::rejects_obfuscated_javascript_variants ... ok
+test domain::recovery::tests::journal_begin_and_update ... ok
+test domain::progress_link::tests::index_rows_and_populate ... ok
+test domain::recovery::tests::journal_serde_roundtrip ... ok
+test domain::recovery::tests::recovery_nothing_needed ... ok
+test domain::recovery::tests::safety_event_log_bounded ... ok
+test domain::session::tests::save_generation_increments ... ok
+test domain::session::tests::session_fingerprint ... ok
+test domain::session::tests::session_initial_state ... ok
+test domain::session::tests::session_mutation_increments_revision ... ok
+test domain::session::tests::session_save_clears_dirty ... ok
+test domain::session::tests::session_save_lock ... ok
+test domain::session::tests::session_stale_revision_check ... ok
+test domain::task::tests::comment_type_roundtrip ... ok
+test domain::task::tests::priority_clamped ... ok
+test domain::task::tests::task_default_values ... ok
+test domain::task::tests::task_status_derived_from_percent ... ok
+test domain::task::tests::task_tree_add_and_get ... ok
+test domain::task::tests::task_tree_depth_first ... ok
+test domain::task::tests::task_tree_remove ... ok
+test domain::attachment::tests::gc_keeps_modified_orphans ... ok
+test domain::task::tests::task_tree_reorder ... ok
+test domain::task::tests::task_tree_reparent ... ok
+test domain::task::tests::task_tree_reparent_prevents_cycle ... ok
+test domain::persistence::tests::atomic_save_validation_failure ... ok
+test domain::persistence::tests::atomic_save_success ... ok
+test domain::file_library::tests::duplicate_creates_independent_doc_with_new_id ... ok
+test domain::transfer::tests::list_targets_reports_writability ... ok
+test domain::file_library::tests::undo_create_moves_file_to_trash_not_delete ... ok
+test domain::transfer::tests::plan_allocates_in_target_id_space ... ok
+test domain::transfer::tests::html_comment_relative_ref_planned_for_copy ... ok
+test domain::file_library::tests::rename_keeps_document_id_stable_and_repairs_refs ... ok
+test domain::file_library::tests::import_managed_copies_and_links_reference_in_place ... ok
+test domain::transfer::tests::plan_rejects_same_document ... ok
+test domain::transfer::tests::plan_missing_task ... ok
+test domain::transfer::tests::plan_block_policy_aborts ... ok
+test domain::transfer::tests::plan_corrects_low_next_unique_id ... ok
+test domain::transfer_journal::tests::default_journal_dir_layout ... ok
+test domain::transfer::tests::plan_classifies_assets ... ok
+test domain::transfer::tests::plan_rewrites_internal_dep_and_marks_external ... ok
+test domain::transfer::tests::copy_preserves_unknown_attrs_and_comments_verbatim ... ok
+test domain::transfer_journal::tests::duplicate_create_rejected ... ok
+test domain::transfer_journal::tests::create_writes_durable_started_entry ... ok
+test domain::transfer::tests::copy_never_touches_source_and_commits_target ... ok
+test domain::transfer::tests::move_detects_concurrent_source_edit_duplicate_not_loss ... ok
+test domain::transfer_journal::tests::load_falls_back_to_bak_when_primary_garbled ... ok
+test domain::transfer_journal::tests::append_phase_sequence_and_reload ... ok
+test domain::transfer::tests::move_commits_target_then_source ... ok
+test domain::transfer_journal::tests::load_reports_corrupt_when_primary_and_bak_unreadable ... ok
+test domain::transfer::tests::copy_undo_removes_target_subtree_without_recycling_ids ... ok
+test domain::transfer_journal::tests::scan_dir_finds_ok_and_corrupt ... ok
+test domain::types::tests::document_id_creation ... ok
+test domain::transfer_journal::tests::truncated_journal_recovers_from_bak ... ok
+test domain::transfer::tests::move_undo_restores_both_documents ... ok
+test domain::transfer::tests::progress_events_emitted ... ok
+test domain::trash::tests::missing_file_rejected ... ok
+test domain::types::tests::task_id_creation ... ok
+test domain::types::tests::document_id_from_str ... ok
+test domain::types::tests::task_id_as_u64_non_numeric ... ok
+test domain::types::tests::task_id_from_u64 ... ok
+test domain::types::tests::task_id_serde_roundtrip ... ok
+test domain::types::tests::task_key_creation ... ok
+test domain::types::tests::task_id_rejects_empty - should panic ... ok
+test domain::types::tests::task_key_equality ... ok
+test domain::types::tests::task_key_serde_roundtrip ... ok
+test domain::types::tests::workspace_id_creation ... ok
+test domain::types::tests::workspace_id_equality ... ok
+test domain::types::tests::workspace_id_from_str ... ok
+test domain::validator::tests::validate_orphaned_child_ref ... ok
+test domain::validator::tests::validate_missing_next_unique_id ... ok
+test domain::trash::tests::empty_trash_purges_all ... ok
+test domain::validator::tests::validate_good_document ... ok
+test domain::transfer_journal::tests::remove_deletes_journal_and_siblings ... ok
+test domain::validator::tests::validate_wrong_root ... ok
+test domain::workspace::tests::create_workspace_writes_metadata ... ok
+test domain::validator::tests::validate_orphaned_dependency ... ok
+test domain::workspace::tests::document_type_serialization ... ok
+test domain::workspace::tests::open_nonexistent_directory_fails ... ok
+test domain::workspace::tests::duplicate_registration_fails ... ok
+test domain::workspace::tests::open_without_metadata_fails ... ok
+test domain::trash::tests::unregistered_file_can_be_trashed_and_restored ... ok
+test domain::workspace::tests::detect_changes_finds_new_files ... ok
+test domain::workspace::tests::supported_extensions ... ok
+test domain::workspace::tests::resolve_managed_path ... ok
+test domain::trash::tests::manifest_corrupt_falls_back_to_bak ... ok
+test domain::trash::tests::trash_delete_restore_roundtrip_keeps_document_id ... ok
+test domain::xml_parser::tests::escape_roundtrip ... ok
+test domain::workspace::tests::resolve_linked_path_absolute ... ok
+test domain::xml_parser::tests::parse_dependency_element ... ok
+test domain::workspace::tests::detect_changes_finds_removed_files ... ok
+test domain::workspace::tests::register_and_find_document ... ok
+test domain::workspace::tests::unregister_document ... ok
+test domain::trash::tests::restore_collision_uses_suffix ... ok
+test domain::xml_parser::tests::parse_detects_encoding_meta ... ok
+test domain::xml_parser::tests::parse_malformed_xml_returns_error ... ok
+test domain::xml_parser::tests::parse_empty_input_returns_error ... ok
+test domain::xml_parser::tests::parse_metadata_element ... ok
+test domain::xml_parser::tests::parse_multiple_child_elements ... ok
+test domain::xml_parser::tests::parse_nested_tasks ... ok
+test domain::workspace::tests::scan_skips_hidden_directories ... ok
+test domain::xml_parser::tests::parse_preserves_comments ... ok
+test domain::xml_parser::tests::parse_preserves_unknown_elements ... ok
+test domain::xml_parser::tests::parse_single_task ... ok
+test domain::trash::tests::purge_is_permanent_and_explicit ... ok
+test domain::xml_parser::tests::parse_preserves_unknown_attrs ... ok
+test domain::xml_parser::tests::parse_xml_entities_in_attrs ... ok
+test domain::xml_parser::tests::parse_xml_entities_in_text ... ok
+test domain::xml_parser::tests::unescape_basic_entities ... ok
+test domain::xml_parser::tests::unescape_numeric_references ... ok
+test domain::xml_serializer::tests::roundtrip_preserves_unknown_attrs ... ok
+test domain::xml_serializer::tests::roundtrip_multiple_categories ... ok
+test domain::xml_parser::tests::unescape_handles_bare_ampersand ... ok
+test domain::xml_parser::tests::unescape_preserves_unknown_entities ... ok
+test domain::xml_serializer::tests::roundtrip_preserves_comments ... ok
+test domain::xml_serializer::tests::roundtrip_nested_tasks ... ok
+test domain::workspace::tests::open_workspace_reads_metadata ... ok
+test domain::workspace::tests::sync_to_db_and_ensure_in_db ... ok
+test domain::xml_serializer::tests::roundtrip_preserves_unknown_elements ... ok
+test domain::xml_serializer::tests::roundtrip_simple_xml ... ok
+test domain::xml_serializer::tests::roundtrip_with_entities ... ok
+test domain::xml_serializer::tests::serialize_escapes_attribute_values ... ok
+test domain::xml_serializer::tests::serialize_escapes_text_content ... ok
+test domain::xml_serializer::tests::serialize_preserves_attr_order ... ok
+test domain::xml_serializer::tests::serialize_self_closing_empty_element ... ok
+test domain::xml_serializer::tests::serialize_utf16be ... ok
+test domain::xml_serializer::tests::serialize_utf16le ... ok
+test domain::xml_serializer::tests::serialize_utf8_no_bom ... ok
+test domain::xml_serializer::tests::serialize_utf8_with_bom ... ok
+test domain::xml_serializer::tests::serialize_with_xml_declaration ... ok
+test domain::xml_tree::tests::element_children_by_tag ... ok
+test domain::xml_tree::tests::element_get_set_attr ... ok
+test domain::xml_tree::tests::element_remove_attr ... ok
+test domain::workspace::tests::scan_finds_xml_files ... ok
+test domain::xml_tree::tests::element_set_text_preserves_non_text_children ... ok
+test domain::xml_tree::tests::element_text_content ... ok
+test domain::xml_tree::tests::xml_document_creation ... ok
+test infrastructure::db::tests::missing_data_dir_enters_recovery_mode ... ok
+test infrastructure::db::tests::with_connection_fails_in_recovery_mode ... ok
+test infrastructure::indexer::tests::rebuild_index_with_cancel ... ok
+test domain::workspace::tests::workspace_metadata_roundtrip ... ok
+test infrastructure::indexer::tests::index_document_clears_before_reindex ... ok
+test infrastructure::indexer::tests::index_document_counts_tasks ... ok
+test infrastructure::indexer::tests::compute_fingerprint_works ... ok
+test infrastructure::migration::tests::all_core_tables_exist_after_migration ... ok
+test infrastructure::migration::tests::all_indexes_exist_after_migration ... ok
+test infrastructure::indexer::tests::rebuild_index_reports_progress ... ok
+test infrastructure::indexer::tests::index_document_with_tags ... ok
+test infrastructure::migration::tests::corrupt_version_file_is_reported ... ok
+test infrastructure::indexer::tests::test_clear_workspace_index ... ok
+test infrastructure::migration::tests::fresh_database_runs_all_migrations ... ok
+test infrastructure::migration::tests::future_data_dir_version_is_rejected ... ok
+test infrastructure::migration::tests::future_schema_version_is_rejected ... ok
+test infrastructure::migration::tests::running_migrations_twice_is_idempotent ... ok
+test infrastructure::db::tests::foreign_keys_are_enabled ... ok
+test infrastructure::migration::tests::task_index_cascade_delete_on_document ... ok
+test infrastructure::db::tests::clone_shares_connection ... ok
+test infrastructure::schema::tests::migrations_start_at_version_1 ... ok
+test infrastructure::schema::tests::first_migration_creates_schema_migrations_table ... ok
+test infrastructure::schema::tests::migrations_are_ordered ... ok
+test infrastructure::migration::tests::workspaces_table_accepts_insert ... ok
+test infrastructure::db::tests::open_creates_database_in_data_dir ... ok
+test infrastructure::schema::tests::schema_version_is_positive ... ok
+test infrastructure::db::tests::open_runs_migrations ... ok
+test infrastructure::migration::tests::legacy_settings_are_upgraded_not_lost ... ok
+test infrastructure::migration::tests::data_dir_migrates_forward_across_three_versions ... ok
+test infrastructure::db::tests::delete_and_reopen_database ... ok
+test qa_m8_001_move_kill_before_stage_assets ... ok
+test infrastructure::migration::tests::migrate_or_rebuild_reports_outcome ... ok
+test infrastructure::migration::tests::data_dir_migration_is_idempotent_and_resumable ... ok
+test qa_m8_002_move_kill_before_commit_target ... ok
+test infrastructure::migration::tests::failed_migration_triggers_index_rebuild_fallback ... ok
+test qa_m8_007_source_commit_concurrent_edit_duplicate_not_loss ... ok
+test qa_m8_008_journal_corruption_quarantined_data_intact ... ok
+test qa_m8_011_target_permission_denied_rolls_back ... ok
+test qa_m8_003_move_kill_after_target_commit_before_source_backup ... ok
+test qa_m8_005_move_kill_before_complete ... ok
+test qa_m8_013_internal_dependency_remap ... ok
+test qa_m8_006_copy_kill_matrix_never_deletes_source ... ok
+test qa_m8_010_target_write_failure_rolls_back ... ok
+test qa_m8_012_asset_stage_io_failure_rolls_back ... ok
+test qa_m8_009_journal_truncation_falls_back_to_bak ... ok
+test qa_m8_004_move_kill_before_commit_source ... ok
+test qa_m8_018_linked_document_remove_reference ... ok
+test qa_m8_017_trash_delete_restore_purge ... ok
+test qa_m8_014_external_dependency_policy ... ok
+test qa_m8_019_rename_repairs_references ... ok
+test qa_m8_015_attachment_asset_remap ... ok
+test qa_m8_016_asset_collision_unique_rename ... ok
+test qa_m8_020_cumulative_regression_m0_through_m8 ... ok
+
+test result: ok. 295 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.88s
+
+     Running tests\m9_qa_tests.rs (target\debug\deps\m9_qa_tests-a6b5bd8d9b79cc24.exe)
+
+running 17 tests
+test qa_m9_007_upcoming_week_rollover ... ok
+test qa_m9_012_command_registry_no_conflicts_and_detection_works ... ok
+test qa_m9_011_quick_add_safe_fallback ... ok
+test qa_m9_014_quick_add_builds_valid_domain_task ... ok
+test qa_m9_008_smart_views_do_not_mutate_data ... ok
+test qa_m9_extras_seam_search_document_from_task ... ok
+test qa_m9_013_task_jump_resolution_and_palette_fuzzy ... ok
+test qa_m9_006_smart_view_date_boundaries_with_injected_now ... ok
+test qa_m9_001_global_search_correctness ... ok
+test qa_m9_010_saved_view_date_boundaries_sql_matches_memory ... ok
+test qa_m9_002_chinese_fallback_where_fts5_returns_nothing ... ok
+test qa_m9_003_incremental_index_updates_on_mutation ... ok
+test qa_m9_015_canonical_filter_regression ... ok
+test qa_m9_005_search_index_rebuildable_from_xml_scan ... ok
+test qa_m9_004_pagination_bounded_and_deterministic ... ok
+test qa_m9_009_saved_views_persist_and_never_mutate_tasks ... ok
+test qa_m9_016_cumulative_regression_index_stays_disposable ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests\round_trip_test.rs (target\debug\deps\round_trip_test-7bbd927e37de3127.exe)
+
+running 17 tests
+test roundtrip_encoding_utf8_bom ... ok
+test roundtrip_attachments_single_filelink ... ok
+test roundtrip_comments_plain_text_comment ... ok
+test roundtrip_canonical_single_task ... ok
+test roundtrip_attachments_multi_filelink ... ok
+test roundtrip_comments_html_comment ... ok
+test roundtrip_canonical_nested_tasks ... ok
+test roundtrip_dependencies_local_dependency ... ok
+test roundtrip_canonical_all_basic_fields ... ok
+test roundtrip_canonical_empty_todolist ... ok
+test roundtrip_encoding_utf16le ... ok
+test roundtrip_encoding_utf16be ... ok
+test roundtrip_encoding_utf8_no_bom ... ok
+test roundtrip_unknown_unknown_attribute ... ok
+test roundtrip_unknown_metadata_element ... ok
+test roundtrip_unknown_unknown_element ... ok
+test roundtrip_realworld_london_underground ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

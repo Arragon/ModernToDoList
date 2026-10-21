@@ -57,3 +57,21 @@ intended resolution point.
 - **Why deferred**: explicit scope constraint in the approved plan (GA 后增强);
   root-level insertion is lossless and undoable.
 - **Resolution**: post-2.0 enhancement issue.
+
+## L-05: GATE-M10 closure, GA tag, and Linear API key rotation — blocked by L-04
+
+- **What**: P6 closing actions — INH-1133 → Done, epic INH-718 → Done,
+  `git tag v2.0.0` on the GA commit, and rotating the Linear API key that
+  once existed on disk in plaintext (GATE_M10_CHECKLIST §6.1).
+- **Why blocked**: GATE_M10_CHECKLIST explicitly forbids closing the GA gate
+  on unit-test evidence alone; criteria 3.H / 4.3 / 4.4 require the
+  clean-machine H-matrix, which is environment-blocked (L-04).
+- **State at freeze**: 2.0.0 RC frozen at commit `0dda444` (local tag
+  `v2.0.0-rc`), ZIP SHA-256
+  `a6c89880da9c9c7188edaf84199de6892f83e1223c19c0a00e4ad00ad66aa58e`,
+  full `cargo test --all-targets` green on the frozen commit.
+- **Resolution**: after L-04 VMs exist and the H-matrix passes on the frozen
+  RC ZIP, close INH-1133/INH-718, re-tag the GA commit as `v2.0.0`, rotate
+  the Linear key. If any H case fails and forces a code change, the ZIP must
+  be rebuilt and re-frozen (new SHA-256) and the render re-measure (L-02)
+  redone on the new build.

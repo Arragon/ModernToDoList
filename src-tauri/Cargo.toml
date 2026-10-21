@@ -1,6 +1,6 @@
 [package]
 name = "moderntodolist"
-version = "2.0.0-dev"
+version = "2.0.0"
 description = "ModernToDoList - Portable Windows Desktop Task Manager"
 authors = ["ModernToDoList Team"]
 edition = "2021"

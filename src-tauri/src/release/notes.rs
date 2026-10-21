@@ -131,7 +131,7 @@ impl ReleaseNotes {
 
 /// The filled-in ModernToDoList 2.0.0 GA changelog.
 pub fn release_notes_2_0_0() -> ReleaseNotes {
-    let mut n = ReleaseNotes::template("2.0.0", "2026-01-15");
+    let mut n = ReleaseNotes::template("2.0.0", "2026-10-21");
 
     n.highlights = vec![
         "Portable Windows app: unzip and run, no installer, no admin rights, no network required".to_string(),

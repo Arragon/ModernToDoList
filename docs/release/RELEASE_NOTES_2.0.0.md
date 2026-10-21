@@ -1,7 +1,8 @@
 # ModernToDoList 2.0.0 — Release Notes
 
-**Release date:** 2026-01-15
+**Release date:** 2026-10-21
 **Artifact:** `ModernToDoList-2.0.0-Portable-win-x64.zip` (+ `.sha256` sidecar)
+**ZIP SHA-256:** `a6c89880da9c9c7188edaf84199de6892f83e1223c19c0a00e4ad00ad66aa58e`
 **Generated from:** `src-tauri/src/release/notes.rs` → `release_notes_2_0_0()`
 
 > This document mirrors the structured release notes in code. Edit
@@ -94,8 +95,10 @@ so releases stay comparable.
 ```
 
 Checklist before publishing notes:
-- [ ] Version and date match `release::version_metadata::VersionMetadata`
-- [ ] Artifact name matches `release::packaging::portable_zip_name(version)`
-- [ ] SHA-256 of the final ZIP recorded in the release channel
-- [ ] Breaking Changes section explicitly addresses TDL XML compatibility
+- [x] Version and date match `release::version_metadata::VersionMetadata`
+- [x] Artifact name matches `release::packaging::portable_zip_name(version)`
+- [x] SHA-256 of the final ZIP recorded in the release channel
+- [x] Breaking Changes section explicitly addresses TDL XML compatibility
 - [ ] Known Issues lists every open Blocker-classified issue or states none
+      (open Blockers are process gates only — INH-1131 VM matrix, INH-1133 GA gate;
+      tracked in docs/release/RC_M10_BLOCKER_REVIEW.md and docs/qa/LEFTOVER_TASKS.md L-04)

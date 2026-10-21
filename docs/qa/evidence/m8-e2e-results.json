@@ -1,0 +1,44 @@
+[
+  {
+    "id": "E1",
+    "ok": true,
+    "detail": "copy banner=\"Copy completed\" target 3->4, source unchanged=true",
+    "at": "2026-10-21T06:12:10.284Z"
+  },
+  {
+    "id": "E1-undo",
+    "ok": true,
+    "detail": "target back to 3",
+    "at": "2026-10-21T06:12:11.819Z"
+  },
+  {
+    "id": "E2",
+    "ok": true,
+    "detail": "move banner=\"Move completed\" source 5->4 target 3->4",
+    "at": "2026-10-21T06:12:14.331Z"
+  },
+  {
+    "id": "E3",
+    "ok": true,
+    "detail": "banner=\"Transfer failed before the target was committed\" counts unchanged=true",
+    "at": "2026-10-21T06:12:16.951Z"
+  },
+  {
+    "id": "E4",
+    "ok": true,
+    "detail": "banner=\"Move incomplete\" source 4->4 target 4->7",
+    "at": "2026-10-21T06:12:19.979Z"
+  },
+  {
+    "id": "E5-complete",
+    "ok": true,
+    "detail": "complete-move: panel items 0, source 4->1, target 7->7",
+    "at": "2026-10-21T06:12:28.235Z"
+  },
+  {
+    "id": "E6",
+    "ok": true,
+    "detail": "confirmShown=true noBanner=true counts unchanged=true",
+    "at": "2026-10-21T06:12:30.156Z"
+  }
+]

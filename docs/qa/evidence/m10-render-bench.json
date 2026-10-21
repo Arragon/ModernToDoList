@@ -1,0 +1,36 @@
+{
+  "scenario": "ui-tree-render-10k",
+  "dataset": "D:\\projects\\modern_todo_list\\Data\\bench\\2026-10-21T04-58-33-039Z\\datasets\\scale-10k",
+  "tasks": 10000,
+  "visible_rows": 10000,
+  "measured_at": "2026-10-21T06:29:13.949Z",
+  "runs": {
+    "off": {
+      "frames": 136,
+      "mean_ms": 22.21,
+      "p50_ms": 20.9,
+      "p95_ms": 34.5,
+      "p99_ms": 34.9,
+      "max_ms": 48.7,
+      "fps_effective": 45,
+      "mounted_dom_rows": 10000
+    },
+    "on": {
+      "frames": 144,
+      "mean_ms": 20.85,
+      "p50_ms": 20.8,
+      "p95_ms": 28,
+      "p99_ms": 48.7,
+      "max_ms": 48.7,
+      "fps_effective": 48,
+      "mounted_dom_rows": 28
+    }
+  },
+  "decision_gate": {
+    "rule": "RD-M10-022: p95 frame time > 16 ms at 10k+ visible rows → virtualization IMPLEMENT",
+    "p95_virtualization_off_ms": 34.5,
+    "p95_virtualization_on_ms": 28,
+    "virtualization_required": true,
+    "verdict": "virtualization IMPLEMENT is mandatory at 10k (already shipped; auto mode must engage)"
+  }
+}

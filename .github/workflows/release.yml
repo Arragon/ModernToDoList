@@ -136,6 +136,14 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      # gh resolves the repository and the tag from the git checkout, so the
+      # publish job needs one too — without it `gh release create` aborts with
+      # "fatal: not a git repository".
+      - name: Checkout (for tag and repo context)
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
       - name: Download build artifacts
         uses: actions/download-artifact@v8
         with:
@@ -149,6 +157,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $tag = "${{ github.ref_name }}"
+          $repo = "${{ github.repository }}"
           $files = @(Get-ChildItem -Path artifacts -Recurse -File | Select-Object -ExpandProperty FullName)
           foreach ($f in $files) { Write-Host "asset: $f" }
 
@@ -156,13 +165,13 @@ jobs:
           $prerelease = @()
           if ($tag -match '(?i)(rc|beta|alpha|build)') { $prerelease = @('--prerelease') }
 
-          gh release view $tag --json tagName 2>$null | Out-Null
+          gh release view $tag --repo $repo --json tagName 2>$null | Out-Null
           if ($LASTEXITCODE -eq 0) {
             Write-Host "release $tag exists — uploading with --clobber"
-            $ghArgs = @('release', 'upload', $tag) + $files + @('--clobber')
+            $ghArgs = @('release', 'upload', $tag, '--repo', $repo) + $files + @('--clobber')
           } else {
             Write-Host "creating release $tag"
-            $ghArgs = @('release', 'create', $tag) + $files + @(
+            $ghArgs = @('release', 'create', $tag, '--repo', $repo) + $files + @(
               '--title', "ModernToDoList $tag",
               '--generate-notes',
               '--verify-tag'

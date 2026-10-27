@@ -26,6 +26,20 @@ intended resolution point.
   required (answered: yes, and it is shipped with auto mode engaging at
   threshold=200). Absolute frame budget on release builds is a clean-machine
   concern.
+- **Constraint discovered (2026-10-27)**: the resolution below is not
+  executable as written. `scripts/e2e/m10-render-bench.cjs` injects
+  `window.__e2e` by dynamically importing `/src/stores/*.ts` from the Vite dev
+  server and additionally drives `app.openWorkspace` / `scanAndIndex` /
+  `taskStore.loadTasks` / `settingsStore.settings.virtualization.mode`. None of
+  those module URLs exist in the bundled frontend of the frozen RC EXE, and the
+  frontend has no `last_workspace` auto-restore (the field exists in
+  `app.rs::AppSettings` but nothing reads it), so the release build cannot be
+  driven to a 10k-row benchmark state from CDP alone — reaching a workspace
+  requires the native folder picker. Only two paths remain, and both are
+  user-level decisions: (a) run the dev-mode harness inside the VM and accept
+  that it measures a dev build, or (b) add an explicitly non-default test hook
+  to the product, which forces a new RC: rebuild, re-freeze a new ZIP SHA-256,
+  and redo every artifact check in `GATE_M10_CHECKLIST.md` §5.
 - **Resolution**: re-run `scripts/e2e/m10-render-bench.cjs` against the frozen
   RC build during QA-M10-H (INH-1131) on a clean VM.
 
@@ -48,6 +62,12 @@ intended resolution point.
   Win10/Win11 ISOs, then run P4a (pre-freeze dry run) and P4b (formal matrix
   on the frozen RC ZIP). Also covers L-02 (release-build render re-measure)
   once VMs exist.
+- **Preparation done (2026-10-27)**: `scripts/qa/m10-h-evidence.ps1` collects
+  the mechanical evidence for H01/H02-preconditions/H08–H10/H11/H13 inside the
+  VM under stock PowerShell 5.1 (no Node/Python/Rust), writing one JSON per
+  check to `docs/qa/evidence/`. It removes the "what exactly do we record"
+  ambiguity but does not reduce the 15 cases a human must execute. Usage table
+  in `QA_M10_H_PORTABLE_PROTOCOL.md` § "Evidence capture helper".
 
 ## L-03: Target-parent selector for cross-document transfer
 

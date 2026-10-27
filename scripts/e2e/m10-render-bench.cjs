@@ -4,6 +4,10 @@
 // → virtualization IMPLEMENT (docs/performance/PROFILING_METHOD.md §4.2).
 // Usage: node scripts/e2e/m10-render-bench.cjs [--rows 10000]
 // Output: docs/qa/evidence/m10-render-bench.json
+//
+// DEV-SERVER ONLY: this harness injects `window.__e2e` via dynamic imports of
+// `/src/stores/*.ts`, which only resolve against `vite dev`. It cannot drive the
+// bundled frontend of the release EXE — see docs/qa/LEFTOVER_TASKS.md L-02.
 const { connectPage } = require('./cdp-client.cjs');
 const fs = require('fs');
 const path = require('path');

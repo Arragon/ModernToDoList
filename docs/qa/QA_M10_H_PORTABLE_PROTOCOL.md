@@ -31,6 +31,27 @@ genuinely self-contained release from one that silently leans on the build envir
 
 ---
 
+## Evidence capture helper
+
+`scripts/qa/m10-h-evidence.ps1` runs **inside the VM** under Windows PowerShell 5.1 and needs no
+Node, Python or Rust. It records only mechanical facts (environment, hashes, path behaviour, bundle
+leaks) and writes one JSON file per check to `docs/qa/evidence/`. It never decides PASS/FAIL — the
+human observation required by this protocol stays authoritative, and the JSON must be attached
+alongside it, not instead of it.
+
+| Check | Cases it feeds | Command |
+|---|---|---|
+| `env` | H02–H04 preconditions | `... -Check env` |
+| `zip` | H01 | `... -Check zip -ZipPath <zip> -SidecarPath <zip>.sha256` |
+| `paths` | H08–H10 | `... -Check paths -Workspace '<full workspace path including CJK / spaces / long nesting>'` |
+| `crash` | H13 | `... -Check crash -BundleDir <exported bundle> -Forbidden 'buy milk;<CJK folder name>'` |
+| `index` | H11 | `... -Check index -AppDir <install dir>` (add `-RemoveIndex` to delete `index.db`, then relaunch and re-run) |
+
+Invoke as `powershell -NoProfile -ExecutionPolicy Bypass -File <path> <args>`. The script is
+ASCII-only by design; pass non-ASCII fixture paths and search needles as arguments.
+
+---
+
 ## Cases
 
 ### H01 — ZIP integrity and hash match
@@ -148,7 +169,9 @@ losing a user's tasks, which is the one failure the product cannot recover from.
 
 ## Status
 
-**Not executed.** As of 2026-09-22 no case in this matrix has been run: the required clean Windows
-VMs are not available in this environment. INH-1131 therefore remains open and is counted as a
-blocker in `docs/release/RC_M10_BLOCKER_REVIEW.md`. Do not close GATE-M10 on the strength of
-automated tests alone — this matrix is an explicit gate requirement.
+**Not executed.** As of 2026-10-27 no case in this matrix has been run (0 of 15 on either OS): the
+required clean Windows VMs are not available in this environment. `scripts/qa/m10-h-evidence.ps1`
+is delivered so that the mechanical part of each case is captured in a standard form, which does not
+reduce the number of cases a human still has to execute. INH-1131 therefore remains open and is
+counted as a blocker in `docs/release/RC_M10_BLOCKER_REVIEW.md`. Do not close GATE-M10 on the
+strength of automated tests alone — this matrix is an explicit gate requirement.

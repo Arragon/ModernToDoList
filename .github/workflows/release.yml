@@ -1,0 +1,172 @@
+name: Release
+
+# Builds a portable 64-bit Windows release on every push, and publishes a
+# GitHub Release when a `v*` tag is pushed.
+#
+# Design notes
+# - x64 only: no matrix, single target x86_64-pc-windows-msvc (RD/QA-M10 scope
+#   is the Windows Portable build; 32-bit and ARM64 are out of scope).
+# - `--no-bundle` skips MSI/NSIS installers: the product ships as a portable
+#   EXE inside a deterministic ZIP (RD-M10-024 / INH-1117).
+# - The ZIP is produced by scripts/release/make-portable-zip.cjs, the same
+#   builder used for the frozen RC, so the SHA-256 sidecar stays reproducible
+#   from a fixed staging directory (GATE_M10_CHECKLIST §5.1).
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: '1'
+
+jobs:
+  build-windows-x64:
+    name: Build portable Windows x64
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Set up Rust (stable, MSVC)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          key: windows-x64
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      # beforeBuildCommand in tauri.conf.json runs `npm run build`
+      # (vue-tsc --noEmit && vite build), so type errors fail the job here.
+      - name: Build release binary
+        run: npx tauri build --no-bundle
+
+      - name: Verify the binary is 64-bit
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = 'src-tauri/target/release/ModernToDoList.exe'
+          $bytes = [System.IO.File]::ReadAllBytes($exe)
+          $peOffset = [BitConverter]::ToInt32($bytes, 0x3C)
+          $machine = [BitConverter]::ToUInt16($bytes, $peOffset + 4)
+          $magic = [BitConverter]::ToUInt16($bytes, $peOffset + 24)
+          if ($machine -ne 0x8664) { throw ('unexpected PE machine 0x{0:X4} (expected 0x8664 x86-64)' -f $machine) }
+          if ($magic -ne 0x20B) { throw ('unexpected optional header magic 0x{0:X3} (expected 0x20B PE32+)' -f $magic) }
+          $size = (Get-Item $exe).Length
+          $sha = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          Write-Host ('x64 OK: machine=0x{0:X4} magic=0x{1:X3} size={2} sha256={3}' -f $machine, $magic, $size, $sha)
+          "EXE_SHA256=$sha" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "EXE_BYTES=$size" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Assemble staging directory and build portable ZIP
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $stage = 'release/staging-ci'
+          $dist = 'release/dist-ci'
+          Remove-Item $stage, $dist -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Path $stage -Force | Out-Null
+          Copy-Item 'src-tauri/target/release/ModernToDoList.exe' $stage
+          Copy-Item 'LICENSES' $stage -Recurse
+          node scripts/release/make-portable-zip.cjs $stage $dist $version
+          Get-ChildItem $dist | ForEach-Object { "{0}  {1} bytes" -f $_.Name, $_.Length }
+
+      - name: Record build summary
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $zip = Get-ChildItem 'release/dist-ci/*.zip' | Select-Object -First 1
+          $zipSha = (Get-Content ("{0}.sha256" -f $zip.FullName) -Raw).Split(' ')[0].Trim()
+          @"
+          ### ModernToDoList $version — Windows x64 portable
+
+          | Field | Value |
+          |---|---|
+          | Commit | `${{ github.sha }}` |
+          | Ref | `${{ github.ref }}` |
+          | EXE size | $env:EXE_BYTES bytes |
+          | EXE SHA-256 | `$env:EXE_SHA256` |
+          | ZIP | `$($zip.Name)` |
+          | ZIP size | $($zip.Length) bytes |
+          | ZIP SHA-256 | `$zipSha` |
+          | PE | machine 0x8664 / magic 0x20B (x64) |
+          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModernToDoList-win-x64-${{ github.sha }}
+          path: |
+            release/dist-ci/*.zip
+            release/dist-ci/*.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: build-windows-x64
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ModernToDoList-win-x64-${{ github.sha }}
+          path: artifacts
+
+      - name: Create or update the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = "${{ github.ref_name }}"
+          $files = @(Get-ChildItem -Path artifacts -Recurse -File | Select-Object -ExpandProperty FullName)
+          foreach ($f in $files) { Write-Host "asset: $f" }
+
+          # rc / beta / build tags are published as pre-releases, never as GA.
+          $prerelease = @()
+          if ($tag -match '(?i)(rc|beta|alpha|build)') { $prerelease = @('--prerelease') }
+
+          gh release view $tag --json tagName 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "release $tag exists — uploading with --clobber"
+            $ghArgs = @('release', 'upload', $tag) + $files + @('--clobber')
+          } else {
+            Write-Host "creating release $tag"
+            $ghArgs = @('release', 'create', $tag) + $files + @(
+              '--title', "ModernToDoList $tag",
+              '--generate-notes',
+              '--verify-tag'
+            ) + $prerelease
+          }
+          & gh @ghArgs
+          if ($LASTEXITCODE -ne 0) { throw "gh release failed with exit code $LASTEXITCODE" }
